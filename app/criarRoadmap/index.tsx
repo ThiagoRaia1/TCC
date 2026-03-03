@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -5,8 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { useState } from "react";
-import { colors } from "../../colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function CriarRoadmap() {
   const [prompt, setPrompt] = useState<string>("");
@@ -14,7 +14,7 @@ export default function CriarRoadmap() {
   const isDisabled = prompt.trim().length < 5;
 
   return (
-    <View style={styles.screen}>
+    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
       <View style={styles.card}>
         <Text selectable={false} style={styles.title}>
           O que você quer aprender hoje?
@@ -27,7 +27,7 @@ export default function CriarRoadmap() {
         <TextInput
           style={styles.input}
           placeholder="Ex: Quero aprender React do zero até nível avançado..."
-          placeholderTextColor={colors.gray}
+          placeholderTextColor="#94a3b8"
           multiline
           numberOfLines={4}
           value={prompt}
@@ -35,10 +35,7 @@ export default function CriarRoadmap() {
         />
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            isDisabled && { opacity: 0.6, cursor: "not-allowed" as any },
-          ]}
+          style={[styles.button, isDisabled && styles.buttonDisabled]}
           disabled={isDisabled}
         >
           <Text selectable={false} style={styles.buttonText}>
@@ -46,66 +43,71 @@ export default function CriarRoadmap() {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 24,
   },
 
   card: {
     width: "100%",
-    maxWidth: 600,
-    backgroundColor: "#FFFFFF",
+    maxWidth: 700,
+    backgroundColor: "#1e293b",
     padding: 32,
-    borderRadius: 16,
+    borderRadius: 24,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
     gap: 20,
   },
 
   title: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#1E293B",
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
 
   subtitle: {
     fontSize: 16,
-    color: "#64748B",
+    color: "#94a3b8",
     lineHeight: 22,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: colors.gray,
-    borderRadius: 12,
-    padding: 16,
+    borderColor: "#334155",
+    borderRadius: 18,
+    padding: 18,
     fontSize: 16,
-    color: "#1E293B",
+    color: "#ffffff",
     textAlignVertical: "top",
-    minHeight: 120,
+    minHeight: 140,
+    backgroundColor: "#0f172a",
   },
 
   button: {
-    backgroundColor: "#2563EB",
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: "#38bdf8",
+    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: "center",
+    marginTop: 10,
+  },
+
+  buttonDisabled: {
+    opacity: 0.5,
+    cursor: "not-allowed" as any,
   },
 
   buttonText: {
-    color: "#FFFFFF",
+    color: "#0f172a",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });

@@ -13,6 +13,17 @@ export const getGlobalStyles = () =>
       justifyContent: "center",
       alignItems: "center",
     },
+    iconTitleContainer: {
+      gap: 10,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    title: {
+      color: "#F1F5F9",
+      fontWeight: "600",
+      fontSize: 22,
+      letterSpacing: 0.5,
+    },
     input: {
       borderWidth: 1,
       borderRadius: 5,

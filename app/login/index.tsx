@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -7,20 +8,19 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-import { useState } from "react";
-import { colors } from "../../colors";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors } from "../../styles/colors";
+import { pageNames } from "../../utils/pageNames";
 
 export default function Login() {
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
 
   return (
-    <View style={styles.screen}>
+    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
       <View style={styles.card}>
-        <View style={styles.headerBar} />
-
-        <Text style={styles.title}>Login</Text>
+        <Text style={styles.title}>AI Teacher</Text>
         <Text style={styles.subtitle}>
-          Informe suas credenciais para continuar
+          Entre para continuar sua jornada de aprendizado
         </Text>
 
         <View style={styles.inputGroup}>
@@ -28,145 +28,173 @@ export default function Login() {
           <TextInput
             style={styles.input}
             placeholder="Digite seu email"
-            placeholderTextColor="#9aa0a6"
+            placeholderTextColor="#94a3b8"
           />
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Senha</Text>
-          <View style={[styles.input, { flexDirection: "row" }]}>
+          <View style={styles.passwordContainer}>
             <TextInput
-              style={{ flex: 1, outlineStyle: "none" as any }}
-              secureTextEntry={isPasswordVisible}
+              style={styles.passwordInput}
+              secureTextEntry={!isPasswordVisible}
               placeholder="Digite sua senha"
-              placeholderTextColor="#9aa0a6"
+              placeholderTextColor="#94a3b8"
             />
             <TouchableOpacity
+              style={{ position: "absolute", right: 12 }}
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             >
               <AntDesign
                 name={isPasswordVisible ? "eye" : "eye-invisible"}
                 size={24}
-                color="black"
+                color="#38bdf8"
               />
             </TouchableOpacity>
           </View>
         </View>
 
         <TouchableOpacity
-          style={styles.button}
+          style={styles.primaryButton}
           activeOpacity={0.85}
           onPress={() =>
             router.push({
               pathname: "/main",
-              params: { mainPage: "CriarRoadmap" },
+              params: {
+                pageName: pageNames.roadmap.main,
+                subPage: pageNames.roadmap.criarRoadmap,
+              },
             })
           }
         >
-          <Text style={styles.buttonText}>Entrar</Text>
+          <Text style={styles.primaryButtonText}>Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#9aa0a6" }]}
+          style={styles.secondaryButton}
           activeOpacity={0.85}
           onPress={() => router.push({ pathname: "/cadastro" })}
         >
-          <Text style={styles.buttonText}>Cadastre-se</Text>
+          <Text style={styles.secondaryButtonText}>Criar Conta</Text>
         </TouchableOpacity>
 
-        <Text style={styles.footerText}>© 2026 Sistema Corporativo</Text>
+        <Text style={styles.footerText}>
+          © 2026 AI Teacher — Todos os direitos reservados
+        </Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#eef1f4",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 24,
   },
 
   card: {
     width: "100%",
-    maxWidth: 460,
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 36,
-    elevation: 6,
+    maxWidth: 420,
+    backgroundColor: "#1e293b",
+    borderRadius: 24,
+    padding: 28,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-
-  headerBar: {
-    width: 50,
-    height: 4,
-    backgroundColor: "#1f2937",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 25,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#1f2937",
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#ffffff",
     textAlign: "center",
   },
 
   subtitle: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#94a3b8",
     textAlign: "center",
-    marginTop: 6,
-    marginBottom: 30,
+    marginTop: 8,
+    marginBottom: 28,
   },
-
   inputGroup: {
-    marginBottom: 22,
+    marginBottom: 18,
   },
   label: {
     fontSize: 13,
     marginBottom: 6,
-    color: "#374151",
+    color: "#cbd5e1",
     fontWeight: "500",
   },
   input: {
-    height: 46,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 14,
     paddingHorizontal: 14,
-    fontSize: 14,
-    backgroundColor: "#f9fafb",
+    fontSize: 16,
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#334155",
+    outlineStyle: "none" as any,
+  },
+  passwordContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#334155",
+    height: 48,
   },
 
-  button: {
-    height: 48,
-    backgroundColor: colors.black,
-    borderRadius: 8,
+  passwordInput: {
+    flex: 1,
+    height: "100%",
+    color: "#ffffff",
+    fontSize: 16,
+    outlineStyle: "none" as any,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+  },
+
+  primaryButton: {
+    backgroundColor: "#38bdf8",
+    height: 50,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
   },
 
-  buttonText: {
-    color: "#ffffff",
+  primaryButtonText: {
+    color: "#0f172a",
     fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 0.5,
+    fontWeight: "bold",
+  },
+
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#38bdf8",
+    height: 50,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  secondaryButtonText: {
+    color: "#38bdf8",
+    fontSize: 15,
+    fontWeight: "bold",
   },
 
   footerText: {
-    marginTop: 30,
-    fontSize: 12,
-    color: "#9ca3af",
+    marginTop: 24,
+    fontSize: 11,
+    color: "#64748b",
     textAlign: "center",
   },
 });

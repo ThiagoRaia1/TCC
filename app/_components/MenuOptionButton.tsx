@@ -12,7 +12,7 @@ interface MenuOptionButtonProps {
   hoverStyle?: StyleProp<ViewStyle>;
   pressedStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  label: string | React.ReactNode;
+  label?: string | React.ReactNode;
   icon?: React.ReactNode;
   onPress: () => void;
   enabled?: boolean;

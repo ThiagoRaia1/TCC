@@ -7,18 +7,13 @@ import {
   Animated,
   Platform,
 } from "react-native";
-import {
-  Entypo,
-  Feather,
-  FontAwesome,
-  FontAwesome6,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { Entypo, Feather, FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { useAuth } from "../../context/auth";
 import { router, useLocalSearchParams } from "expo-router";
 import { useLoading } from "../../context/providers/loading";
-import { colors } from "../../colors";
+import { pageNames } from "../../utils/pageNames";
+import CriarRoadmapTitle from "./menuTitles/criarRoadmapTitle";
+import MeusRoadmapsTitle from "./menuTitles/meusRoadmapsTitle";
 
 type TopBarProps = {
   openSideBar: () => void;
@@ -35,6 +30,9 @@ export default function TopBar({ openSideBar }: TopBarProps) {
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   const animationDuration = 200;
+
+  const iconSize: number = 40;
+  const titleTextColor: string = "white";
 
   useEffect(() => {
     Animated.parallel([
@@ -63,81 +61,14 @@ export default function TopBar({ openSideBar }: TopBarProps) {
 
   return (
     <View style={styles.container}>
-      <Pressable style={[styles.titleContainer]} onPress={openSideBar}>
-        <Entypo name="menu" size={28} color="white" />
-        {params.pageName === "operacoes" && params.subPage === "novaCarga" && (
-          <>
-            <MaterialIcons
-              name="add-circle-outline"
-              size={32}
-              color={"white"}
-            />
-            <Text style={[styles.title]} selectable={false}>
-              {"Nova Carga"}
-            </Text>
-          </>
+      <Pressable style={styles.titleContainer} onPress={openSideBar}>
+        <Entypo name="menu" size={28} color={titleTextColor} />
+        {params.subPage === pageNames.roadmap.criarRoadmap && (
+          <CriarRoadmapTitle size={iconSize} color={titleTextColor} />
         )}
 
-        {params.pageName === "operacoes" && params.subPage === "cargas" && (
-          <>
-            <Feather name="package" size={40} color={"white"} />
-            <Text style={[styles.title]} selectable={false}>
-              {"Cargas"}
-            </Text>
-          </>
-        )}
-
-        {params.pageName === "cadastros" && params.subPage === "motoristas" && (
-          <>
-            <FontAwesome name="drivers-license-o" size={40} color={"white"} />
-            <Text style={[styles.title]} selectable={false}>
-              {"Motoristas"}
-            </Text>
-          </>
-        )}
-
-        {params.pageName === "cadastros" && params.subPage === "clientes" && (
-          <>
-            <MaterialCommunityIcons
-              name="office-building-outline"
-              size={40}
-              color={"white"}
-            />
-            <Text style={[styles.title]} selectable={false}>
-              {"Clientes"}
-            </Text>
-          </>
-        )}
-
-        {params.pageName === "cadastros" && params.subPage === "veiculos" && (
-          <>
-            <MaterialCommunityIcons
-              name="truck-outline"
-              size={40}
-              color={"white"}
-            />
-            <Text style={[styles.title]} selectable={false}>
-              {"Veículos"}
-            </Text>
-          </>
-        )}
-
-        {params.pageName === "relatorios" && params.subPage === "pdf" && (
-          <>
-            {/* <FontAwesome name="drivers-license-o" size={40} color={"white"} /> */}
-            <Text style={[styles.title]} selectable={false}>
-              {"PDF"}
-            </Text>
-          </>
-        )}
-
-        {params.pageName === "relatorios" && params.subPage === "excel" && (
-          <>
-            {/* <FontAwesome name="drivers-license-o" size={40} color={"white"} /> */}
-            <Text style={[styles.title]} selectable={false}>
-              {"Excel"}
-            </Text>
-          </>
+        {params.subPage === pageNames.roadmap.meusRoadmaps && (
+          <MeusRoadmapsTitle size={iconSize} color={titleTextColor} />
         )}
       </Pressable>
 
@@ -165,7 +96,15 @@ export default function TopBar({ openSideBar }: TopBarProps) {
           },
         ]}
       >
-        <Pressable style={styles.option}>
+        <Pressable
+          style={styles.option}
+          onPress={() =>
+            router.push({
+              pathname: "/main",
+              params: { pageName: pageNames.meuPerfil },
+            })
+          }
+        >
           <Text style={styles.optionText} selectable={false}>
             Meu perfil
           </Text>
@@ -223,13 +162,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-  },
-
-  title: {
-    color: "#F1F5F9",
-    fontWeight: "600",
-    fontSize: 22,
-    letterSpacing: 0.5,
   },
 
   userButton: {
