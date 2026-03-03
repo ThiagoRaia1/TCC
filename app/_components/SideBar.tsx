@@ -159,7 +159,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
                         ? "VIEW"
                         : ""}
                 </Text>
-                <Text style={styles.version}>V0.3.0</Text>
+                <Text style={styles.version}>V0.5.0</Text>
               </View>
             </ScrollView>
           </LinearGradient>

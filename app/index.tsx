@@ -73,7 +73,7 @@ export default function LandingPage() {
             Comece a evoluir seus estudos hoje mesmo 🚀
           </Text>
 
-          <TouchableOpacity style={styles.ctaButton}>
+          <TouchableOpacity style={styles.ctaButton} onPress={() => router.push("/cadastrar")}>
             <Text style={styles.ctaButtonText}>Criar Conta Gratuita</Text>
           </TouchableOpacity>
         </View>

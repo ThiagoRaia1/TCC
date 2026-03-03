@@ -9,18 +9,20 @@ import {
 import { router } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors } from "../../styles/colors";
 import { pageNames } from "../../utils/pageNames";
 
-export default function Login() {
+export default function cadastrar() {
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [senha, setSenha] = useState<string>("");
+  const [senhaConfirmacao, setSenhaConfirmacao] = useState<string>("");
 
   return (
     <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
       <View style={styles.card}>
         <Text style={styles.title}>AI Teacher</Text>
         <Text style={styles.subtitle}>
-          Entre para continuar sua jornada de aprendizado
+          Aprimore seu aprendizado criando uma conta!
         </Text>
 
         <View style={styles.inputGroup}>
@@ -29,6 +31,7 @@ export default function Login() {
             style={styles.input}
             placeholder="Digite seu email"
             placeholderTextColor="#94a3b8"
+            onChangeText={(text) => setEmail(text)}
           />
         </View>
 
@@ -40,6 +43,7 @@ export default function Login() {
               secureTextEntry={!isPasswordVisible}
               placeholder="Digite sua senha"
               placeholderTextColor="#94a3b8"
+              onChangeText={(text) => setSenha(text)}
             />
             <TouchableOpacity
               style={{ position: "absolute", right: 12 }}
@@ -54,28 +58,44 @@ export default function Login() {
           </View>
         </View>
 
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Confirmar senha</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              secureTextEntry={!isPasswordVisible}
+              placeholder="Confirme sua senha"
+              placeholderTextColor="#94a3b8"
+              onChangeText={(text) => setSenhaConfirmacao(text)}
+            />
+          </View>
+        </View>
+
         <TouchableOpacity
           style={styles.primaryButton}
           activeOpacity={0.85}
-          onPress={() =>
+          onPress={() => {
+            // Adicionar função para confirmar o cadastro da conta e ja logar o usuario
             router.push({
               pathname: "/main",
               params: {
                 pageName: pageNames.roadmap.main,
                 subPage: pageNames.roadmap.criarRoadmap,
               },
-            })
-          }
+            });
+          }}
         >
-          <Text style={styles.primaryButtonText}>Entrar</Text>
+          <Text style={styles.primaryButtonText}>Criar conta</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.secondaryButton}
           activeOpacity={0.85}
-          onPress={() => router.push({ pathname: "/cadastrar" })}
+          onPress={() => router.push({ pathname: "/login" })}
         >
-          <Text style={styles.secondaryButtonText}>Criar Conta</Text>
+          <Text style={styles.secondaryButtonText}>
+            Já possui uma conta? Clique aqui
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.footerText}>
