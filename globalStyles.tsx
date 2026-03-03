@@ -1,4 +1,5 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+import { colors } from "./colors";
 
 export const getGlobalStyles = () =>
   StyleSheet.create({
@@ -20,7 +21,7 @@ export const getGlobalStyles = () =>
     },
     button: {
       height: 30,
-      backgroundColor: "blue",
+      backgroundColor: colors.lightBlue,
       alignItems: "center",
       justifyContent: "center",
       borderRadius: 20,
@@ -32,5 +33,18 @@ export const getGlobalStyles = () =>
       color: "white",
       fontSize: 16,
       fontWeight: 600,
+    },
+    menuOption: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      padding: 20,
+      borderRadius: 12,
+      gap: 12,
+      ...Platform.select({
+        web: {
+          transitionDuration: "150ms",
+        },
+      }),
     },
   });
