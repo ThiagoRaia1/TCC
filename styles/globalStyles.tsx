@@ -9,9 +9,9 @@ export const getGlobalStyles = () =>
     },
     mainContainer: {
       flex: 1,
-      width: "100%",
       justifyContent: "center",
       alignItems: "center",
+      padding: 24,
     },
     iconTitleContainer: {
       gap: 10,

@@ -70,10 +70,13 @@ export default function LandingPage() {
         {/* CALL TO ACTION */}
         <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>
-            Comece a evoluir seus estudos hoje mesmo 🚀
+            Comece a evoluir seus estudos hoje mesmo!
           </Text>
 
-          <TouchableOpacity style={styles.ctaButton} onPress={() => router.push("/cadastrar")}>
+          <TouchableOpacity
+            style={styles.ctaButton}
+            onPress={() => router.push("/cadastrar")}
+          >
             <Text style={styles.ctaButtonText}>Criar Conta Gratuita</Text>
           </TouchableOpacity>
         </View>

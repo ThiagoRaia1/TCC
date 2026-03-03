@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { pageNames } from "../../utils/pageNames";
+import { GradientScreen } from "../_components/GradientBackground";
 
 export default function cadastrar() {
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
@@ -18,7 +19,13 @@ export default function cadastrar() {
   const [senhaConfirmacao, setSenhaConfirmacao] = useState<string>("");
 
   return (
-    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
+    <GradientScreen>
+      <TouchableOpacity
+        style={{ position: "absolute", left: 30, top: 30 }}
+        onPress={() => router.push("/")}
+      >
+        <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
+      </TouchableOpacity>
       <View style={styles.card}>
         <Text style={styles.title}>AI Teacher</Text>
         <Text style={styles.subtitle}>
@@ -102,7 +109,7 @@ export default function cadastrar() {
           © 2026 AI Teacher — Todos os direitos reservados
         </Text>
       </View>
-    </LinearGradient>
+    </GradientScreen>
   );
 }
 

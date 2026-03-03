@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { GradientScreen } from "../_components/GradientBackground";
 
 export default function CriarRoadmap() {
   const [prompt, setPrompt] = useState<string>("");
@@ -14,7 +14,7 @@ export default function CriarRoadmap() {
   const isDisabled = prompt.trim().length < 5;
 
   return (
-    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
+    <GradientScreen>
       <View style={styles.card}>
         <Text selectable={false} style={styles.title}>
           O que você quer aprender hoje?
@@ -43,7 +43,7 @@ export default function CriarRoadmap() {
           </Text>
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </GradientScreen>
   );
 }
 

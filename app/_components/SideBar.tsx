@@ -150,16 +150,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
               </View>
 
               <View style={{ marginTop: "auto" }}>
-                <Text style={styles.version}>
-                  {usuario?.nivelDeAcesso === 1
-                    ? "ADM"
-                    : usuario?.nivelDeAcesso === 2
-                      ? "EDIT"
-                      : usuario?.nivelDeAcesso === 3
-                        ? "VIEW"
-                        : ""}
-                </Text>
-                <Text style={styles.version}>V0.5.0</Text>
+                <Text style={styles.version}>V0.6.0</Text>
               </View>
             </ScrollView>
           </LinearGradient>

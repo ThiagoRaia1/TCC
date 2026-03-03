@@ -1,9 +1,10 @@
-import { View, Text } from "react-native";
+import { Text } from "react-native";
+import { GradientScreen } from "../_components/GradientBackground";
 
 export default function MeusRoadmaps() {
   return (
-    <View>
+    <GradientScreen>
       <Text>AAA</Text>
-    </View>
+    </GradientScreen>
   );
 }

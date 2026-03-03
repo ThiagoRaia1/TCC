@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -7,16 +7,54 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
-import { AntDesign } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { colors } from "../../styles/colors";
+import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import { pageNames } from "../../utils/pageNames";
+import { GradientScreen } from "../_components/GradientBackground";
+import { useAuth } from "../../context/auth";
+import { useLoading } from "../../context/providers/loading";
 
 export default function Login() {
-  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const { login, logout } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
+
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [isSenhaVisible, setIsSenhaVisible] = useState<boolean>(false);
+
+  const senhaRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    logout();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      showLoading();
+
+      const usuarioLogado = await login({ email, senha });
+
+      router.push({
+        pathname: "/main",
+        params: {
+          pageName: pageNames.roadmap.main,
+          subPage: pageNames.roadmap.criarRoadmap,
+        },
+      });
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
 
   return (
-    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.screen}>
+    <GradientScreen>
+      <TouchableOpacity
+        style={{ position: "absolute", left: 30, top: 30 }}
+        onPress={() => router.push("/")}
+      >
+        <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
+      </TouchableOpacity>
       <View style={styles.card}>
         <Text style={styles.title}>AI Teacher</Text>
         <Text style={styles.subtitle}>
@@ -29,6 +67,8 @@ export default function Login() {
             style={styles.input}
             placeholder="Digite seu email"
             placeholderTextColor="#94a3b8"
+            onChangeText={(text) => setEmail(text)}
+            onSubmitEditing={() => senhaRef.current?.focus()}
           />
         </View>
 
@@ -36,17 +76,20 @@ export default function Login() {
           <Text style={styles.label}>Senha</Text>
           <View style={styles.passwordContainer}>
             <TextInput
+              ref={senhaRef}
               style={styles.passwordInput}
-              secureTextEntry={!isPasswordVisible}
+              secureTextEntry={!isSenhaVisible}
               placeholder="Digite sua senha"
               placeholderTextColor="#94a3b8"
+              onChangeText={(text) => setSenha(text)}
+              onSubmitEditing={handleLogin}
             />
             <TouchableOpacity
               style={{ position: "absolute", right: 12 }}
-              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              onPress={() => setIsSenhaVisible(!isSenhaVisible)}
             >
               <AntDesign
-                name={isPasswordVisible ? "eye" : "eye-invisible"}
+                name={isSenhaVisible ? "eye" : "eye-invisible"}
                 size={24}
                 color="#38bdf8"
               />
@@ -57,15 +100,7 @@ export default function Login() {
         <TouchableOpacity
           style={styles.primaryButton}
           activeOpacity={0.85}
-          onPress={() =>
-            router.push({
-              pathname: "/main",
-              params: {
-                pageName: pageNames.roadmap.main,
-                subPage: pageNames.roadmap.criarRoadmap,
-              },
-            })
-          }
+          onPress={handleLogin}
         >
           <Text style={styles.primaryButtonText}>Entrar</Text>
         </TouchableOpacity>
@@ -82,7 +117,7 @@ export default function Login() {
           © 2026 AI Teacher — Todos os direitos reservados
         </Text>
       </View>
-    </LinearGradient>
+    </GradientScreen>
   );
 }
 
