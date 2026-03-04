@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -8,15 +8,57 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { pageNames } from "../../utils/pageNames";
-import { GradientScreen } from "../_components/GradientBackground";
+import GradientScreen from "../_components/GradientBackground";
+import { useLoading } from "../../context/providers/loading";
+import { criarConta } from "../../services/usuario";
+import { useAuth } from "../../context/auth";
 
 export default function cadastrar() {
-  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const { showLoading, hideLoading } = useLoading();
+  const { login } = useAuth();
+
+  const [isSenhaVisible, setIsSenhaVisible] = useState<boolean>(false);
+  const [nome, setNome] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
   const [senhaConfirmacao, setSenhaConfirmacao] = useState<string>("");
+
+  const emailRef = useRef<TextInput>(null);
+  const senhaRef = useRef<TextInput>(null);
+  const senhaConfirmacaoRef = useRef<TextInput>(null);
+  const criarContaButtonRef = useRef<View>(null);
+
+  const handleCriarConta = async () => {
+    try {
+      showLoading();
+
+      if (senha !== senhaConfirmacao) {
+        alert("As senhas não coincidem.");
+        return;
+      }
+
+      const resultCriarConta = await criarConta({
+        email,
+        senha,
+        nome,
+      });
+
+      const resultLogin = await login({ email, senha });
+
+      router.push({
+        pathname: "/main",
+        params: {
+          pageName: pageNames.roadmap.main,
+          subPage: pageNames.roadmap.criarRoadmap,
+        },
+      });
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
 
   return (
     <GradientScreen>
@@ -33,12 +75,27 @@ export default function cadastrar() {
         </Text>
 
         <View style={styles.inputGroup}>
+          <Text style={styles.label}>Nome</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu nome"
+            placeholderTextColor="#94a3b8"
+            value={nome}
+            onChangeText={(text) => setNome(text.trim())}
+            onSubmitEditing={() => emailRef.current?.focus()}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
+            ref={emailRef}
             style={styles.input}
             placeholder="Digite seu email"
             placeholderTextColor="#94a3b8"
-            onChangeText={(text) => setEmail(text)}
+            value={email}
+            onChangeText={(text) => setEmail(text.trim().toLocaleLowerCase())}
+            onSubmitEditing={() => senhaRef.current?.focus()}
           />
         </View>
 
@@ -46,18 +103,21 @@ export default function cadastrar() {
           <Text style={styles.label}>Senha</Text>
           <View style={styles.passwordContainer}>
             <TextInput
+              ref={senhaRef}
               style={styles.passwordInput}
-              secureTextEntry={!isPasswordVisible}
+              secureTextEntry={!isSenhaVisible}
               placeholder="Digite sua senha"
               placeholderTextColor="#94a3b8"
-              onChangeText={(text) => setSenha(text)}
+              value={senha}
+              onChangeText={(text) => setSenha(text.trim())}
+              onSubmitEditing={() => senhaConfirmacaoRef.current?.focus()}
             />
             <TouchableOpacity
               style={{ position: "absolute", right: 12 }}
-              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              onPress={() => setIsSenhaVisible(!isSenhaVisible)}
             >
               <AntDesign
-                name={isPasswordVisible ? "eye" : "eye-invisible"}
+                name={isSenhaVisible ? "eye" : "eye-invisible"}
                 size={24}
                 color="#38bdf8"
               />
@@ -69,28 +129,23 @@ export default function cadastrar() {
           <Text style={styles.label}>Confirmar senha</Text>
           <View style={styles.passwordContainer}>
             <TextInput
+              ref={senhaConfirmacaoRef}
               style={styles.passwordInput}
-              secureTextEntry={!isPasswordVisible}
+              secureTextEntry={!isSenhaVisible}
               placeholder="Confirme sua senha"
               placeholderTextColor="#94a3b8"
+              value={senhaConfirmacao}
               onChangeText={(text) => setSenhaConfirmacao(text)}
+              onSubmitEditing={() => criarContaButtonRef.current?.focus()}
             />
           </View>
         </View>
 
         <TouchableOpacity
+          ref={criarContaButtonRef}
           style={styles.primaryButton}
           activeOpacity={0.85}
-          onPress={() => {
-            // Adicionar função para confirmar o cadastro da conta e ja logar o usuario
-            router.push({
-              pathname: "/main",
-              params: {
-                pageName: pageNames.roadmap.main,
-                subPage: pageNames.roadmap.criarRoadmap,
-              },
-            });
-          }}
+          onPress={handleCriarConta}
         >
           <Text style={styles.primaryButtonText}>Criar conta</Text>
         </TouchableOpacity>

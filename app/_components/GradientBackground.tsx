@@ -7,7 +7,10 @@ interface GradientScreenProps {
   style?: ViewStyle; // opcional para customizar
 }
 
-export function GradientScreen({ children, style }: GradientScreenProps) {
+export default function GradientScreen({
+  children,
+  style,
+}: GradientScreenProps) {
   return (
     <LinearGradient
       colors={["#0f172a", "#1e293b"]}

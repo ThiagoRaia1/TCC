@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { GradientScreen } from "../_components/GradientBackground";
+import GradientScreen from "../_components/GradientBackground";
 
 export default function CriarRoadmap() {
   const [prompt, setPrompt] = useState<string>("");

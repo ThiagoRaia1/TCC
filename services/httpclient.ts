@@ -35,4 +35,4 @@ export async function httpClient(endpoint: string, options: RequestInit) {
   return data;
 }
 
-export const socket = io(process.env.EXPO_PUBLIC_BACKEND_API_URL);
+// export const socket = io(process.env.EXPO_PUBLIC_BACKEND_API_URL);

@@ -1,4 +1,4 @@
-import { Text, View, TextInput } from "react-native";
+import { View } from "react-native";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import TopBar from "../_components/TopBar";
 import MeusRoadmaps from "../meusRoadmaps";

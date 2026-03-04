@@ -9,7 +9,7 @@ import {
 import { router } from "expo-router";
 import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import { pageNames } from "../../utils/pageNames";
-import { GradientScreen } from "../_components/GradientBackground";
+import GradientScreen from "../_components/GradientBackground";
 import { useAuth } from "../../context/auth";
 import { useLoading } from "../../context/providers/loading";
 
