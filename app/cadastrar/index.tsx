@@ -13,8 +13,10 @@ import GradientScreen from "../_components/GradientBackground";
 import { useLoading } from "../../context/providers/loading";
 import { criarConta } from "../../services/usuario";
 import { useAuth } from "../../context/auth";
+import { getGlobalStyles } from "../../styles/globalStyles";
 
 export default function cadastrar() {
+  const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
   const { login } = useAuth();
 
@@ -74,23 +76,22 @@ export default function cadastrar() {
           Aprimore seu aprendizado criando uma conta!
         </Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nome</Text>
+        <View style={globalStyles.inputGroup}>
+          <Text style={globalStyles.label}>Nome</Text>
           <TextInput
-            style={styles.input}
+            style={globalStyles.input}
             placeholder="Digite seu nome"
             placeholderTextColor="#94a3b8"
-            value={nome}
             onChangeText={(text) => setNome(text.trim())}
             onSubmitEditing={() => emailRef.current?.focus()}
           />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
+        <View style={globalStyles.inputGroup}>
+          <Text style={globalStyles.label}>Email</Text>
           <TextInput
             ref={emailRef}
-            style={styles.input}
+            style={globalStyles.input}
             placeholder="Digite seu email"
             placeholderTextColor="#94a3b8"
             value={email}
@@ -99,12 +100,12 @@ export default function cadastrar() {
           />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Senha</Text>
-          <View style={styles.passwordContainer}>
+        <View style={globalStyles.inputGroup}>
+          <Text style={globalStyles.label}>Senha</Text>
+          <View style={globalStyles.passwordContainer}>
             <TextInput
               ref={senhaRef}
-              style={styles.passwordInput}
+              style={globalStyles.passwordInput}
               secureTextEntry={!isSenhaVisible}
               placeholder="Digite sua senha"
               placeholderTextColor="#94a3b8"
@@ -125,12 +126,12 @@ export default function cadastrar() {
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Confirmar senha</Text>
-          <View style={styles.passwordContainer}>
+        <View style={globalStyles.inputGroup}>
+          <Text style={globalStyles.label}>Confirmar senha</Text>
+          <View style={globalStyles.passwordContainer}>
             <TextInput
               ref={senhaConfirmacaoRef}
-              style={styles.passwordInput}
+              style={globalStyles.passwordInput}
               secureTextEntry={!isSenhaVisible}
               placeholder="Confirme sua senha"
               placeholderTextColor="#94a3b8"
@@ -143,19 +144,19 @@ export default function cadastrar() {
 
         <TouchableOpacity
           ref={criarContaButtonRef}
-          style={styles.primaryButton}
+          style={globalStyles.button}
           activeOpacity={0.85}
           onPress={handleCriarConta}
         >
-          <Text style={styles.primaryButtonText}>Criar conta</Text>
+          <Text style={globalStyles.buttonText}>Criar conta</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.secondaryButton}
+          style={globalStyles.secondaryButton}
           activeOpacity={0.85}
           onPress={() => router.push({ pathname: "/login" })}
         >
-          <Text style={styles.secondaryButtonText}>
+          <Text style={globalStyles.secondaryButtonText}>
             Já possui uma conta? Clique aqui
           </Text>
         </TouchableOpacity>
@@ -169,13 +170,6 @@ export default function cadastrar() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-
   card: {
     width: "100%",
     maxWidth: 420,
@@ -187,14 +181,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-
   title: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#ffffff",
     textAlign: "center",
   },
-
   subtitle: {
     fontSize: 14,
     color: "#94a3b8",
@@ -202,77 +194,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 28,
   },
-  inputGroup: {
-    marginBottom: 18,
-  },
-  label: {
-    fontSize: 13,
-    marginBottom: 6,
-    color: "#cbd5e1",
-    fontWeight: "500",
-  },
-  input: {
-    height: 48,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    backgroundColor: "#0f172a",
-    color: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#334155",
-    outlineStyle: "none" as any,
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#0f172a",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#334155",
-    height: 48,
-  },
-
-  passwordInput: {
-    flex: 1,
-    height: "100%",
-    color: "#ffffff",
-    fontSize: 16,
-    outlineStyle: "none" as any,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-  },
-
-  primaryButton: {
-    backgroundColor: "#38bdf8",
-    height: 50,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-  },
-
-  primaryButtonText: {
-    color: "#0f172a",
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#38bdf8",
-    height: 50,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 12,
-  },
-
-  secondaryButtonText: {
-    color: "#38bdf8",
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-
   footerText: {
     marginTop: 24,
     fontSize: 11,

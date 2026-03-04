@@ -7,6 +7,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import SideBar from "../_components/SideBar";
 import { pageNames } from "../../utils/pageNames";
+import MeuPerfil from "../meuPerfil";
 
 export default function Main() {
   const params = useLocalSearchParams();
@@ -26,6 +27,8 @@ export default function Main() {
 
       {params.pageName === pageNames.roadmap.main &&
         params.subPage === pageNames.roadmap.meusRoadmaps && <MeusRoadmaps />}
+
+      {params.pageName === pageNames.meuPerfil && <MeuPerfil />}
     </View>
   );
 }

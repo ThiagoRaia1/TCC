@@ -17,6 +17,7 @@ import MenuOptionButton from "./MenuOptionButton";
 import { pageNames } from "../../utils/pageNames";
 import MeusRoadmapsTitle from "./menuTitles/meusRoadmapsTitle";
 import CriarRoadmapTitle from "./menuTitles/criarRoadmapTitle";
+import { colors } from "../../styles/colors";
 
 type SideBarProps = {
   visible: boolean;
@@ -105,7 +106,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
                       color={
                         params.subPage === pageNames.roadmap.criarRoadmap
                           ? "#0f172a"
-                          : "#38bdf8"
+                          : colors.lightBlue
                       }
                     />
                   }
@@ -133,7 +134,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
                       color={
                         params.subPage === pageNames.roadmap.meusRoadmaps
                           ? "#0f172a"
-                          : "#38bdf8"
+                          : colors.lightBlue
                       }
                     />
                   }
@@ -150,7 +151,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
               </View>
 
               <View style={{ marginTop: "auto" }}>
-                <Text style={styles.version}>V0.6.0</Text>
+                <Text style={styles.version}>V0.7.0</Text>
               </View>
             </ScrollView>
           </LinearGradient>
@@ -212,12 +213,12 @@ const styles = StyleSheet.create({
   },
 
   menuButtonActive: {
-    backgroundColor: "#38bdf8",
-    borderColor: "#38bdf8",
+    backgroundColor: colors.lightBlue,
+    borderColor: colors.lightBlue,
   },
 
   menuLabel: {
-    color: "#38bdf8",
+    color: colors.lightBlue,
   },
 
   version: {

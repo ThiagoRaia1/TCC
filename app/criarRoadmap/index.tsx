@@ -7,8 +7,13 @@ import {
   StyleSheet,
 } from "react-native";
 import GradientScreen from "../_components/GradientBackground";
+import { gerarRoadmap } from "../../services/groq";
+import { useLoading } from "../../context/providers/loading";
+import { useAuth } from "../../context/auth";
 
 export default function CriarRoadmap() {
+  const { usuario } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
   const [prompt, setPrompt] = useState<string>("");
 
   const isDisabled = prompt.trim().length < 5;
@@ -37,6 +42,21 @@ export default function CriarRoadmap() {
         <TouchableOpacity
           style={[styles.button, isDisabled && styles.buttonDisabled]}
           disabled={isDisabled}
+          onPress={async () => {
+            try {
+              showLoading();
+              if (!usuario?.sub) return;
+
+              console.log(usuario.sub)
+
+              const result = await gerarRoadmap(prompt, usuario.sub);
+              console.log(result);
+            } catch (erro: any) {
+              alert(erro.message);
+            } finally {
+              hideLoading();
+            }
+          }}
         >
           <Text selectable={false} style={styles.buttonText}>
             Gerar Roadmap

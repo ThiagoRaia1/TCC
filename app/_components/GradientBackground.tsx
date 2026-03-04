@@ -3,7 +3,7 @@ import { StyleSheet, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 interface GradientScreenProps {
-  children: ReactNode;
+  children?: ReactNode;
   style?: ViewStyle; // opcional para customizar
 }
 

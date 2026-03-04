@@ -7,3 +7,16 @@ export async function criarConta(usuario: ICreateUsuario) {
     body: JSON.stringify(usuario),
   });
 }
+
+export async function updateConta(usuario: ICreateUsuario) {
+  return await httpClient("/usuario", {
+    method: "PATCH",
+    body: JSON.stringify(usuario),
+  });
+}
+
+export async function deletarConta(id: number) {
+  return await httpClient(`/usuario/${id}`, {
+    method: "DELETE",
+  });
+}

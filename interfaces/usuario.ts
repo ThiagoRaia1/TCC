@@ -12,9 +12,11 @@ export interface ICreateUsuario {
 }
 
 export interface IEditUsuario {
-  email?: string;
-  senha?: string;
-  nome?: string;
+  nome: string;
+  email: string;
+  senhaAtual?: string;
+  novaSenha?: string;
+  confirmarNovaSenha?: string;
 }
 
 export interface ILoginRequest {
