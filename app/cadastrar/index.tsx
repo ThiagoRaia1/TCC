@@ -80,7 +80,6 @@ export default function cadastrar() {
             style={styles.input}
             placeholder="Digite seu nome"
             placeholderTextColor="#94a3b8"
-            value={nome}
             onChangeText={(text) => setNome(text.trim())}
             onSubmitEditing={() => emailRef.current?.focus()}
           />
