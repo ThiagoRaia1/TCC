@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { colors } from "../styles/colors";
 
 export default function LandingPage() {
   return (
@@ -16,7 +17,7 @@ export default function LandingPage() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* HERO */}
         <View style={styles.hero}>
-          <Ionicons name="school-outline" size={70} color="#38bdf8" />
+          <Ionicons name="school-outline" size={70} color={colors.lightBlue} />
 
           <Text style={styles.title}>AI Teacher</Text>
 
@@ -95,7 +96,7 @@ export default function LandingPage() {
 function Feature({ icon, title, description }: any) {
   return (
     <View style={styles.card}>
-      <Ionicons name={icon} size={34} color="#38bdf8" />
+      <Ionicons name={icon} size={34} color={colors.lightBlue} />
       <Text style={styles.cardTitle}>{title}</Text>
       <Text style={styles.cardDescription}>{description}</Text>
     </View>
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   primaryButton: {
-    backgroundColor: "#38bdf8",
+    backgroundColor: colors.lightBlue,
     paddingVertical: 14,
     paddingHorizontal: 22,
     borderRadius: 20,
@@ -145,13 +146,13 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: "#38bdf8",
+    borderColor: colors.lightBlue,
     paddingVertical: 14,
     paddingHorizontal: 22,
     borderRadius: 20,
   },
   secondaryButtonText: {
-    color: "#38bdf8",
+    color: colors.lightBlue,
     fontWeight: "bold",
   },
   featuresContainer: {

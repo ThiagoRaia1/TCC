@@ -1,4 +1,4 @@
-import { ICreateUsuario } from "../interfaces/usuario";
+import { ICreateUsuario, IEditUsuario } from "../interfaces/usuario";
 import { httpClient } from "./httpclient";
 
 export async function criarConta(usuario: ICreateUsuario) {
@@ -8,8 +8,8 @@ export async function criarConta(usuario: ICreateUsuario) {
   });
 }
 
-export async function updateConta(usuario: ICreateUsuario) {
-  return await httpClient("/usuario", {
+export async function updateConta(usuario: IEditUsuario, id: number) {
+  return await httpClient(`/usuario/${id}`, {
     method: "PATCH",
     body: JSON.stringify(usuario),
   });

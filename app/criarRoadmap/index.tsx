@@ -10,11 +10,16 @@ import GradientScreen from "../_components/GradientBackground";
 import { gerarRoadmap } from "../../services/groq";
 import { useLoading } from "../../context/providers/loading";
 import { useAuth } from "../../context/auth";
+import RoadmapModal, { IRoadmap } from "../_components/RoadmapModal";
+import { colors } from "../../styles/colors";
 
 export default function CriarRoadmap() {
   const { usuario } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const [prompt, setPrompt] = useState<string>("");
+
+  const [roadmap, setRoadmap] = useState<IRoadmap>();
+  const [modalVisible, setModalVisible] = useState<boolean>(true);
 
   const isDisabled = prompt.trim().length < 5;
 
@@ -47,9 +52,11 @@ export default function CriarRoadmap() {
               showLoading();
               if (!usuario?.sub) return;
 
-              console.log(usuario.sub)
+              console.log(usuario.sub);
 
               const result = await gerarRoadmap(prompt, usuario.sub);
+              setRoadmap(result);
+              setModalVisible(true);
               console.log(result);
             } catch (erro: any) {
               alert(erro.message);
@@ -63,6 +70,12 @@ export default function CriarRoadmap() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <RoadmapModal
+        visible={modalVisible}
+        roadmap={roadmap}
+        onClose={() => setModalVisible(false)}
+      />
     </GradientScreen>
   );
 }
@@ -113,7 +126,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#38bdf8",
+    backgroundColor: colors.lightBlue,
     paddingVertical: 16,
     borderRadius: 18,
     alignItems: "center",
