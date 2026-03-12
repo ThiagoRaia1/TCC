@@ -14,6 +14,7 @@ import { useLoading } from "../../context/providers/loading";
 import { criarConta } from "../../services/usuario";
 import { useAuth } from "../../context/auth";
 import { getGlobalStyles } from "../../styles/globalStyles";
+import { colors } from "../../styles/colors";
 
 export default function cadastrar() {
   const globalStyles = getGlobalStyles();
@@ -120,7 +121,7 @@ export default function cadastrar() {
               <AntDesign
                 name={isSenhaVisible ? "eye" : "eye-invisible"}
                 size={24}
-                color="#38bdf8"
+                color={colors.lightBlue}
               />
             </TouchableOpacity>
           </View>

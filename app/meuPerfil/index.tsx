@@ -206,7 +206,7 @@ export default function MeuPerfil() {
       <View style={styles.card}>
         {/* HEADER */}
         <View style={styles.header}>
-          <FontAwesome name="user" size={80} color="#38bdf8" />
+          <FontAwesome name="user" size={80} color={colors.lightBlue} />
           <Text style={styles.title}>Meu Perfil</Text>
           <Text style={styles.subtitle}>
             Gerencie suas informações da conta
@@ -277,7 +277,7 @@ export default function MeuPerfil() {
                 <AntDesign
                   name={isSenhaVisible ? "eye" : "eye-invisible"}
                   size={24}
-                  color="#38bdf8"
+                  color={colors.lightBlue}
                 />
               </TouchableOpacity>
             </View>

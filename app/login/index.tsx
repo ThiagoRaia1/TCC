@@ -12,6 +12,7 @@ import { pageNames } from "../../utils/pageNames";
 import GradientScreen from "../_components/GradientBackground";
 import { useAuth } from "../../context/auth";
 import { useLoading } from "../../context/providers/loading";
+import { colors } from "../../styles/colors";
 
 export default function Login() {
   const { login, logout } = useAuth();
@@ -91,7 +92,7 @@ export default function Login() {
               <AntDesign
                 name={isSenhaVisible ? "eye" : "eye-invisible"}
                 size={24}
-                color="#38bdf8"
+                color={colors.lightBlue}
               />
             </TouchableOpacity>
           </View>
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   },
 
   primaryButton: {
-    backgroundColor: "#38bdf8",
+    backgroundColor: colors.lightBlue,
     height: 50,
     borderRadius: 18,
     justifyContent: "center",
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
 
   secondaryButton: {
     borderWidth: 1,
-    borderColor: "#38bdf8",
+    borderColor: colors.lightBlue,
     height: 50,
     borderRadius: 18,
     justifyContent: "center",
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   },
 
   secondaryButtonText: {
-    color: "#38bdf8",
+    color: colors.lightBlue,
     fontSize: 15,
     fontWeight: "bold",
   },

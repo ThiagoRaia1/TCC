@@ -1,4 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
+import { colors } from "./colors";
 
 export const getGlobalStyles = () =>
   StyleSheet.create({
@@ -77,7 +78,8 @@ export const getGlobalStyles = () =>
       paddingHorizontal: 14,
     },
     button: {
-      backgroundColor: "#38bdf8",
+      flex: 1,
+      backgroundColor: colors.lightBlue,
       height: 50,
       borderRadius: 18,
       justifyContent: "center",
@@ -90,8 +92,9 @@ export const getGlobalStyles = () =>
       fontWeight: "bold",
     },
     secondaryButton: {
+      flex: 1,
       borderWidth: 1,
-      borderColor: "#38bdf8",
+      borderColor: colors.lightBlue,
       height: 50,
       borderRadius: 18,
       justifyContent: "center",
@@ -99,7 +102,7 @@ export const getGlobalStyles = () =>
       marginTop: 12,
     },
     secondaryButtonText: {
-      color: "#38bdf8",
+      color: colors.lightBlue,
       fontSize: 15,
       fontWeight: "bold",
     },
