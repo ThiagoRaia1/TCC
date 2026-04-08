@@ -10,6 +10,11 @@ export interface IEtapa {
   objetivos: IObjetivo[];
   recursosSugeridos: IRecursoSugerido[];
   concluido: boolean;
+
+  anotacoes?: {
+    plainText: string;
+    editorState: string | null;
+  };
 }
 
 export interface ICriarEtapa {
@@ -20,4 +25,9 @@ export interface ICriarEtapa {
   objetivos: ICriarObjetivo[];
   recursosSugeridos: ICriarRecursoSugerido[];
   concluido: boolean;
+
+  anotacoes?: {
+    plainText: string;
+    editorState: string | null;
+  };
 }

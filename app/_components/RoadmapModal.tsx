@@ -14,6 +14,8 @@ import { ICriarRoadmap } from "../../interfaces/roadmap";
 import { useAuth } from "../../context/auth";
 import { salvarRoadmap } from "../../services/roadmap";
 import { useLoading } from "../../context/providers/loading";
+import { router } from "expo-router";
+import { pageNames } from "../../utils/pageNames";
 
 type Props = {
   visible: boolean;
@@ -41,8 +43,16 @@ export default function RoadmapModal({ visible, roadmap, onClose }: Props) {
       };
 
       const resultado = await salvarRoadmap(roadmapDto);
-      
+
       alert("Roadmap salvo com sucesso!");
+
+      router.push({
+        pathname: "main",
+        params: {
+          pageName: pageNames.roadmap.main,
+          subPage: pageNames.roadmap.meusRoadmaps,
+        },
+      });
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -97,37 +107,21 @@ export default function RoadmapModal({ visible, roadmap, onClose }: Props) {
                       • {obj.descricao}
                     </Text>
                   ))}
-
-                  {/* RECURSOS */}
-                  <Text style={styles.subTitle}>Recursos sugeridos</Text>
-                  {etapa.recursosSugeridos &&
-                    etapa.recursosSugeridos.map((rec, i) => (
-                      <Text
-                        key={i}
-                        style={styles.listItem}
-                        onPress={() => {
-                          if (rec.link) {
-                            Linking.openURL(rec.link);
-                          }
-                        }}
-                      >
-                        • {rec.titulo} - {rec.tipo}
-                      </Text>
-                    ))}
                 </View>
               ))}
             </View>
           </ScrollView>
+
           <View style={{ flexDirection: "row", gap: 20 }}>
             <TouchableOpacity
-              style={globalStyles.button}
+              style={[globalStyles.button, { flex: 1 }]}
               onPress={handleSalvarRoadmap}
             >
               <Text style={globalStyles.buttonText}>Salvar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={globalStyles.secondaryButton}
+              style={[globalStyles.secondaryButton, { flex: 1 }]}
               onPress={onClose}
             >
               <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>

@@ -53,11 +53,7 @@ export default function CriarRoadmap() {
               showLoading();
               if (!usuario) return;
 
-              console.log(usuario.sub);
-              console.log(prompt);
-
               const result = await gerarRoadmap(prompt);
-              console.log(result);
 
               setRoadmap(result);
               setModalVisible(true);

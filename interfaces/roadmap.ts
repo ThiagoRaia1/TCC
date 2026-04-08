@@ -22,3 +22,14 @@ export interface ICriarRoadmap {
   etapas: ICriarEtapa[];
   usuarioId: number;
 }
+
+export interface IUpdateRoadmap {
+  id: number;
+  tema?: string;
+  descricaoGeral?: string;
+  duracaoEstimada?: string;
+  nivel?: Nivel;
+  etapas?: IEtapa[];
+  usuario: IUsuario;
+  porcentagemConclusao?: number;
+}

@@ -14,6 +14,7 @@ import { useLoading } from "../../context/providers/loading";
 import { pageNames } from "../../utils/pageNames";
 import CriarRoadmapTitle from "./menuTitles/criarRoadmapTitle";
 import MeusRoadmapsTitle from "./menuTitles/meusRoadmapsTitle";
+import { colors } from "../../styles/colors";
 
 type TopBarProps = {
   openSideBar: () => void;
@@ -148,14 +149,14 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: 72,
-    backgroundColor: "#1E293B", // azul escuro sofisticado
+    backgroundColor: colors.secundaryDarkBlue,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 32,
     zIndex: 50,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: colors.secundaryDarkBlueBorder,
   },
 
   titleContainer: {

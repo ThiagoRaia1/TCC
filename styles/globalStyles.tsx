@@ -9,6 +9,7 @@ export const getGlobalStyles = () =>
     },
     mainContainer: {
       flex: 1,
+      width: "100%",
       justifyContent: "center",
       alignItems: "center",
       padding: 24,
@@ -78,13 +79,14 @@ export const getGlobalStyles = () =>
       paddingHorizontal: 14,
     },
     button: {
-      flex: 1,
       backgroundColor: colors.lightBlue,
       height: 50,
       borderRadius: 18,
       justifyContent: "center",
       alignItems: "center",
-      marginTop: 10,
+      marginTop: 12,
+      borderWidth: 1,
+      borderColor: colors.lightBlue,
     },
     buttonText: {
       color: "#0f172a",
@@ -92,7 +94,6 @@ export const getGlobalStyles = () =>
       fontWeight: "bold",
     },
     secondaryButton: {
-      flex: 1,
       borderWidth: 1,
       borderColor: colors.lightBlue,
       height: 50,
@@ -118,6 +119,14 @@ export const getGlobalStyles = () =>
       color: "#ffffff",
       fontSize: 15,
       fontWeight: "bold",
+    },
+    actionButton: {
+      backgroundColor: colors.green,
+      height: 55,
+      width: 55,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 10,
     },
     errorText: {
       color: "red",

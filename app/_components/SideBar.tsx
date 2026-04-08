@@ -151,7 +151,7 @@ export default function SideBar({ closeModal, visible }: SideBarProps) {
               </View>
 
               <View style={{ marginTop: "auto" }}>
-                <Text style={styles.version}>V0.8.0</Text>
+                <Text style={styles.version}>V0.10.0</Text>
               </View>
             </ScrollView>
           </LinearGradient>

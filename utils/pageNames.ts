@@ -3,6 +3,7 @@ export const pageNames = {
     main: "Roadmaps",
     meusRoadmaps: "Meus Roadmaps",
     criarRoadmap: "Criar Roadmap",
+    roadmapSelecionado: "Roadmap Selecionado"
   },
   meuPerfil: "Meu Perfil",
 };

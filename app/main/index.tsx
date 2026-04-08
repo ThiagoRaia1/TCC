@@ -8,6 +8,7 @@ import { useState } from "react";
 import SideBar from "../_components/SideBar";
 import { pageNames } from "../../utils/pageNames";
 import MeuPerfil from "../meuPerfil";
+import RoadmapSelecionado from "../roadmapSelecionado";
 
 export default function Main() {
   const params = useLocalSearchParams();
@@ -27,6 +28,9 @@ export default function Main() {
 
       {params.pageName === pageNames.roadmap.main &&
         params.subPage === pageNames.roadmap.meusRoadmaps && <MeusRoadmaps />}
+
+      {params.pageName === pageNames.roadmap.main &&
+        params.subPage === pageNames.roadmap.roadmapSelecionado && <RoadmapSelecionado />}
 
       {params.pageName === pageNames.meuPerfil && <MeuPerfil />}
     </View>

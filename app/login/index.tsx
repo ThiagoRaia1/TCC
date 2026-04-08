@@ -13,10 +13,12 @@ import GradientScreen from "../_components/GradientBackground";
 import { useAuth } from "../../context/auth";
 import { useLoading } from "../../context/providers/loading";
 import { colors } from "../../styles/colors";
+import { getGlobalStyles } from "../../styles/globalStyles";
 
 export default function Login() {
   const { login, logout } = useAuth();
   const { showLoading, hideLoading } = useLoading();
+  const globalStyles = getGlobalStyles()
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -99,19 +101,19 @@ export default function Login() {
         </View>
 
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={globalStyles.button}
           activeOpacity={0.85}
           onPress={handleLogin}
         >
-          <Text style={styles.primaryButtonText}>Entrar</Text>
+          <Text style={globalStyles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.secondaryButton}
+          style={globalStyles.secondaryButton}
           activeOpacity={0.85}
           onPress={() => router.push({ pathname: "/cadastrar" })}
         >
-          <Text style={styles.secondaryButtonText}>Criar Conta</Text>
+          <Text style={globalStyles.secondaryButtonText}>Criar Conta</Text>
         </TouchableOpacity>
 
         <Text style={styles.footerText}>
@@ -194,37 +196,6 @@ const styles = StyleSheet.create({
     outlineStyle: "none" as any,
     borderRadius: 14,
     paddingHorizontal: 14,
-  },
-
-  primaryButton: {
-    backgroundColor: colors.lightBlue,
-    height: 50,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-  },
-
-  primaryButtonText: {
-    color: "#0f172a",
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: colors.lightBlue,
-    height: 50,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 12,
-  },
-
-  secondaryButtonText: {
-    color: colors.lightBlue,
-    fontSize: 15,
-    fontWeight: "bold",
   },
 
   footerText: {
