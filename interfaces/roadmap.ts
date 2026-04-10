@@ -1,4 +1,4 @@
-import { ICriarEtapa, IEtapa } from "./etapa";
+import { ICriarEtapa, IEtapa, IUpdateEtapa } from "./etapa";
 import { IUsuario } from "./usuario";
 
 type Nivel = "iniciante" | "intermediario" | "avancado";
@@ -29,7 +29,7 @@ export interface IUpdateRoadmap {
   descricaoGeral?: string;
   duracaoEstimada?: string;
   nivel?: Nivel;
-  etapas?: IEtapa[];
+  etapas?: IUpdateEtapa[];
   usuario: IUsuario;
   porcentagemConclusao?: number;
 }

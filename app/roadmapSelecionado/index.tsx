@@ -13,7 +13,7 @@ import GradientScreen from "../_components/GradientBackground";
 import { useLoading } from "../../context/providers/loading";
 import { router } from "expo-router";
 import { pageNames } from "../../utils/pageNames";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { colors } from "../../styles/colors";
 import {
   salvarAnotacao,
@@ -23,6 +23,8 @@ import {
 import { IEtapa } from "../../interfaces/etapa";
 import Editor from "../_components/dom-components/hello-dom";
 import MenuOptionButton from "../_components/MenuOptionButton";
+import { IRoadmap, IUpdateRoadmap } from "../../interfaces/roadmap";
+import { IUpdateObjetivo } from "../../interfaces/objetivo";
 
 const scrollAdjust: number = 32;
 
@@ -39,6 +41,11 @@ export default function RoadmapSelecionado() {
       editorState: string | null;
       alterado: boolean;
     };
+  }>({});
+
+  const [adicionandoObjetivo, setAdicionandoObjetivo] = useState<number[]>([]);
+  const [descricaoNovoObjetivo, setDescricaoNovoObjetivo] = useState<{
+    [etapaId: number]: string;
   }>({});
 
   const atualizarAnotacao = (
@@ -70,6 +77,12 @@ export default function RoadmapSelecionado() {
 
   const toggleEtapa = (id: number) => {
     setEtapasAbertas((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const toggleAdicionandoObjetivo = (id: number) => {
+    setAdicionandoObjetivo((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
@@ -106,9 +119,18 @@ export default function RoadmapSelecionado() {
         }),
       };
 
-      const atualizar = await updateRoadmap(novoRoadmap);
+      const porcentagemConclusao = calcularProgresso(novoRoadmap);
+
+      const roadmapComPorcentagemConclusao = {
+        ...novoRoadmap,
+        porcentagemConclusao: Number(porcentagemConclusao.toFixed(0)),
+      };
+
+      const roadmapAtualizado = await updateRoadmap(
+        roadmapComPorcentagemConclusao,
+      );
       // atualiza no contexto (e salva no AsyncStorage)
-      setRoadmapSelecionado(novoRoadmap);
+      setRoadmapSelecionado(roadmapAtualizado);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -116,10 +138,53 @@ export default function RoadmapSelecionado() {
     }
   };
 
-  const calcularProgresso = (): number => {
-    if (!roadmapSelecionado) return 0;
-    const total = roadmapSelecionado.etapas.flatMap((e) => e.objetivos).length;
-    const concluidos = roadmapSelecionado.etapas
+  const criarNovoObjetivo = async (etapaId: number) => {
+    try {
+      showLoading();
+      if (!roadmapSelecionado) return;
+
+      const descricao = descricaoNovoObjetivo[etapaId];
+      if (!descricao) return;
+
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmapSelecionado,
+        etapas: roadmapSelecionado.etapas.map((etapa) => {
+          if (etapa.id !== etapaId) return etapa;
+
+          return {
+            ...etapa,
+            objetivos: [
+              ...etapa.objetivos,
+              {
+                descricao,
+                concluido: false,
+              },
+            ],
+          };
+        }),
+      };
+
+      const atualizado = await updateRoadmap(novoRoadmap);
+      setRoadmapSelecionado(atualizado);
+
+      // limpa input + fecha
+      setDescricaoNovoObjetivo((prev) => ({
+        ...prev,
+        [etapaId]: "",
+      }));
+
+      toggleAdicionandoObjetivo(etapaId);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const calcularProgresso = (roadmap: IRoadmap | null): number => {
+    if (!roadmap) return 0;
+    const total = roadmap.etapas.flatMap((e) => e.objetivos).length;
+    const concluidos = roadmap.etapas
       .flatMap((e) => e.objetivos)
       .filter((o) => o.concluido).length;
 
@@ -127,8 +192,6 @@ export default function RoadmapSelecionado() {
 
     return (concluidos / total) * 100;
   };
-
-  const progresso = calcularProgresso();
 
   return roadmapSelecionado ? (
     <GradientScreen style={{ paddingHorizontal: 48, backgroundColor: "red" }}>
@@ -164,10 +227,15 @@ export default function RoadmapSelecionado() {
 
         {/* Barra de progresso */}
         <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { width: `${progresso}%` }]} />
+          <View
+            style={[
+              styles.progressBar,
+              { width: `${roadmapSelecionado.porcentagemConclusao}%` },
+            ]}
+          />
         </View>
         <Text style={styles.progressText}>
-          {progresso.toFixed(0)}% concluído
+          {roadmapSelecionado.porcentagemConclusao.toFixed(0)}% concluído
         </Text>
 
         {/* Etapas */}
@@ -177,6 +245,10 @@ export default function RoadmapSelecionado() {
             const aberta = etapasAbertas.includes(etapa.id);
             const anotacaoEtapa = anotacoes[etapa.id];
             const alterado = !!anotacaoEtapa?.alterado;
+
+            const etapaAdicionandoNovoObjetivo = adicionandoObjetivo.includes(
+              etapa.id,
+            );
 
             return (
               <View key={etapa.id} style={styles.etapaCard}>
@@ -191,16 +263,16 @@ export default function RoadmapSelecionado() {
                     </Text>
 
                     {/* Barra de progresso da etapa no header */}
-                    {!aberta && (
-                      <View style={styles.progressContainerEtapa}>
-                        <View
-                          style={[
-                            styles.progressBarEtapa,
-                            { width: `${calcularProgressoEtapa(etapa)}%` },
-                          ]}
-                        />
-                      </View>
-                    )}
+
+                    <View style={styles.progressContainerEtapa}>
+                      <View
+                        style={[
+                          styles.progressBarEtapa,
+                          { width: `${calcularProgressoEtapa(etapa)}%` },
+                        ]}
+                      />
+                    </View>
+
                     <Text style={styles.progressTextEtapa}>
                       {calcularProgressoEtapa(etapa).toFixed(0)}% da etapa
                     </Text>
@@ -219,35 +291,139 @@ export default function RoadmapSelecionado() {
                     <Text style={styles.etapaDescricao}>{etapa.descricao}</Text>
                     <Text style={styles.etapaDuracao}>⏱ {etapa.duracao}</Text>
 
-                    {/* Barra de progresso da etapa */}
-                    <View style={styles.progressContainerEtapa}>
-                      <View
-                        style={[
-                          styles.progressBarEtapa,
-                          { width: `${calcularProgressoEtapa(etapa)}%` },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.progressTextEtapa}>
-                      {calcularProgressoEtapa(etapa).toFixed(0)}% da etapa
-                      concluída
-                    </Text>
-
                     {/* Objetivos */}
-                    {etapa.objetivos.map((obj) => (
-                      <Pressable
-                        key={obj.id}
-                        style={styles.objetivoRow}
-                        onPress={() => toggleObjetivo(etapa.id, obj.id)}
+                    {[...etapa.objetivos]
+                      .sort((a, b) => a.id - b.id)
+                      .map((obj) => (
+                        <View key={obj.id} style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                          <Pressable
+                            key={obj.id}
+                            style={styles.objetivoRow}
+                            onPress={() => toggleObjetivo(etapa.id, obj.id)}
+                          >
+                            <FontAwesome
+                              name={obj.concluido ? "check-square" : "square-o"}
+                              size={18}
+                              color={obj.concluido ? "lime" : "white"}
+                            />
+                            <Text style={styles.objetivoText}>
+                              {obj.descricao}
+                            </Text>
+                          </Pressable>
+                          <Pressable>AAA</Pressable>
+                        </View>
+                      ))}
+                    {!etapaAdicionandoNovoObjetivo ? (
+                      <MenuOptionButton
+                        containerStyle={styles.adicionarNovoButton}
+                        label={
+                          <Pressable style={styles.objetivoRow}>
+                            <FontAwesome
+                              name={"plus"}
+                              size={18}
+                              color={"lime"}
+                            />
+                            <Text style={styles.objetivoText}>
+                              Adicionar novo objetivo
+                            </Text>
+                          </Pressable>
+                        }
+                        onPress={async () => {
+                          toggleAdicionandoObjetivo(etapa.id);
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          gap: 12,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <FontAwesome
-                          name={obj.concluido ? "check-square" : "square-o"}
-                          size={18}
-                          color={obj.concluido ? "lime" : "white"}
+                        <TextInput
+                          style={globalStyles.input}
+                          placeholder="Digite a descrição do objetivo."
+                          placeholderTextColor={colors.placeholderTextColor}
+                          value={descricaoNovoObjetivo[etapa.id] || ""}
+                          onChangeText={(text) =>
+                            setDescricaoNovoObjetivo((prev) => ({
+                              ...prev,
+                              [etapa.id]: text,
+                            }))
+                          }
                         />
-                        <Text style={styles.objetivoText}>{obj.descricao}</Text>
-                      </Pressable>
-                    ))}
+                        <MenuOptionButton
+                          containerStyle={[
+                            globalStyles.button,
+                            {
+                              borderWidth: 0,
+                              backgroundColor: descricaoNovoObjetivo[etapa.id]
+                                ? colors.green
+                                : "#555",
+                              alignSelf: "flex-end",
+                              width: 125,
+                              opacity: descricaoNovoObjetivo[etapa.id]
+                                ? 1
+                                : 0.6,
+                              marginTop: 0,
+                            },
+                          ]}
+                          enabled={!!descricaoNovoObjetivo[etapa.id]}
+                          label={
+                            <View style={{ flexDirection: "row", gap: 10 }}>
+                              <Text
+                                style={[
+                                  globalStyles.buttonText,
+                                  { color: "white", marginTop: 3 },
+                                ]}
+                                selectable={false}
+                              >
+                                Salvar
+                              </Text>
+                              <Feather
+                                name="check-circle"
+                                size={24}
+                                color="white"
+                              />
+                            </View>
+                          }
+                          onPress={() => criarNovoObjetivo(etapa.id)}
+                        />
+                        <MenuOptionButton
+                          containerStyle={[
+                            globalStyles.button,
+                            {
+                              borderWidth: 0,
+                              backgroundColor: colors.red,
+                              alignSelf: "flex-end",
+                              width: 125,
+                              marginTop: 0,
+                            },
+                          ]}
+                          label={
+                            <View style={{ flexDirection: "row", gap: 10 }}>
+                              <Text
+                                style={[
+                                  globalStyles.buttonText,
+                                  { color: "white" },
+                                ]}
+                                selectable={false}
+                              >
+                                Cancelar
+                              </Text>
+                            </View>
+                          }
+                          onPress={() => {
+                            setDescricaoNovoObjetivo((prev) => ({
+                              ...prev,
+                              [etapa.id]: "",
+                            }));
+                            toggleAdicionandoObjetivo(etapa.id);
+                          }}
+                        />
+                      </View>
+                    )}
                     <Editor
                       initialState={etapa.anotacoes?.editorState ?? null}
                       setPlainText={(text) => {
@@ -288,12 +464,11 @@ export default function RoadmapSelecionado() {
                         </View>
                       }
                       onPress={async () => {
-                        showLoading();
-
-                        const anotacao = anotacoes[etapa.id];
-                        if (!anotacao) return;
-
                         try {
+                          showLoading();
+
+                          const anotacao = anotacoes[etapa.id];
+                          if (!anotacao) return;
                           const atualizarAnotacao = await salvarAnotacao(
                             etapa.id,
                             {
@@ -424,5 +599,17 @@ const styles = StyleSheet.create({
 
   objetivoText: {
     color: "white",
+  },
+
+  adicionarNovoButton: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "lime",
+    backgroundColor: colors.darkBlue,
+    width: 200,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+    borderRadius: 20,
   },
 });

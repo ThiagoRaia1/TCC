@@ -1,4 +1,4 @@
-import { ICriarObjetivo, IObjetivo } from "./objetivo";
+import { ICriarObjetivo, IObjetivo, IUpdateObjetivo } from "./objetivo";
 import { ICriarRecursoSugerido, IRecursoSugerido } from "./recursoSugerido";
 
 export interface IEtapa {
@@ -25,6 +25,21 @@ export interface ICriarEtapa {
   objetivos: ICriarObjetivo[];
   recursosSugeridos: ICriarRecursoSugerido[];
   concluido: boolean;
+
+  anotacoes?: {
+    plainText: string;
+    editorState: string | null;
+  };
+}
+
+export interface IUpdateEtapa {
+  titulo?: string;
+  ordem?: number;
+  descricao?: string;
+  duracao?: string;
+  objetivos?: IUpdateObjetivo[];
+  recursosSugeridos?: ICriarRecursoSugerido[];
+  concluido?: boolean;
 
   anotacoes?: {
     plainText: string;

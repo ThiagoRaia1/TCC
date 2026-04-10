@@ -5,6 +5,7 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
+  View,
 } from "react-native";
 
 interface MenuOptionButtonProps {
@@ -39,10 +40,12 @@ export default function MenuOptionButton({
       ]}
       onPress={enabled ? onPress : undefined}
     >
-      {icon}
-      <Text style={labelStyle} selectable={false}>
-        {label}
-      </Text>
+      <View pointerEvents="none">
+        {icon}
+        <Text style={labelStyle} selectable={false}>
+          {label}
+        </Text>
+      </View>
     </Pressable>
   );
 }

@@ -8,3 +8,8 @@ export interface ICriarObjetivo {
   descricao: string;
   concluido: boolean;
 }
+
+export interface IUpdateObjetivo {
+  descricao?: string;
+  concluido?: boolean;
+}

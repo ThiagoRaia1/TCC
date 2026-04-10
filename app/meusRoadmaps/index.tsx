@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import GradientScreen from "../_components/GradientBackground";
 import { colors } from "../../styles/colors";
 import { IRoadmap } from "../../interfaces/roadmap";
@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getAllRoadmap } from "../../services/roadmap";
 import { useLoading } from "../../context/providers/loading";
 import RoadmapCard from "../_components/RoadmapCard";
+import { getGlobalStyles } from "../../styles/globalStyles";
 
 const styles = StyleSheet.create({
   roadmapsContainer: {
@@ -45,6 +46,7 @@ const styles = StyleSheet.create({
 
 export default function MeusRoadmaps() {
   const { showLoading, hideLoading } = useLoading();
+  const globalStyles = getGlobalStyles();
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
 
   const getData = async () => {
@@ -67,9 +69,13 @@ export default function MeusRoadmaps() {
   return (
     <GradientScreen>
       <View style={styles.roadmapsContainer}>
-        {roadmaps.map((roadmap, index) => (
-          <RoadmapCard key={index} roadmap={roadmap} />
-        ))}
+        {roadmaps.length !== 0 ? (
+          roadmaps.map((roadmap, index) => (
+            <RoadmapCard key={index} roadmap={roadmap} />
+          ))
+        ) : (
+          <Text style={globalStyles.label}>Não há nenhum roadmap!</Text>
+        )}
       </View>
     </GradientScreen>
   );

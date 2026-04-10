@@ -15,6 +15,12 @@ export async function salvarRoadmap(roadmap: ICriarRoadmap) {
   });
 }
 
+export async function getRoadmap(id: number): Promise<IRoadmap> {
+  return await httpClient(`/roadmap/${id}`, {
+    method: "GET",
+  });
+}
+
 export async function getAllRoadmap(): Promise<IRoadmap[]> {
   return await httpClient("/roadmap", {
     method: "GET",

@@ -9,4 +9,5 @@ export const colors = {
   red: "#FF4C4C",
   gray: "#949494",
   black: "#111827",
+  placeholderTextColor: "#94a3b8",
 };
