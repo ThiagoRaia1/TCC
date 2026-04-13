@@ -1,4 +1,4 @@
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather, FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import {
   Pressable,
   ScrollView,
@@ -13,20 +13,21 @@ import GradientScreen from "../_components/GradientBackground";
 import { useLoading } from "../../context/providers/loading";
 import { router } from "expo-router";
 import { pageNames } from "../../utils/pageNames";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { colors } from "../../styles/colors";
 import {
+  getRoadmap,
   salvarAnotacao,
-  salvarRoadmap,
   updateRoadmap,
 } from "../../services/roadmap";
 import { IEtapa } from "../../interfaces/etapa";
 import Editor from "../_components/dom-components/hello-dom";
 import MenuOptionButton from "../_components/MenuOptionButton";
 import { IRoadmap, IUpdateRoadmap } from "../../interfaces/roadmap";
-import { IUpdateObjetivo } from "../../interfaces/objetivo";
+import { deleteObjetivo } from "../../services/objetivo";
 
 const scrollAdjust: number = 32;
+const editDeleteButtonsSize: number = 40;
 
 export default function RoadmapSelecionado() {
   const globalStyles = getGlobalStyles();
@@ -73,6 +74,9 @@ export default function RoadmapSelecionado() {
     });
   };
 
+  const [idObjetivoSendoEditado, setIdObjetivoSendoEditado] =
+    useState<number>();
+
   const [etapasAbertas, setEtapasAbertas] = useState<number[]>([]);
 
   const toggleEtapa = (id: number) => {
@@ -97,7 +101,7 @@ export default function RoadmapSelecionado() {
 
   const toggleObjetivo = async (etapaId: number, objetivoId: number) => {
     try {
-      showLoading();
+      // showLoading();
       if (!roadmapSelecionado) return;
 
       const novoRoadmap = {
@@ -134,13 +138,13 @@ export default function RoadmapSelecionado() {
     } catch (erro: any) {
       alert(erro.message);
     } finally {
-      hideLoading();
+      // hideLoading();
     }
   };
 
   const criarNovoObjetivo = async (etapaId: number) => {
     try {
-      showLoading();
+      // showLoading();
       if (!roadmapSelecionado) return;
 
       const descricao = descricaoNovoObjetivo[etapaId];
@@ -177,7 +181,7 @@ export default function RoadmapSelecionado() {
     } catch (erro: any) {
       alert(erro.message);
     } finally {
-      hideLoading();
+      // hideLoading();
     }
   };
 
@@ -191,6 +195,28 @@ export default function RoadmapSelecionado() {
     if (total === 0) return 0;
 
     return (concluidos / total) * 100;
+  };
+
+  const handleEditObjetivo = async (objetivoId: number) => {
+    try {
+    } catch (erro: any) {
+      alert(erro.message);
+    }
+  };
+
+  const handleDeleteObjetivo = async (objetivoId: number) => {
+    try {
+      showLoading();
+      if (!roadmapSelecionado) return;
+      const resultadoExclusao = await deleteObjetivo(objetivoId);
+      const roadmapAtualizado = await getRoadmap(roadmapSelecionado.id);
+
+      setRoadmapSelecionado(roadmapAtualizado);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
   };
 
   return roadmapSelecionado ? (
@@ -294,25 +320,116 @@ export default function RoadmapSelecionado() {
                     {/* Objetivos */}
                     {[...etapa.objetivos]
                       .sort((a, b) => a.id - b.id)
-                      .map((obj) => (
-                        <View key={obj.id} style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                          <Pressable
+                      .map((obj) => {
+                        const objetivoEstaSendoEditado: boolean =
+                          obj.id !== idObjetivoSendoEditado;
+
+                        return (
+                          <View
                             key={obj.id}
-                            style={styles.objetivoRow}
-                            onPress={() => toggleObjetivo(etapa.id, obj.id)}
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              borderTopWidth: 1,
+                              borderColor: colors.placeholderTextColor,
+                              paddingTop: 8,
+                            }}
                           >
-                            <FontAwesome
-                              name={obj.concluido ? "check-square" : "square-o"}
-                              size={18}
-                              color={obj.concluido ? "lime" : "white"}
-                            />
-                            <Text style={styles.objetivoText}>
-                              {obj.descricao}
-                            </Text>
-                          </Pressable>
-                          <Pressable>AAA</Pressable>
-                        </View>
-                      ))}
+                            {objetivoEstaSendoEditado ? (
+                              <Pressable
+                                key={obj.id}
+                                style={styles.objetivoRow}
+                                onPress={() => toggleObjetivo(etapa.id, obj.id)}
+                              >
+                                <FontAwesome
+                                  name={
+                                    obj.concluido ? "check-square" : "square-o"
+                                  }
+                                  size={18}
+                                  color={obj.concluido ? "lime" : "white"}
+                                />
+                                <Text style={styles.objetivoText}>
+                                  {obj.descricao}
+                                </Text>
+                              </Pressable>
+                            ) : (
+                              <TextInput style={globalStyles.input} />
+                            )}
+
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                gap: 8,
+                                marginLeft: 8,
+                              }}
+                            >
+                              {/* Editar */}
+                              <MenuOptionButton
+                                containerStyle={[
+                                  globalStyles.actionButton,
+                                  {
+                                    width: objetivoEstaSendoEditado
+                                      ? editDeleteButtonsSize
+                                      : 55,
+                                    height: editDeleteButtonsSize,
+                                  },
+                                ]}
+                                label={
+                                  objetivoEstaSendoEditado ? (
+                                    <Feather
+                                      name="edit"
+                                      size={22}
+                                      color="white"
+                                    />
+                                  ) : (
+                                    <Text style={{ color: "white" }}>
+                                      Salvar
+                                    </Text>
+                                  )
+                                }
+                                onPress={() =>
+                                  setIdObjetivoSendoEditado(obj.id)
+                                }
+                              />
+
+                              {/* Deletar */}
+                              <MenuOptionButton
+                                containerStyle={[
+                                  globalStyles.actionButton,
+                                  {
+                                    backgroundColor: colors.red,
+                                    width: objetivoEstaSendoEditado
+                                      ? editDeleteButtonsSize
+                                      : 55,
+                                    height: editDeleteButtonsSize,
+                                  },
+                                ]}
+                                label={
+                                  objetivoEstaSendoEditado ? (
+                                    <FontAwesome6
+                                      name="trash"
+                                      size={18}
+                                      color="white"
+                                    />
+                                  ) : (
+                                    <Text style={{ color: "white" }}>
+                                      Cancelar
+                                    </Text>
+                                  )
+                                }
+                                onPress={() => {
+                                  if (objetivoEstaSendoEditado) {
+                                    handleDeleteObjetivo(obj.id);
+                                  } else {
+                                    setIdObjetivoSendoEditado(0);
+                                  }
+                                }}
+                              />
+                            </View>
+                          </View>
+                        );
+                      })}
                     {!etapaAdicionandoNovoObjetivo ? (
                       <MenuOptionButton
                         containerStyle={styles.adicionarNovoButton}

@@ -7,3 +7,9 @@ export async function updateObjetivo(id: number, objetivo: IUpdateObjetivo) {
     body: JSON.stringify(objetivo),
   });
 }
+
+export async function deleteObjetivo(id: number) {
+  return await httpClient(`/objetivo/${id}`, {
+    method: "DELETE",
+  });
+}
