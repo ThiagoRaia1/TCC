@@ -14,11 +14,12 @@ import { useAuth } from "../../context/auth";
 import { useLoading } from "../../context/providers/loading";
 import { colors } from "../../styles/colors";
 import { getGlobalStyles } from "../../styles/globalStyles";
+import Header from "../_components/Header";
 
 export default function Login() {
   const { login, logout } = useAuth();
   const { showLoading, hideLoading } = useLoading();
-  const globalStyles = getGlobalStyles()
+  const globalStyles = getGlobalStyles();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -51,110 +52,104 @@ export default function Login() {
   };
 
   return (
-    <GradientScreen>
-      <TouchableOpacity
-        style={{ position: "absolute", left: 30, top: 30 }}
-        onPress={() => router.push("/")}
-      >
-        <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
-      </TouchableOpacity>
-      <View style={styles.card}>
-        <Text style={styles.title}>AI Teacher</Text>
-        <Text style={styles.subtitle}>
-          Entre para continuar sua jornada de aprendizado
-        </Text>
+    <>
+      <Header />
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={{ position: "absolute", left: 30, top: 30 }}
+          onPress={() => router.push("/")}
+        >
+          <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
+        </TouchableOpacity>
+        <View style={styles.card}>
+          <Text style={styles.title}>Bem-vindo de volta</Text>
+          <Text style={styles.subtitle}>
+            Realize o login para acessar seus Roadmaps
+          </Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu email"
-            placeholderTextColor="#94a3b8"
-            onChangeText={(text) => setEmail(text)}
-            onSubmitEditing={() => senhaRef.current?.focus()}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Senha</Text>
-          <View style={styles.passwordContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              ref={senhaRef}
-              style={styles.passwordInput}
-              secureTextEntry={!isSenhaVisible}
-              placeholder="Digite sua senha"
+              style={styles.input}
+              placeholder="Digite seu email"
               placeholderTextColor="#94a3b8"
-              onChangeText={(text) => setSenha(text)}
-              onSubmitEditing={handleLogin}
+              onChangeText={(text) => setEmail(text)}
+              onSubmitEditing={() => senhaRef.current?.focus()}
             />
-            <TouchableOpacity
-              style={{ position: "absolute", right: 12 }}
-              onPress={() => setIsSenhaVisible(!isSenhaVisible)}
-            >
-              <AntDesign
-                name={isSenhaVisible ? "eye" : "eye-invisible"}
-                size={24}
-                color={colors.lightBlue}
-              />
-            </TouchableOpacity>
           </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Senha</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                ref={senhaRef}
+                style={styles.passwordInput}
+                secureTextEntry={!isSenhaVisible}
+                placeholder="Digite sua senha"
+                placeholderTextColor="#94a3b8"
+                onChangeText={(text) => setSenha(text)}
+                onSubmitEditing={handleLogin}
+              />
+              <TouchableOpacity
+                onPress={() => setIsSenhaVisible(!isSenhaVisible)}
+              >
+                <AntDesign
+                  name={isSenhaVisible ? "eye" : "eye-invisible"}
+                  size={24}
+                  color={colors.lightBlue}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={globalStyles.button}
+            activeOpacity={0.85}
+            onPress={handleLogin}
+          >
+            <Text style={globalStyles.buttonText}>Entrar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push({ pathname: "/cadastrar" })}
+          >
+            <Text style={styles.cadastreText}>
+              Não tem uma conta? Cadastre-se
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={globalStyles.button}
-          activeOpacity={0.85}
-          onPress={handleLogin}
-        >
-          <Text style={globalStyles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={globalStyles.secondaryButton}
-          activeOpacity={0.85}
-          onPress={() => router.push({ pathname: "/cadastrar" })}
-        >
-          <Text style={globalStyles.secondaryButtonText}>Criar Conta</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          © 2026 AI Teacher — Todos os direitos reservados
-        </Text>
       </View>
-    </GradientScreen>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    justifyContent: "center",
   },
 
   card: {
     width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#1e293b",
-    borderRadius: 24,
-    padding: 28,
-    shadowColor: "#000",
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    maxWidth: 450,
+    borderRadius: 12,
+    padding: 24,
+    boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
   },
 
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#ffffff",
-    textAlign: "center",
+    fontWeight: 600,
+    color: "black",
+    textAlign: "left",
   },
 
   subtitle: {
     fontSize: 14,
     color: "#94a3b8",
-    textAlign: "center",
+    textAlign: "left",
     marginTop: 8,
     marginBottom: 28,
   },
@@ -162,46 +157,40 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 6,
-    color: "#cbd5e1",
+    color: "black",
     fontWeight: "500",
   },
   input: {
-    height: 48,
-    borderRadius: 14,
     paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
     fontSize: 16,
-    backgroundColor: "#0f172a",
-    color: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#334155",
-    outlineStyle: "none" as any,
+    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0f172a",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#334155",
-    height: 48,
+    borderRadius: 8,
+    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 12
   },
 
   passwordInput: {
     flex: 1,
     height: "100%",
-    color: "#ffffff",
     fontSize: 16,
     outlineStyle: "none" as any,
-    borderRadius: 14,
-    paddingHorizontal: 14,
   },
 
-  footerText: {
-    marginTop: 24,
-    fontSize: 11,
-    color: "#64748b",
+  cadastreText: {
+    color: colors.lightBlue,
+    fontWeight: 600,
+    textDecorationLine: "underline",
     textAlign: "center",
+    marginTop: 24
   },
 });

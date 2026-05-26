@@ -79,19 +79,17 @@ export const getGlobalStyles = () =>
       paddingHorizontal: 14,
     },
     button: {
+      borderRadius: 10,
       backgroundColor: colors.lightBlue,
-      height: 50,
-      borderRadius: 18,
-      justifyContent: "center",
       alignItems: "center",
-      marginTop: 12,
-      borderWidth: 1,
-      borderColor: colors.lightBlue,
+      justifyContent: "center",
+      padding: 8,
     },
     buttonText: {
-      color: "#0f172a",
-      fontSize: 15,
-      fontWeight: "bold",
+      color: "white",
+      fontWeight: 500,
+      fontSize: 16,
+      textAlign: "center"
     },
     secondaryButton: {
       borderWidth: 1,

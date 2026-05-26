@@ -9,6 +9,7 @@ import SideBar from "../_components/SideBar";
 import { pageNames } from "../../utils/pageNames";
 import MeuPerfil from "../meuPerfil";
 import RoadmapSelecionado from "../roadmapSelecionado";
+import Header from "../_components/Header";
 
 export default function Main() {
   const params = useLocalSearchParams();
@@ -21,7 +22,8 @@ export default function Main() {
         closeModal={() => setIsSideBarVisible(!isSidebarVisible)}
       />
 
-      <TopBar openSideBar={() => setIsSideBarVisible(!isSidebarVisible)} />
+      {/* <TopBar openSideBar={() => setIsSideBarVisible(!isSidebarVisible)} /> */}
+      <Header />
 
       {params.pageName === pageNames.roadmap.main &&
         params.subPage === pageNames.roadmap.criarRoadmap && <CriarRoadmap />}
@@ -30,7 +32,9 @@ export default function Main() {
         params.subPage === pageNames.roadmap.meusRoadmaps && <MeusRoadmaps />}
 
       {params.pageName === pageNames.roadmap.main &&
-        params.subPage === pageNames.roadmap.roadmapSelecionado && <RoadmapSelecionado />}
+        params.subPage === pageNames.roadmap.roadmapSelecionado && (
+          <RoadmapSelecionado />
+        )}
 
       {params.pageName === pageNames.meuPerfil && <MeuPerfil />}
     </View>

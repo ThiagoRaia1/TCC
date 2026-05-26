@@ -1,75 +1,103 @@
-import React from "react";
+import React, { useActionState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ImageBackground,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { colors } from "../styles/colors";
+import Header from "./_components/Header";
+import {
+  Target,
+  Zap,
+  TrendingUp,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react-native";
+import { useAuth } from "../context/auth";
 
 export default function LandingPage() {
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    logout();
+  }, []);
+
   return (
-    <LinearGradient colors={["#0f172a", "#1e293b"]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <>
+      <Header />
+      <ScrollView>
         {/* HERO */}
         <View style={styles.hero}>
-          <Ionicons name="school-outline" size={70} color={colors.lightBlue} />
+          <ImageBackground
+            source={{
+              uri: "https://images.unsplash.com/photo-1686061592689-312bbfb5c055",
+            }}
+            style={styles.heroBackgroundImage}
+          >
+            <View style={styles.overlay} />
+            <View style={styles.heroContent}>
+              <Text style={styles.title}>
+                Mapeie sua jornada{"\n"}
+                no aprendizado
+              </Text>
 
-          <Text style={styles.title}>AI Teacher</Text>
+              <Text style={styles.subtitle}>
+                Crie Roadmaps de estudo personalizados, rastreie seu progresso e
+                {"\n"}
+                conquiste seus objetivos de aprendizado com um caminho claro.
+              </Text>
 
-          <Text style={styles.subtitle}>
-            Seu professor inteligente disponível 24 horas por dia. Aprenda
-            qualquer assunto com explicações claras, personalizadas e
-            instantâneas.
-          </Text>
-
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => router.push({ pathname: "/login" })}
-            >
-              <Text style={styles.primaryButtonText}>Começar a Aprender</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Ver Como Funciona</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.comeceAgoraButton}
+                  onPress={() => router.push({ pathname: "/login" })}
+                >
+                  <Text style={styles.comeceAgoraButtonText}>
+                    Começar a aprender
+                  </Text>
+                  <ArrowRight />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ImageBackground>
         </View>
 
         {/* FEATURES */}
         <View style={styles.featuresContainer}>
-          <Feature
-            icon="flash-outline"
-            title="Respostas Instantâneas"
-            description="Tire dúvidas em segundos com explicações claras e diretas ao ponto."
-          />
+          <View style={styles.featuresRow}>
+            <Feature
+              icon={<Zap />}
+              title="Respostas Instantâneas"
+              description="Tire dúvidas em segundos com explicações claras e diretas ao ponto."
+            />
 
-          <Feature
-            icon="person-outline"
-            title="Aprendizado Personalizado"
-            description="O AI Teacher adapta as explicações ao seu nível e ritmo de estudo."
-          />
+            <Feature
+              icon={<Target />}
+              title="Crie roadmaps personalizados"
+              description="Crie planos de aprendizagem personalizados, adaptados aos seus objetivos e ritmo"
+            />
+          </View>
 
-          <Feature
-            icon="book-outline"
-            title="Vários Assuntos"
-            description="Matemática, Programação, História, Ciências e muito mais em um só lugar."
-          />
+          <View style={styles.featuresRow}>
+            <Feature
+              icon={<TrendingUp />}
+              title="Rastreie seu progresso"
+              description="Monitore as taxas de conclusão e mantenha-se motivado com indicadores visuais de progresso"
+            />
 
-          <Feature
-            icon="time-outline"
-            title="Disponível 24/7"
-            description="Estude quando quiser, sem horários ou limitações."
-          />
-        </View>
+            <Feature
+              icon={<CheckCircle2 />}
+              title="Gerencie seus passos"
+              description="Divida tópicos complexos em etapas gerenciáveis ​​e marque-as conforme for aprendendo"
+            />
+          </View>
 
-        {/* CALL TO ACTION */}
-        <View style={styles.ctaSection}>
+          {/* CALL TO ACTION */}
+          {/* <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>
             Comece a evoluir seus estudos hoje mesmo!
           </Text>
@@ -80,24 +108,20 @@ export default function LandingPage() {
           >
             <Text style={styles.ctaButtonText}>Criar Conta Gratuita</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* FOOTER */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            © 2026 AI Teacher — Todos os direitos reservados
-          </Text>
+        </View> */}
         </View>
       </ScrollView>
-    </LinearGradient>
+    </>
   );
 }
 
 function Feature({ icon, title, description }: any) {
   return (
     <View style={styles.card}>
-      <Ionicons name={icon} size={34} color={colors.lightBlue} />
+      <View style={styles.cardIcon}>{icon}</View>
+
       <Text style={styles.cardTitle}>{title}</Text>
+
       <Text style={styles.cardDescription}>{description}</Text>
     </View>
   );
@@ -107,32 +131,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scroll: {
-    padding: 24,
-  },
   hero: {
+    height: "90%",
+  },
+  heroBackgroundImage: {
+    height: "100%",
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 60,
-    marginBottom: 60,
+    paddingHorizontal: 40,
+  },
+  heroContent: {
+    width: "100%",
+    maxWidth: 1350,
+    gap: 40,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.75)",
   },
   title: {
-    fontSize: 36,
+    fontSize: 60,
     fontWeight: "bold",
-    color: "#ffffff",
-    marginTop: 20,
+    color: "black",
+    textAlign: "left",
+    lineHeight: 50,
   },
   subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#cbd5e1",
-    marginTop: 16,
+    fontSize: 18,
+    textAlign: "left",
+    color: "#65758B",
     lineHeight: 24,
-    paddingHorizontal: 10,
+  },
+  comeceAgoraButton: {
+    flexDirection: "row",
+    gap: 4,
+    borderRadius: 10,
+    backgroundColor: "#3D84F6",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  comeceAgoraButtonText: {
+    color: "white",
+    fontWeight: 600,
+    fontSize: 16,
+    paddingVertical: 12,
   },
   buttonRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 30,
   },
   primaryButton: {
     backgroundColor: colors.lightBlue,
@@ -156,26 +204,51 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   featuresContainer: {
-    gap: 22,
+    gap: 20,
+    maxWidth: 1200,
+    alignSelf: "center",
+    paddingVertical: 64,
+    paddingHorizontal: 32,
+  },
+  featuresRow: {
+    flexWrap: "wrap",
+    flexDirection: "row",
+    gap: 20,
+    justifyContent: "center",
   },
   card: {
-    backgroundColor: "#1e293b",
+    width: "100%",
+    maxWidth: 430,
+    height: 222,
+    justifyContent: "space-evenly",
     padding: 22,
     borderRadius: 22,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 4,
+    // boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
+  },
+  cardIcon: {
+    width: 56,
+    height: 56,
+
+    borderRadius: 16,
+
+    backgroundColor: "#89b5fc2f",
+    color: "#3D84F6",
+
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
-    color: "#ffffff",
+    color: "black",
     marginTop: 14,
   },
   cardDescription: {
-    fontSize: 14,
-    color: "#94a3b8",
+    fontSize: 16,
+    color: "#7e899b",
     marginTop: 8,
     lineHeight: 20,
   },
@@ -186,7 +259,7 @@ const styles = StyleSheet.create({
   ctaTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "black",
     textAlign: "center",
   },
   ctaButton: {
