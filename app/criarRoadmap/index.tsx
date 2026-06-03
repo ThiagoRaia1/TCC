@@ -18,6 +18,8 @@ import Header from "../_components/Header";
 import { getAllRoadmap } from "../../services/roadmap";
 import { BookOpen } from "lucide-react-native";
 import { getGlobalStyles } from "../../styles/globalStyles";
+import { router } from "expo-router";
+import { pageNames } from "../../utils/pageNames";
 
 export default function CriarRoadmap() {
   const { usuario } = useAuth();
@@ -104,7 +106,7 @@ export default function CriarRoadmap() {
     <ScrollView style={{ paddingHorizontal: 40 }}>
       <View
         style={{
-          gap: 32,
+          gap: 40,
           maxWidth: 1350,
           width: "100%",
           paddingVertical: 40,
@@ -134,14 +136,26 @@ export default function CriarRoadmap() {
           <Text style={{ fontSize: 16, color: "#525252", textAlign: "center" }}>
             Crie seu primeiro roteiro de aprendizado para começar.
           </Text>
-          <TouchableOpacity style={[globalStyles.button, styles.button]}>
-            <Text style={[globalStyles.buttonText, styles.buttonText]}>
+
+          <TouchableOpacity
+            style={[globalStyles.confirmButton, styles.button]}
+            onPress={() =>
+              router.push({
+                pathname: "/main",
+                params: {
+                  pageName: pageNames.roadmap.main,
+                  subPage: pageNames.roadmap.novoRoadmap,
+                },
+              })
+            }
+          >
+            <Text style={[globalStyles.confirmButtonText, styles.buttonText]}>
               + Crie seu primeiro roadmap
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[globalStyles.button, styles.button]}>
-            <Text style={[globalStyles.buttonText, styles.buttonText]}>
+          <TouchableOpacity style={[globalStyles.confirmButton, styles.button]}>
+            <Text style={[globalStyles.confirmButtonText, styles.buttonText]}>
               Gere com inteligência artificial
             </Text>
           </TouchableOpacity>

@@ -15,17 +15,24 @@ import { useLoading } from "../../context/providers/loading";
 import { colors } from "../../styles/colors";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import Header from "../_components/Header";
+import { criarConta } from "../../services/usuario";
 
 export default function Login() {
   const { login, logout } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
 
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [isSenhaVisible, setIsSenhaVisible] = useState<boolean>(false);
+  const [senhaConfirmacao, setSenhaConfirmacao] = useState<string>("");
 
+  const [isSenhaVisible, setIsSenhaVisible] = useState<boolean>(false);
+  const [estaLogando, setEstaLogando] = useState<boolean>(true);
+
+  const emailRef = useRef<TextInput>(null);
   const senhaRef = useRef<TextInput>(null);
+  const confirmarSenhaRef = useRef<TextInput>(null);
 
   useEffect(() => {
     logout();
@@ -36,6 +43,42 @@ export default function Login() {
       showLoading();
 
       const usuarioLogado = await login({ email, senha });
+
+      router.push({
+        pathname: "/main",
+        params: {
+          pageName: pageNames.roadmap.main,
+          subPage: pageNames.roadmap.criarRoadmap,
+        },
+      });
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleCriarConta = async () => {
+    try {
+      showLoading();
+
+      if (!nome || !email || !senha || !senhaConfirmacao) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      if (senha !== senhaConfirmacao) {
+        alert("As senhas não coincidem.");
+        return;
+      }
+
+      const resultCriarConta = await criarConta({
+        email,
+        senha,
+        nome,
+      });
+
+      const resultLogin = await login({ email, senha });
 
       router.push({
         pathname: "/main",
@@ -62,15 +105,35 @@ export default function Login() {
           <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
         </TouchableOpacity>
         <View style={styles.card}>
-          <Text style={styles.title}>Bem-vindo de volta</Text>
-          <Text style={styles.subtitle}>
-            Realize o login para acessar seus Roadmaps
-          </Text>
+          <View>
+            <Text style={styles.title}>
+              {estaLogando ? "Bem-vindo de volta" : "Seja bem-vindo!"}
+            </Text>
+            <Text style={styles.subtitle}>
+              {estaLogando
+                ? "Realize o login para acessar seus Roadmaps"
+                : "Cadastre-se e crie seu primeiro roadmap!"}
+            </Text>
+          </View>
+
+          {!estaLogando && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Nome</Text>
+              <TextInput
+                style={globalStyles.input}
+                placeholder="Digite seu nome"
+                placeholderTextColor="#94a3b8"
+                onChangeText={(text) => setNome(text)}
+                onSubmitEditing={() => senhaRef.current?.focus()}
+              />
+            </View>
+          )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.input}
+              ref={emailRef}
+              style={globalStyles.input}
               placeholder="Digite seu email"
               placeholderTextColor="#94a3b8"
               onChangeText={(text) => setEmail(text)}
@@ -86,15 +149,19 @@ export default function Login() {
                 style={styles.passwordInput}
                 secureTextEntry={!isSenhaVisible}
                 placeholder="Digite sua senha"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={colors.placeholderTextColor}
                 onChangeText={(text) => setSenha(text)}
-                onSubmitEditing={handleLogin}
+                onSubmitEditing={
+                  estaLogando
+                    ? handleLogin
+                    : () => confirmarSenhaRef.current?.focus()
+                }
               />
               <TouchableOpacity
                 onPress={() => setIsSenhaVisible(!isSenhaVisible)}
               >
                 <AntDesign
-                  name={isSenhaVisible ? "eye" : "eye-invisible"}
+                  name={isSenhaVisible ? "eye-invisible" : "eye"}
                   size={24}
                   color={colors.lightBlue}
                 />
@@ -102,22 +169,47 @@ export default function Login() {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={globalStyles.button}
-            activeOpacity={0.85}
-            onPress={handleLogin}
-          >
-            <Text style={globalStyles.buttonText}>Entrar</Text>
-          </TouchableOpacity>
+          {!estaLogando && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Confirmar senha</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  ref={confirmarSenhaRef}
+                  style={styles.passwordInput}
+                  secureTextEntry={!isSenhaVisible}
+                  placeholder="Confirme sua senha"
+                  placeholderTextColor={colors.placeholderTextColor}
+                  onChangeText={(text) => setSenhaConfirmacao(text)}
+                  onSubmitEditing={handleLogin}
+                />
+              </View>
+            </View>
+          )}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => router.push({ pathname: "/cadastrar" })}
-          >
-            <Text style={styles.cadastreText}>
-              Não tem uma conta? Cadastre-se
-            </Text>
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              style={globalStyles.confirmButton}
+              activeOpacity={0.85}
+              onPress={estaLogando ? handleLogin : handleCriarConta}
+            >
+              <Text style={globalStyles.confirmButtonText}>
+                {estaLogando ? "Entrar" : "Cadastrar"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setEstaLogando(!estaLogando);
+              }}
+            >
+              <Text style={styles.cadastreText}>
+                {estaLogando
+                  ? "Não tem uma conta? Cadastre-se"
+                  : "Já possui uma conta? Entre aqui"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </>
@@ -137,6 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 24,
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
+    justifyContent: "space-between",
   },
 
   title: {
@@ -162,13 +255,6 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "500",
   },
-  input: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    fontSize: 16,
-    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
-  },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -176,7 +262,7 @@ const styles = StyleSheet.create({
     boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
     paddingHorizontal: 14,
     paddingVertical: 8,
-    gap: 12
+    gap: 12,
   },
 
   passwordInput: {
@@ -191,6 +277,6 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     textDecorationLine: "underline",
     textAlign: "center",
-    marginTop: 24
+    marginTop: 24,
   },
 });

@@ -35,7 +35,7 @@ export default function Header() {
           (!isAuthenticated ? (
             <TouchableOpacity
               style={styles.loginButton}
-              onPress={() => router.push("/login")}
+              onPress={() => router.push("/auth")}
             >
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
@@ -89,11 +89,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
   },
   loginButtonText: {
     color: "black",
     fontWeight: 600,
-    fontSize: 16,
+    fontSize: 14,
   },
 });

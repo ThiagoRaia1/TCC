@@ -54,12 +54,12 @@ export default function LandingPage() {
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={styles.comeceAgoraButton}
-                  onPress={() => router.push({ pathname: "/login" })}
+                  onPress={() => router.push({ pathname: "/auth" })}
                 >
                   <Text style={styles.comeceAgoraButtonText}>
                     Começar a aprender
                   </Text>
-                  <ArrowRight />
+                  <ArrowRight size={20} style={{ marginTop: 4 }} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   comeceAgoraButtonText: {
     color: "white",
     fontWeight: 600,
-    fontSize: 16,
+    fontSize: 14,
     paddingVertical: 12,
   },
   buttonRow: {
@@ -224,8 +224,6 @@ const styles = StyleSheet.create({
     padding: 22,
     borderRadius: 22,
     // boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.2)",
-    borderWidth: 1,
-    borderColor: "#ddd",
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
   },
   cardIcon: {
