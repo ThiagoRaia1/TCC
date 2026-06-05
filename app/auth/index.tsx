@@ -9,12 +9,10 @@ import {
 import { router } from "expo-router";
 import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import { pageNames } from "../../utils/pageNames";
-import GradientScreen from "../_components/GradientBackground";
 import { useAuth } from "../../context/auth";
 import { useLoading } from "../../context/providers/loading";
 import { colors } from "../../styles/colors";
 import { getGlobalStyles } from "../../styles/globalStyles";
-import Header from "../_components/Header";
 import { criarConta } from "../../services/usuario";
 
 export default function Login() {
@@ -44,13 +42,7 @@ export default function Login() {
 
       const usuarioLogado = await login({ email, senha });
 
-      router.push({
-        pathname: "/main",
-        params: {
-          pageName: pageNames.roadmap.main,
-          subPage: pageNames.roadmap.criarRoadmap,
-        },
-      });
+      router.push("/roadmap");
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -96,7 +88,6 @@ export default function Login() {
 
   return (
     <>
-      <Header />
       <View style={styles.container}>
         <TouchableOpacity
           style={{ position: "absolute", left: 30, top: 30 }}

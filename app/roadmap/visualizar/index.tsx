@@ -7,29 +7,29 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import { getGlobalStyles } from "../../styles/globalStyles";
-import { useRoadmap } from "../../context/providers/roadmap";
-import GradientScreen from "../_components/GradientBackground";
-import { useLoading } from "../../context/providers/loading";
+import { getGlobalStyles } from "../../../styles/globalStyles";
 import { router } from "expo-router";
-import { pageNames } from "../../utils/pageNames";
 import { useState } from "react";
-import { colors } from "../../styles/colors";
+import { useLoading } from "../../../context/providers/loading";
+import { useRoadmap } from "../../../context/providers/roadmap";
+import { IEtapa } from "../../../interfaces/etapa";
+import { IUpdateRoadmap, IRoadmap } from "../../../interfaces/roadmap";
+import { deleteObjetivo } from "../../../services/objetivo";
 import {
+  updateRoadmap,
   getRoadmap,
   salvarAnotacao,
-  updateRoadmap,
-} from "../../services/roadmap";
-import { IEtapa } from "../../interfaces/etapa";
-import Editor from "../_components/dom-components/hello-dom";
-import MenuOptionButton from "../_components/MenuOptionButton";
-import { IRoadmap, IUpdateRoadmap } from "../../interfaces/roadmap";
-import { deleteObjetivo } from "../../services/objetivo";
+} from "../../../services/roadmap";
+import { colors } from "../../../styles/colors";
+import { pageNames } from "../../../utils/pageNames";
+import Editor from "../../_components/dom-components/hello-dom";
+import GradientScreen from "../../_components/GradientBackground";
+import MenuOptionButton from "../../_components/MenuOptionButton";
 
 const scrollAdjust: number = 32;
 const editDeleteButtonsSize: number = 40;
 
-export default function RoadmapSelecionado() {
+export default function Visualizar() {
   const globalStyles = getGlobalStyles();
   const { roadmapSelecionado, setRoadmapSelecionado } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
@@ -472,7 +472,7 @@ export default function RoadmapSelecionado() {
                         />
                         <MenuOptionButton
                           containerStyle={[
-                            globalStyles.button,
+                            globalStyles.confirmButton,
                             {
                               borderWidth: 0,
                               backgroundColor: descricaoNovoObjetivo[etapa.id]
@@ -491,7 +491,7 @@ export default function RoadmapSelecionado() {
                             <View style={{ flexDirection: "row", gap: 10 }}>
                               <Text
                                 style={[
-                                  globalStyles.buttonText,
+                                  globalStyles.confirmButtonText,
                                   { color: "white", marginTop: 3 },
                                 ]}
                                 selectable={false}
@@ -509,7 +509,7 @@ export default function RoadmapSelecionado() {
                         />
                         <MenuOptionButton
                           containerStyle={[
-                            globalStyles.button,
+                            globalStyles.confirmButton,
                             {
                               borderWidth: 0,
                               backgroundColor: colors.red,
@@ -522,7 +522,7 @@ export default function RoadmapSelecionado() {
                             <View style={{ flexDirection: "row", gap: 10 }}>
                               <Text
                                 style={[
-                                  globalStyles.buttonText,
+                                  globalStyles.confirmButtonText,
                                   { color: "white" },
                                 ]}
                                 selectable={false}
@@ -552,7 +552,7 @@ export default function RoadmapSelecionado() {
                     />
                     <MenuOptionButton
                       containerStyle={[
-                        globalStyles.button,
+                        globalStyles.confirmButton,
                         {
                           borderWidth: 0,
                           backgroundColor: alterado ? colors.green : "#555",
@@ -566,7 +566,7 @@ export default function RoadmapSelecionado() {
                         <View style={{ flexDirection: "row", gap: 10 }}>
                           <Text
                             style={[
-                              globalStyles.buttonText,
+                              globalStyles.confirmButtonText,
                               { color: "white", marginTop: 3 },
                             ]}
                             selectable={false}

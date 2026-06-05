@@ -8,9 +8,13 @@ import {
 } from "react-native";
 import { getGlobalStyles } from "../../../styles/globalStyles";
 import { colors } from "../../../styles/colors";
+import { useLoading } from "../../../context/providers/loading";
+import { router } from "expo-router";
 
 export default function NovoRoadmap() {
+  const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
+
   const style = StyleSheet.create({
     labelInputContainer: {
       gap: 8,
@@ -72,7 +76,10 @@ export default function NovoRoadmap() {
               <Text style={globalStyles.confirmButtonText}>Criar Roadmap</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={globalStyles.secondaryButton}>
+            <TouchableOpacity
+              style={globalStyles.secondaryButton}
+              onPress={() => router.push("/roadmap")}
+            >
               <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>

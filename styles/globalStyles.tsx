@@ -83,7 +83,7 @@ export const getGlobalStyles = () =>
     },
     confirmButtonText: {
       color: "white",
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 14,
       textAlign: "center",
     },
@@ -93,6 +93,7 @@ export const getGlobalStyles = () =>
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 20,
+      paddingVertical: 8,
       boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
     },
     secondaryButtonText: {

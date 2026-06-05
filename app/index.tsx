@@ -28,7 +28,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <Header />
       <ScrollView>
         {/* HERO */}
         <View style={styles.hero}>
