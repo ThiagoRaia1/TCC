@@ -14,15 +14,10 @@ export default function Header() {
         <TouchableOpacity
           style={styles.logoContainer}
           onPress={() => {
-            if (!isAuthenticated) router.push("/");
             if (isAuthenticated) {
-              router.push({
-                pathname: "/main",
-                params: {
-                  pageName: pageNames.roadmap.main,
-                  subPage: pageNames.roadmap.criarRoadmap,
-                },
-              });
+              router.push("/roadmap");
+            } else {
+              router.push("/");
             }
           }}
         >

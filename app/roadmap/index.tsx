@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Pressable,
 } from "react-native";
 import { useLoading } from "../../context/providers/loading";
 import { useAuth } from "../../context/auth";
@@ -86,17 +87,7 @@ export default function CriarRoadmap() {
         </View>
 
         {!roadmaps ? (
-          <View
-            style={{
-              boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              paddingVertical: 76,
-              paddingHorizontal: 32,
-              borderRadius: 8,
-            }}
-          >
+          <View style={styles.noRoadmapsContainer}>
             <BookOpen size={60} color="#3D84F6" />
             <Text
               style={{ fontSize: 20, fontWeight: 600, textAlign: "center" }}
@@ -127,14 +118,7 @@ export default function CriarRoadmap() {
             </TouchableOpacity>
           </View>
         ) : (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 45,
-              justifyContent: "center",
-            }}
-          >
+          <View style={styles.roadmapsContainer}>
             {roadmaps.map((roadmap) => {
               return (
                 <View style={styles.roadmapCard}>
@@ -159,30 +143,33 @@ export default function CriarRoadmap() {
                           { color: "black", fontWeight: "bold" },
                         ]}
                       >
-                        0%
+                        {roadmap.porcentagemConclusao}%
                       </Text>
                     </View>
-                    <View
-                      style={{
-                        borderRadius: 20,
-                        backgroundColor: "#DBE6FD",
-                        height: 8,
-                      }}
-                    ></View>
+                    <View style={styles.emptyProgressBar}>
+                      <View
+                        style={[
+                          styles.filledProgressBar,
+                          {
+                            width: `${roadmap.porcentagemConclusao}%`,
+                          },
+                        ]}
+                      />
+                    </View>
                   </View>
 
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 12,
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  <View style={styles.cardActionsRow}>
                     <TouchableOpacity
                       style={[
                         globalStyles.secondaryButton,
-                        { flex: 1, flexDirection: "row", gap: 8 },
+                        {
+                          flex: 1,
+                          paddingVertical: 8,
+                        },
                       ]}
+                      onPress={() =>
+                        router.push(`roadmap/visualizar/${roadmap.id}`)
+                      }
                     >
                       <Eye color={"black"} size={18} />
                       <Text style={globalStyles.secondaryButtonText}>
@@ -199,15 +186,28 @@ export default function CriarRoadmap() {
                       <Pencil color={"black"} size={18} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={[
+                    <Pressable
+                      style={(state: any) => [
                         globalStyles.secondaryButton,
                         styles.secundaryButton,
-                        { backgroundColor: "#ff6b6b" },
+                        {
+                          paddingVertical: 8,
+                          width: 40,
+                          backgroundColor: state.hovered ? "#ef4444" : "#fff",
+                          transitionProperty: "background-color",
+                          transitionDuration: "200ms",
+                          transitionTimingFunction: "ease-in-out",
+                        },
                       ]}
                     >
-                      <Trash2 color={"white"} size={18} strokeWidth={2.5} />
-                    </TouchableOpacity>
+                      {(state: any) => (
+                        <Trash2
+                          color={state.hovered ? "#fff" : "#000"}
+                          size={18}
+                          strokeWidth={2.5}
+                        />
+                      )}
+                    </Pressable>
                   </View>
                 </View>
               );
@@ -239,6 +239,23 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
+  noRoadmapsContainer: {
+    boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingVertical: 76,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+  },
+
+  roadmapsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 45,
+    justifyContent: "center",
+  },
+
   roadmapCard: {
     width: 420,
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
@@ -259,6 +276,24 @@ const styles = StyleSheet.create({
     fontWeight: 400,
     color: "#555555",
     textAlign: "left",
+  },
+
+  emptyProgressBar: {
+    borderRadius: 20,
+    backgroundColor: "#DBE6FD",
+    height: 8,
+    overflow: "hidden",
+  },
+
+  filledProgressBar: {
+    height: "100%",
+    backgroundColor: colors.lightBlue,
+  },
+
+  cardActionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
   },
 
   secundaryButton: {

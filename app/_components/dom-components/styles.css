@@ -54,17 +54,18 @@ h1 {
 .editor-container {
   margin: 20px auto;
   width: 100%;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
   border-radius: 10px;
   color: #fff;
   position: relative;
   line-height: 20px;
   font-weight: 400;
   text-align: left;
+  overflow: hidden;
 }
 
 .editor-inner {
-  background: #1b263b; /* fundo do editor */
+  background: #fff; /* fundo do editor */
   position: relative;
 }
 
@@ -82,7 +83,7 @@ h1 {
   tab-size: 1;
   outline: 0;
   padding: 15px 10px;
-  color: #eee;
+  color: #000; /* preto */
   background: transparent;
 }
 
@@ -218,7 +219,7 @@ h1 {
   margin: 0;
   margin-bottom: 8px;
   position: relative;
-  color: #ddd;
+  color: #000;
 }
 
 .editor-paragraph:last-child {
@@ -321,7 +322,7 @@ pre::-webkit-scrollbar-thumb {
 .toolbar {
   display: flex;
   margin-bottom: 1px;
-  background: #1b263b;
+  background: "white";
   padding: 4px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -336,7 +337,7 @@ pre::-webkit-scrollbar-thumb {
   padding: 8px;
   cursor: pointer;
   vertical-align: middle;
-  color: #eee;
+  color: "black";
 }
 
 .toolbar button.toolbar-item:disabled {
@@ -363,7 +364,7 @@ pre::-webkit-scrollbar-thumb {
 }
 
 .toolbar button.toolbar-item.active {
-  background-color: rgba(76, 175, 80, 0.3); /* verde ativo */
+  background-color: #3d84f69c; /* verde ativo */
 }
 
 .toolbar button.toolbar-item.active i {
@@ -371,13 +372,13 @@ pre::-webkit-scrollbar-thumb {
 }
 
 .toolbar .toolbar-item:hover:not([disabled]) {
-  background-color: rgba(76, 175, 80, 0.2); /* verde suave no hover */
+  background-color: #3D84F6; /* verde suave no hover */
   color: #fff; /* garante que o ícone/texto fique visível */
 }
 
 .toolbar .toolbar-item:hover i.format {
   opacity: 1; /* ícones ficam totalmente visíveis */
-  color: #4caf50; /* ou qualquer verde do tema */
+  color: #3D84F6; /* ou qualquer verde do tema */
 }
 
 .toolbar .divider {

@@ -18,9 +18,11 @@ import {
   ArrowRight,
 } from "lucide-react-native";
 import { useAuth } from "../context/auth";
+import { getGlobalStyles } from "../styles/globalStyles";
 
 export default function LandingPage() {
   const { logout } = useAuth();
+  const globalStyles = getGlobalStyles();
 
   useEffect(() => {
     logout();
@@ -52,10 +54,10 @@ export default function LandingPage() {
 
               <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={styles.comeceAgoraButton}
+                  style={globalStyles.buttonWithIcon}
                   onPress={() => router.push({ pathname: "/auth" })}
                 >
-                  <Text style={styles.comeceAgoraButtonText}>
+                  <Text style={globalStyles.buttonWithIconText}>
                     Começar a aprender
                   </Text>
                   <ArrowRight size={20} style={{ marginTop: 4 }} />
@@ -160,22 +162,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
     color: "#65758B",
     lineHeight: 24,
-  },
-  comeceAgoraButton: {
-    flexDirection: "row",
-    gap: 4,
-    borderRadius: 10,
-    backgroundColor: "#3D84F6",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-  },
-  comeceAgoraButtonText: {
-    color: "white",
-    fontWeight: 600,
-    fontSize: 14,
-    paddingVertical: 12,
   },
   buttonRow: {
     flexDirection: "row",

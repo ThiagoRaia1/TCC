@@ -31,6 +31,7 @@ export function RoadmapProvider({ children }: any) {
 
         if (data) {
           setRoadmapSelecionadoState(JSON.parse(data));
+          console.log(JSON.parse(data))
         }
       } catch (error: any) {
         console.error("Erro ao carregar roadmap:", error);

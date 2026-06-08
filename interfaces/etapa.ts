@@ -1,5 +1,5 @@
 import { ICriarObjetivo, IObjetivo, IUpdateObjetivo } from "./objetivo";
-import { ICriarRecursoSugerido, IRecursoSugerido } from "./recursoSugerido";
+import { ICriarReferencia, IReferencia, IUpdateReferencia } from "./referencia";
 
 export interface IEtapa {
   id: number;
@@ -8,7 +8,7 @@ export interface IEtapa {
   descricao: string;
   duracao: string;
   objetivos: IObjetivo[];
-  recursosSugeridos: IRecursoSugerido[];
+  referencias?: IReferencia[];
   concluido: boolean;
 
   anotacoes?: {
@@ -23,7 +23,7 @@ export interface ICriarEtapa {
   descricao: string;
   duracao: string;
   objetivos: ICriarObjetivo[];
-  recursosSugeridos: ICriarRecursoSugerido[];
+  referencias?: ICriarReferencia[];
   concluido: boolean;
 
   anotacoes?: {
@@ -38,7 +38,7 @@ export interface IUpdateEtapa {
   descricao?: string;
   duracao?: string;
   objetivos?: IUpdateObjetivo[];
-  recursosSugeridos?: ICriarRecursoSugerido[];
+  referencias?: IUpdateReferencia[];
   concluido?: boolean;
 
   anotacoes?: {

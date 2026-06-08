@@ -11,7 +11,6 @@ export interface IRoadmap {
   nivel: Nivel;
   etapas: IEtapa[];
   usuario: IUsuario;
-  porcentagemConclusao: number;
 }
 
 export interface ICriarRoadmap {
@@ -31,5 +30,4 @@ export interface IUpdateRoadmap {
   nivel?: Nivel;
   etapas?: IUpdateEtapa[];
   usuario: IUsuario;
-  porcentagemConclusao?: number;
 }
