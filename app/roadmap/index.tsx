@@ -86,7 +86,7 @@ export default function CriarRoadmap() {
           )}
         </View>
 
-        {!roadmaps ? (
+        {roadmaps.length == 0 ? (
           <View style={styles.noRoadmapsContainer}>
             <BookOpen size={60} color="#3D84F6" />
             <Text
@@ -143,7 +143,8 @@ export default function CriarRoadmap() {
                           { color: "black", fontWeight: "bold" },
                         ]}
                       >
-                        {roadmap.porcentagemConclusao}%
+                        {/* FIX ME */}
+                        {/* {roadmap.porcentagemConclusao}% */}
                       </Text>
                     </View>
                     <View style={styles.emptyProgressBar}>
@@ -151,7 +152,8 @@ export default function CriarRoadmap() {
                         style={[
                           styles.filledProgressBar,
                           {
-                            width: `${roadmap.porcentagemConclusao}%`,
+                            // FIX ME
+                            // width: `${roadmap.porcentagemConclusao}%`,
                           },
                         ]}
                       />

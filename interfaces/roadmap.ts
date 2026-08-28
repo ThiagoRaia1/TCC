@@ -15,10 +15,10 @@ export interface IRoadmap {
 
 export interface ICriarRoadmap {
   tema: string;
-  descricaoGeral: string;
-  duracaoEstimada: string;
-  nivel: Nivel;
-  etapas: ICriarEtapa[];
+  descricaoGeral?: string;
+  duracaoEstimada?: string;
+  nivel?: Nivel;
+  etapas?: ICriarEtapa[];
   usuarioId: number;
 }
 

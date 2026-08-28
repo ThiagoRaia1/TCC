@@ -10,10 +10,18 @@ import { getGlobalStyles } from "../../../styles/globalStyles";
 import { colors } from "../../../styles/colors";
 import { useLoading } from "../../../context/providers/loading";
 import { router } from "expo-router";
+import { ICriarRoadmap } from "../../../interfaces/roadmap";
+import { useState } from "react";
+import { salvarRoadmap } from "../../../services/roadmap";
+import { useAuth } from "../../../context/auth";
 
 export default function NovoRoadmap() {
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
+  const { usuario } = useAuth();
+
+  const [temaRoadmap, setTemaRoadmap] = useState<string>("");
+  const [descricaoRoadmap, setDescricaoRoadmap] = useState<string>("");
 
   const style = StyleSheet.create({
     labelInputContainer: {
@@ -32,6 +40,28 @@ export default function NovoRoadmap() {
     },
   });
 
+  const handleCriarRoadmap = async () => {
+    try {
+      if (usuario) {
+        // FIX ME: Consertar criacao do roadmap
+        const roadmap: ICriarRoadmap = {
+          tema: temaRoadmap,
+          descricaoGeral: descricaoRoadmap,
+          duracaoEstimada: "1 Mes",
+          nivel: "iniciante",
+          etapas: [],
+          usuarioId: usuario.sub,
+        };
+
+        const resultado = await salvarRoadmap(roadmap);
+
+        router.push(`roadmap/visualizar/${resultado.id}`);
+      }
+    } catch (erro: any) {
+      alert(erro.message);
+    }
+  };
+
   return (
     <ScrollView style={{ paddingHorizontal: 40 }}>
       <View
@@ -43,9 +73,26 @@ export default function NovoRoadmap() {
           alignSelf: "center",
         }}
       >
-        <Text style={{ fontSize: 40, fontWeight: 600 }}>
-          Criar novo roadmap
-        </Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+          }}
+        >
+          <Text style={{ fontSize: 40, fontWeight: 600 }}>
+            Criar novo roadmap
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/roadmap");
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: 600 }}>← Voltar</Text>
+          </TouchableOpacity>
+        </View>
         <View style={style.sectionContainer}>
           <Text style={style.sectionTitle}>Detalhes do roadmap</Text>
 
@@ -55,6 +102,9 @@ export default function NovoRoadmap() {
               style={globalStyles.input}
               placeholder="Insira o título do roadmap"
               placeholderTextColor={colors.placeholderTextColor}
+              onChangeText={(text) => {
+                setTemaRoadmap(text);
+              }}
             />
           </View>
 
@@ -66,18 +116,24 @@ export default function NovoRoadmap() {
               placeholderTextColor={colors.placeholderTextColor}
               multiline={true}
               numberOfLines={4}
+              onChangeText={(text) => {
+                setDescricaoRoadmap(text);
+              }}
             />
           </View>
 
           <View
             style={{ alignItems: "flex-start", flexDirection: "row", gap: 12 }}
           >
-            <TouchableOpacity style={globalStyles.confirmButton}>
+            <TouchableOpacity
+              style={globalStyles.confirmButton}
+              onPress={handleCriarRoadmap}
+            >
               <Text style={globalStyles.confirmButtonText}>Criar Roadmap</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={globalStyles.secondaryButton}
+              style={[globalStyles.secondaryButton, { height: "100%" }]}
               onPress={() => router.push("/roadmap")}
             >
               <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>

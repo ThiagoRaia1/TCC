@@ -72,13 +72,7 @@ export default function Login() {
 
       const resultLogin = await login({ email, senha });
 
-      router.push({
-        pathname: "/main",
-        params: {
-          pageName: pageNames.roadmap.main,
-          subPage: pageNames.roadmap.criarRoadmap,
-        },
-      });
+      router.push("/roadmap");
     } catch (erro: any) {
       alert(erro.message);
     } finally {

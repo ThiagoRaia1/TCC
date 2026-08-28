@@ -8,7 +8,7 @@ export async function criarRoadmap(tema: string) {
   });
 }
 
-export async function salvarRoadmap(roadmap: ICriarRoadmap) {
+export async function salvarRoadmap(roadmap: ICriarRoadmap): Promise<IRoadmap> {
   return await httpClient("/roadmap/salvar", {
     method: "POST",
     body: JSON.stringify(roadmap),
