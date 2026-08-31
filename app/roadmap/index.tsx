@@ -23,6 +23,18 @@ export default function CriarRoadmap() {
 
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
 
+  const calcularProgresso = (roadmap: IRoadmap | null) => {
+    if (!roadmap) return 0;
+    const total = roadmap.etapas.flatMap((e) => e.objetivos).length;
+    const concluidos = roadmap.etapas
+      .flatMap((e) => e.objetivos)
+      .filter((o) => o.concluido).length;
+
+    if (total === 0) return 0;
+
+    return (concluidos / total) * 100;
+  };
+
   const getData = async () => {
     try {
       showLoading();
@@ -123,9 +135,18 @@ export default function CriarRoadmap() {
               return (
                 <View style={styles.roadmapCard}>
                   <View>
-                    <Text style={styles.roadmapCardTitle}>{roadmap.tema}</Text>
-                    <Text style={[styles.roadmapCardText, { fontSize: 14 }]}>
-                      {roadmap.descricaoGeral}
+                    <Text style={styles.roadmapCardTitle} selectable={false}>
+                      {roadmap.tema}
+                    </Text>
+                    <Text
+                      style={[styles.roadmapCardText, { fontSize: 14 }]}
+                      selectable={false}
+                    >
+                      {roadmap.descricaoGeral != "" ? (
+                        roadmap.descricaoGeral
+                      ) : (
+                        <i>Este roadmap ainda não possui descrição.</i>
+                      )}
                     </Text>
                   </View>
 
@@ -143,8 +164,7 @@ export default function CriarRoadmap() {
                           { color: "black", fontWeight: "bold" },
                         ]}
                       >
-                        {/* FIX ME */}
-                        {/* {roadmap.porcentagemConclusao}% */}
+                        {calcularProgresso(roadmap)}%
                       </Text>
                     </View>
                     <View style={styles.emptyProgressBar}>
@@ -152,8 +172,7 @@ export default function CriarRoadmap() {
                         style={[
                           styles.filledProgressBar,
                           {
-                            // FIX ME
-                            // width: `${roadmap.porcentagemConclusao}%`,
+                            width: `${calcularProgresso(roadmap)}%`,
                           },
                         ]}
                       />
@@ -262,7 +281,7 @@ const styles = StyleSheet.create({
     width: 420,
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
     justifyContent: "space-between",
-    gap: 24,
+    gap: 16,
     padding: 24,
     borderRadius: 8,
   },

@@ -96,7 +96,7 @@ export const getGlobalStyles = () =>
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 12,
-      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.3)",
+      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
     },
     secondaryButtonText: {
       color: "black",
@@ -144,5 +144,10 @@ export const getGlobalStyles = () =>
       color: "red",
       fontSize: 18,
       marginTop: 4,
+    },
+    slashedBorder: {
+      borderColor: "rgba(61, 132, 246, 0.41)",
+      borderStyle: "dashed",
+      borderWidth: 2,
     },
   });

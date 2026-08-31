@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import GradientScreen from "../_components/GradientBackground";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -200,7 +199,7 @@ export default function MeuPerfil() {
   }
 
   return (
-    <GradientScreen
+    <View
       style={{ justifyContent: "flex-start", alignItems: "flex-start" }}
     >
       <View style={styles.card}>
@@ -347,7 +346,7 @@ export default function MeuPerfil() {
             <TouchableOpacity
               ref={criarContaButtonRef}
               style={[
-                globalStyles.button,
+                // globalStyles.button,
                 isEditing && { backgroundColor: colors.green },
                 { flex: 1 },
               ]}
@@ -361,7 +360,7 @@ export default function MeuPerfil() {
             >
               <Text
                 style={[
-                  globalStyles.buttonText,
+                  // globalStyles.buttonText,
                   isEditing && { color: "white" },
                 ]}
               >
@@ -383,7 +382,7 @@ export default function MeuPerfil() {
               >
                 <Text
                   style={[
-                    globalStyles.buttonText,
+                    // globalStyles.buttonText,
                     isEditing && { color: "white" },
                   ]}
                 >
@@ -406,6 +405,6 @@ export default function MeuPerfil() {
           © 2026 AI Teacher — Todos os direitos reservados
         </Text> */}
       </View>
-    </GradientScreen>
+    </View>
   );
 }

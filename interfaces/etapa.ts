@@ -6,7 +6,6 @@ export interface IEtapa {
   titulo: string;
   ordem: number;
   descricao: string;
-  duracao: string;
   objetivos: IObjetivo[];
   referencias?: IReferencia[];
   concluido: boolean;
@@ -21,8 +20,7 @@ export interface ICriarEtapa {
   titulo: string;
   ordem: number;
   descricao: string;
-  duracao: string;
-  objetivos: ICriarObjetivo[];
+  objetivos?: ICriarObjetivo[];
   referencias?: ICriarReferencia[];
   concluido: boolean;
 
@@ -36,7 +34,6 @@ export interface IUpdateEtapa {
   titulo?: string;
   ordem?: number;
   descricao?: string;
-  duracao?: string;
   objetivos?: IUpdateObjetivo[];
   referencias?: IUpdateReferencia[];
   concluido?: boolean;

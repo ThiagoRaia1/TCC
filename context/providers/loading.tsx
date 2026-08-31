@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+
+import { View, ActivityIndicator, StyleSheet, Modal } from "react-native";
 
 interface LoadingContextProps {
   showLoading: () => void;
@@ -25,11 +26,11 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
     <LoadingContext.Provider value={{ showLoading, hideLoading }}>
       {children}
 
-      {visible && (
+      <Modal transparent visible={visible} animationType="none">
         <View style={styles.overlay}>
           <ActivityIndicator size={100} color="#fff" />
         </View>
-      )}
+      </Modal>
     </LoadingContext.Provider>
   );
 }
@@ -40,14 +41,9 @@ export function useLoading() {
 
 const styles = StyleSheet.create({
   overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 9999,
   },
 });

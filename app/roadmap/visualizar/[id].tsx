@@ -40,6 +40,8 @@ import {
   Trash2,
   Video,
 } from "lucide-react-native";
+import AdicionarEtapaModal from "./AdicionarEtapaModal";
+import DeleteModal from "./DeleteModal";
 
 export default function Visualizar() {
   const { id } = useLocalSearchParams();
@@ -48,8 +50,6 @@ export default function Visualizar() {
   const [menuSelecionado, setMenuSelecionado] = useState<"Etapas" | "Quizzes">(
     "Etapas",
   );
-  const [porcentagemConclusaoRoadmap, setPorcentagemConclusaoRoadmap] =
-    useState<number>(0);
 
   const { showLoading, hideLoading } = useLoading();
   const [anotacoes, setAnotacoes] = useState<{
@@ -64,6 +64,15 @@ export default function Visualizar() {
     useState<string>("");
   const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] =
     useState<string>("");
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const [tipoItemASerExcluido, setTipoItemASerExcluido] = useState<
+    "roadmap" | "etapa" | "objetivo"
+  >("roadmap");
+  const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
+
+  const [adicionandoEtapaModal, setAdicionandoEtapaModal] =
+    useState<boolean>(false);
 
   const tiposReferencia = [
     {
@@ -114,38 +123,44 @@ export default function Visualizar() {
     }
   };
 
+  const getData = async () => {
+    showLoading();
+    const resultado = await getRoadmap(Number(id));
+    setRoadmap(resultado);
+
+    const anotacoesIniciais: {
+      [etapaId: number]: {
+        plainText: string;
+        editorState: string | null;
+        alterado: boolean;
+      };
+    } = {};
+
+    resultado.etapas.forEach((etapa) => {
+      anotacoesIniciais[etapa.id] = {
+        plainText: etapa.anotacoes?.plainText ?? "",
+        editorState: etapa.anotacoes?.editorState ?? null,
+        alterado: false,
+      };
+    });
+
+    setAnotacoes(anotacoesIniciais);
+    hideLoading();
+  };
+
   useEffect(() => {
-    const getData = async () => {
-      showLoading();
-      const resultado = await getRoadmap(Number(id));
-      setRoadmap(resultado);
-
-      const anotacoesIniciais: {
-        [etapaId: number]: {
-          plainText: string;
-          editorState: string | null;
-          alterado: boolean;
-        };
-      } = {};
-
-      resultado.etapas.forEach((etapa) => {
-        anotacoesIniciais[etapa.id] = {
-          plainText: etapa.anotacoes?.plainText ?? "",
-          editorState: etapa.anotacoes?.editorState ?? null,
-          alterado: false,
-        };
-      });
-
-      setAnotacoes(anotacoesIniciais);
-      hideLoading();
-    };
-
     getData();
   }, [id]);
 
   useEffect(() => {
     if (roadmap) calcularProgresso(roadmap);
   }, [roadmap]);
+
+  useEffect(() => {
+    if (!adicionandoEtapaModal) {
+      getData();
+    }
+  }, [adicionandoEtapaModal]);
 
   const [adicionandoObjetivo, setAdicionandoObjetivo] = useState<number[]>([]);
 
@@ -329,8 +344,12 @@ export default function Visualizar() {
 
     if (total === 0) return 0;
 
-    setPorcentagemConclusaoRoadmap((concluidos / total) * 100);
+    return (concluidos / total) * 100;
   };
+
+  const porcentagemConclusaoRoadmap: number = roadmap
+    ? calcularProgresso(roadmap)
+    : 0;
 
   const addAnotacaoObjetivo = (objetivoId: number) => {};
 
@@ -344,11 +363,22 @@ export default function Visualizar() {
   const handleDeleteObjetivo = async (objetivoId: number) => {
     try {
       showLoading();
-      if (!roadmap) return;
-      const resultadoExclusao = await deleteObjetivo(objetivoId);
-      const roadmapAtualizado = await getRoadmap(roadmap.id);
 
-      setRoadmap(roadmapAtualizado);
+      if (!roadmap) return;
+
+      await deleteObjetivo(objetivoId);
+
+      const novoRoadmap: IRoadmap = {
+        ...roadmap,
+        etapas: roadmap.etapas.map((etapa) => ({
+          ...etapa,
+          objetivos: etapa.objetivos.filter(
+            (objetivo) => objetivo.id !== objetivoId,
+          ),
+        })),
+      };
+
+      setRoadmap(novoRoadmap);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -400,6 +430,15 @@ export default function Visualizar() {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
+  const openDeleteModal = (
+    tipoItem: "roadmap" | "etapa" | "objetivo",
+    etapa?: IEtapa,
+  ) => {
+    if (etapa) setEtapaSelecionada(etapa);
+    setTipoItemASerExcluido(tipoItem);
+    setDeleteModalVisible(true);
+  };
+
   return roadmap ? (
     <View
       style={{
@@ -409,8 +448,18 @@ export default function Visualizar() {
         paddingVertical: 40,
         width: "100%",
         alignSelf: "center",
+        flex: 1,
       }}
     >
+      {deleteModalVisible && (
+        <DeleteModal
+          closeModal={() => setDeleteModalVisible(false)}
+          roadmap={roadmap}
+          tipoItem={tipoItemASerExcluido}
+          etapa={etapaSelecionada}
+        />
+      )}
+
       <TouchableOpacity // VOLTAR AO DASHBOARD
         style={[globalStyles.buttonWithIcon, styles.buttonWithIcon]}
         onPress={() => {
@@ -482,6 +531,7 @@ export default function Visualizar() {
                   transitionTimingFunction: "ease-in-out",
                 },
               ]}
+              onPress={() => openDeleteModal("roadmap")}
             >
               {(state: any) => (
                 <>
@@ -500,7 +550,13 @@ export default function Visualizar() {
           </View>
         </View>
         <Text style={styles.nivel}>Nível: {roadmap.nivel}</Text>
-        <Text style={styles.descricao}>{roadmap.descricaoGeral}</Text>
+        <Text style={styles.descricao}>
+          {roadmap.descricaoGeral ? (
+            roadmap.descricaoGeral
+          ) : (
+            <i>Este roadmap ainda não possui descrição.</i>
+          )}
+        </Text>
 
         {/* Barra de progresso */}
         <View style={styles.progressContainer}>
@@ -579,759 +635,943 @@ export default function Visualizar() {
           }}
         >
           <Text style={styles.titulo}>Etapas</Text>
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.lightBlue,
-              paddingVertical: 8,
-              paddingHorizontal: 20,
-              borderRadius: 12,
-            }}
-          >
-            <Text style={{ color: "white" }}>+ Adicionar Etapa</Text>
-          </TouchableOpacity>
+          {!adicionandoEtapaModal && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.lightBlue,
+                paddingVertical: 8,
+                paddingHorizontal: 20,
+                borderRadius: 12,
+              }}
+              onPress={() => setAdicionandoEtapaModal(true)}
+            >
+              <Text style={{ color: "white" }}>+ Adicionar Etapa</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {roadmap.etapas
-          .sort((a, b) => a.ordem - b.ordem)
-          .map((etapa) => {
-            const aberta = etapasAbertas.includes(etapa.id);
-            const anotacaoEtapa = anotacoes[etapa.id];
-            const alterado = !!anotacaoEtapa?.alterado;
 
-            const etapaAdicionandoNovoObjetivo = adicionandoObjetivo.includes(
-              etapa.id,
-            );
+        {adicionandoEtapaModal && (
+          <AdicionarEtapaModal
+            closeModal={() => setAdicionandoEtapaModal(false)}
+            roadmap={roadmap}
+          />
+        )}
 
-            return (
-              <View key={etapa.id} style={styles.card}>
-                {/* Header da etapa */}
-                <Pressable
-                  style={styles.etapaHeader}
-                  onPress={() => toggleEtapa(etapa.id)}
-                >
-                  <View style={{ flex: 1, gap: 8 }}>
-                    <View // ORDEM TITULO DESCRICAO BOTOES DE ACAO
-                      style={{ flexDirection: "row", gap: 20 }}
+        {roadmap.etapas.length != 0
+          ? roadmap.etapas
+              .sort((a, b) => a.ordem - b.ordem)
+              .map((etapa) => {
+                const aberta = etapasAbertas.includes(etapa.id);
+                const anotacaoEtapa = anotacoes[etapa.id];
+                const alterado = !!anotacaoEtapa?.alterado;
+
+                const etapaAdicionandoNovoObjetivo =
+                  adicionandoObjetivo.includes(etapa.id);
+
+                return (
+                  <View key={etapa.id} style={styles.card}>
+                    {/* Header da etapa */}
+                    <Pressable
+                      style={styles.etapaHeader}
+                      onPress={() => toggleEtapa(etapa.id)}
                     >
-                      <View // ORDEM, TITULO E DESCRICAO
-                        style={{
-                          justifyContent: "space-between",
-                          flex: 1,
-                          gap: 4,
-                        }}
-                      >
-                        <View style={{ flexDirection: "row", gap: 8 }}>
-                          {aberta ? (
-                            <ChevronUp
-                              color={"black"}
-                              style={{
-                                marginLeft: -8,
-                                alignSelf: "flex-start",
-                              }}
-                            />
-                          ) : (
-                            <ChevronDown
-                              color={"black"}
-                              style={{
-                                marginLeft: -8,
-                                alignSelf: "flex-start",
-                              }}
-                            />
-                          )}
-                          <Text style={styles.etapaTitulo}>
-                            {etapa.ordem}. {etapa.titulo}
-                          </Text>
-                        </View>
-                        <Text style={styles.etapaDescricao}>
-                          {etapa.descricao}
-                        </Text>
-                      </View>
-
-                      <View // BOTOES DE ACAO
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "flex-end",
-                          gap: 12,
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <Pressable
-                          style={(state: any) => [
-                            globalStyles.secondaryButton,
-                            {
-                              paddingVertical: 8,
-                              width: 40,
-                              backgroundColor: state.hovered
-                                ? colors.lightBlue
-                                : "#fff",
-                              transitionProperty: "background-color",
-                              transitionDuration: "200ms",
-                              transitionTimingFunction: "ease-in-out",
-                            },
-                          ]}
+                      <View style={{ flex: 1, gap: 8 }}>
+                        <View // ORDEM TITULO DESCRICAO BOTOES DE ACAO
+                          style={{ flexDirection: "row", gap: 20 }}
                         >
-                          {(state: any) => (
-                            <Pencil
-                              color={state.hovered ? "#fff" : "#000"}
-                              size={16}
-                            />
-                          )}
-                        </Pressable>
-
-                        <Pressable
-                          style={(state: any) => [
-                            globalStyles.secondaryButton,
-                            {
-                              paddingVertical: 8,
-                              width: 40,
-                              backgroundColor: state.hovered
-                                ? "#ef4444"
-                                : "#fff",
-                              transitionProperty: "background-color",
-                              transitionDuration: "200ms",
-                              transitionTimingFunction: "ease-in-out",
-                            },
-                          ]}
-                        >
-                          {(state: any) => (
-                            <Trash2
-                              color={state.hovered ? "#fff" : "#000"}
-                              size={16}
-                            />
-                          )}
-                        </Pressable>
-                      </View>
-                    </View>
-
-                    {/* Barra de progresso da etapa no header */}
-                    <View style={styles.progressContainerEtapa}>
-                      <View
-                        style={[
-                          styles.progressBarEtapa,
-                          {
-                            width: `${calcularProgressoEtapa(etapa)}%`,
-                            backgroundColor: getProgressColor(
-                              calcularProgressoEtapa(etapa),
-                            ),
-                          },
-                        ]}
-                      />
-                    </View>
-
-                    <Text style={styles.progressTextEtapa}>
-                      {calcularProgressoEtapa(etapa).toFixed(0)}% da etapa
-                    </Text>
-                  </View>
-                </Pressable>
-
-                {/* Etapa expandida */}
-                {aberta && (
-                  <View style={styles.etapaContent}>
-                    {/* Objetivos */}
-                    {[...etapa.objetivos]
-                      .sort((a, b) => a.id - b.id)
-                      .map((obj) => {
-                        const objetivoEstaSendoEditado: boolean =
-                          obj.id === idObjetivoSendoEditado;
-
-                        const objetivoAberto = objetivosAbertos.includes(
-                          obj.id,
-                        );
-
-                        return (
-                          <Pressable // OBJETIVO ROW
-                            key={obj.id}
-                            style={(state: any) => [
-                              state.hovered && { backgroundColor: "#F1F5F9" },
-                              styles.objetivoRow,
-                              {
-                                transitionProperty: "background-color",
-                                transitionDuration: "200ms",
-                                transitionTimingFunction: "ease-in-out",
-                                gap: 20,
-                                flexDirection: "column",
-                              },
-                              objetivoEstaSendoEditado && {
-                                cursor: "default",
-                                borderColor: "rgba(61, 132, 246, 0.41)",
-                                borderStyle: "dashed",
-                                borderWidth: 2,
-                              },
-                            ]}
-                            onPress={() => {
-                              // CONCLUIR OBJETIVO
-                              if (!objetivoEstaSendoEditado)
-                                toggleObjetivo(etapa.id, obj.id);
+                          <View // ORDEM, TITULO E DESCRICAO
+                            style={{
+                              justifyContent: "space-between",
+                              flex: 1,
+                              gap: 4,
                             }}
                           >
-                            <View
-                              style={{
-                                flex: 1,
-                                flexDirection: "row",
-                                width: "100%",
-                                padding: 4,
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              {/* OBJETIVO */}
-                              {objetivoEstaSendoEditado ? (
-                                // FIX ME: EDITANDO OBJETIVO
-                                <View
+                            <View style={{ flexDirection: "row", gap: 8 }}>
+                              {aberta ? (
+                                <ChevronUp
+                                  color={"black"}
                                   style={{
-                                    flex: 1,
-                                    gap: 20,
-                                    paddingHorizontal: 12,
-                                    paddingTop: 12,
+                                    marginLeft: -8,
+                                    alignSelf: "flex-start",
                                   }}
-                                >
-                                  <View style={{ gap: 4 }}>
-                                    <Text style={styles.objetivoEditLabel}>
-                                      Título:
-                                    </Text>
-                                    <TextInput
-                                      style={[
-                                        globalStyles.input,
-                                        {
-                                          flex: 1,
-                                          backgroundColor: "white",
-                                          color: "black",
-                                        },
-                                      ]}
-                                      value={objetivoTituloEditInput}
-                                    />
-                                  </View>
-
-                                  <View style={{ gap: 4 }}>
-                                    <Text style={styles.objetivoEditLabel}>
-                                      Descrição (opcional):
-                                    </Text>
-                                    <TextInput
-                                      style={[
-                                        globalStyles.input,
-                                        {
-                                          flex: 1,
-                                          backgroundColor: "white",
-                                          color: "black",
-                                        },
-                                      ]}
-                                      value={objetivoDescricaoEditInput}
-                                    />
-                                  </View>
-                                </View>
+                                />
                               ) : (
+                                <ChevronDown
+                                  color={"black"}
+                                  style={{
+                                    marginLeft: -8,
+                                    alignSelf: "flex-start",
+                                  }}
+                                />
+                              )}
+                              <Text
+                                style={styles.etapaTitulo}
+                                selectable={false}
+                              >
+                                {etapa.ordem}. {etapa.titulo}
+                              </Text>
+                            </View>
+                            <Text
+                              style={styles.etapaDescricao}
+                              selectable={false}
+                            >
+                              {etapa.descricao != "" ? (
+                                etapa.descricao
+                              ) : (
+                                <i>Esta etapa ainda não possui descrição.</i>
+                              )}
+                            </Text>
+                          </View>
+
+                          <View // BOTOES DE ACAO
+                            style={{
+                              flexDirection: "row",
+                              justifyContent: "flex-end",
+                              gap: 12,
+                              alignItems: "flex-start",
+                            }}
+                          >
+                            <Pressable
+                              style={(state: any) => [
+                                globalStyles.secondaryButton,
+                                {
+                                  paddingVertical: 8,
+                                  width: 40,
+                                  backgroundColor: state.hovered
+                                    ? colors.lightBlue
+                                    : "#fff",
+                                  transitionProperty: "background-color",
+                                  transitionDuration: "200ms",
+                                  transitionTimingFunction: "ease-in-out",
+                                },
+                              ]}
+                            >
+                              {(state: any) => (
+                                <Pencil
+                                  color={state.hovered ? "#fff" : "#000"}
+                                  size={16}
+                                />
+                              )}
+                            </Pressable>
+
+                            <Pressable
+                              style={(state: any) => [
+                                globalStyles.secondaryButton,
+                                {
+                                  paddingVertical: 8,
+                                  width: 40,
+                                  backgroundColor: state.hovered
+                                    ? "#ef4444"
+                                    : "#fff",
+                                  transitionProperty: "background-color",
+                                  transitionDuration: "200ms",
+                                  transitionTimingFunction: "ease-in-out",
+                                },
+                              ]}
+                              onPress={() => openDeleteModal("etapa", etapa)}
+                            >
+                              {(state: any) => (
+                                <Trash2
+                                  color={state.hovered ? "#fff" : "#000"}
+                                  size={16}
+                                />
+                              )}
+                            </Pressable>
+                          </View>
+                        </View>
+
+                        {/* Barra de progresso da etapa no header */}
+                        <View style={styles.progressContainerEtapa}>
+                          <View
+                            style={[
+                              styles.progressBarEtapa,
+                              {
+                                width: `${calcularProgressoEtapa(etapa)}%`,
+                                backgroundColor: getProgressColor(
+                                  calcularProgressoEtapa(etapa),
+                                ),
+                              },
+                            ]}
+                          />
+                        </View>
+
+                        <Text style={styles.progressTextEtapa}>
+                          {calcularProgressoEtapa(etapa).toFixed(0)}% da etapa
+                        </Text>
+                      </View>
+                    </Pressable>
+
+                    {/* Etapa expandida */}
+                    {aberta && (
+                      <View style={styles.etapaContent}>
+                        {/* Objetivos */}
+                        {[...etapa.objetivos]
+                          .sort((a, b) => a.id - b.id)
+                          .map((obj) => {
+                            const objetivoEstaSendoEditado: boolean =
+                              obj.id === idObjetivoSendoEditado;
+
+                            const objetivoAberto = objetivosAbertos.includes(
+                              obj.id,
+                            );
+
+                            return (
+                              <Pressable // OBJETIVO ROW
+                                key={obj.id}
+                                style={(state: any) => [
+                                  state.hovered && {
+                                    backgroundColor: "#F1F5F9",
+                                  },
+                                  styles.objetivoRow,
+                                  {
+                                    transitionProperty: "background-color",
+                                    transitionDuration: "200ms",
+                                    transitionTimingFunction: "ease-in-out",
+                                    gap: 20,
+                                    flexDirection: "column",
+                                  },
+                                  objetivoEstaSendoEditado && [
+                                    {
+                                      cursor: "default",
+                                    },
+                                    globalStyles.slashedBorder,
+                                  ],
+                                ]}
+                                onPress={() => {
+                                  // CONCLUIR OBJETIVO
+                                  if (!objetivoEstaSendoEditado)
+                                    toggleObjetivo(etapa.id, obj.id);
+                                }}
+                              >
                                 <View
                                   style={{
                                     flex: 1,
                                     flexDirection: "row",
-                                    gap: 8,
+                                    width: "100%",
+                                    padding: 4,
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                   }}
                                 >
-                                  <View style={styles.check}>
-                                    {obj.concluido && (
-                                      <Check
-                                        color={colors.lightBlue}
-                                        style={{ backgroundColor: "white" }}
-                                      />
-                                    )}
-                                  </View>
-                                  <View style={{ gap: 4 }}>
-                                    <Text style={styles.objetivoTituloText}>
-                                      {obj.titulo}
-                                    </Text>
-                                    <Text style={styles.objetivoDescricaoText}>
-                                      {obj.descricao}
-                                    </Text>
-                                  </View>
-                                </View>
-                              )}
-
-                              {/* ROW BOTAO EDITAR/EXCLUIR */}
-                              {!objetivoEstaSendoEditado && (
-                                <View
-                                  style={{
-                                    flexDirection: "row",
-                                    gap: 8,
-                                    marginLeft: 8,
-                                    justifyContent: "flex-end",
-                                    marginRight: 8,
-                                    alignSelf: "flex-end",
-                                  }}
-                                >
-                                  {/* BOTAO EDITAR OBJETIVO */}
-                                  <Pressable
-                                    style={(state: any) => [
-                                      globalStyles.secondaryButton,
-                                      {
-                                        paddingVertical: 8,
-                                        width: 40,
-                                        height: 32,
-                                        backgroundColor: state.hovered
-                                          ? colors.lightBlue
-                                          : "#fff",
-                                        transitionProperty: "background-color",
-                                        transitionDuration: "200ms",
-                                        transitionTimingFunction: "ease-in-out",
-                                      },
-                                    ]}
-                                    onPress={() => {
-                                      setIdObjetivoSendoEditado(obj.id);
-                                      setObjetivoTituloEditInput(obj.titulo);
-                                      setObjetivoDescricaoEditInput(
-                                        obj.descricao,
-                                      );
-                                    }}
-                                  >
-                                    {(state: any) => (
-                                      <Pencil
-                                        color={state.hovered ? "#fff" : "#000"}
-                                        size={16}
-                                      />
-                                    )}
-                                  </Pressable>
-
-                                  {/* BOTAO DELETAR OBJETIVO */}
-                                  <Pressable
-                                    style={(state: any) => [
-                                      globalStyles.secondaryButton,
-                                      {
-                                        paddingVertical: 8,
-                                        width: 40,
-                                        height: 32,
-                                        backgroundColor: state.hovered
-                                          ? "#ef4444"
-                                          : "#fff",
-                                        transitionProperty: "background-color",
-                                        transitionDuration: "200ms",
-                                        transitionTimingFunction: "ease-in-out",
-                                      },
-                                    ]}
-                                    onPress={() => {
-                                      handleDeleteObjetivo(obj.id);
-                                    }}
-                                  >
-                                    {(state: any) => (
-                                      <Trash2
-                                        color={state.hovered ? "#fff" : "#000"}
-                                        size={16}
-                                      />
-                                    )}
-                                  </Pressable>
-
-                                  {objetivoAberto ? (
-                                    <Pressable
-                                      style={(state: any) => [
-                                        globalStyles.secondaryButton,
-                                        {
-                                          width: 40,
-                                          height: 32,
-                                          paddingHorizontal: 0,
-                                          backgroundColor: state.hovered
-                                            ? "#c9cccf"
-                                            : "#fff",
-                                          transitionProperty:
-                                            "background-color",
-                                          transitionDuration: "200ms",
-                                          transitionTimingFunction:
-                                            "ease-in-out",
-                                          overflow: "hidden",
-                                        },
-                                      ]}
-                                      onPress={() =>
-                                        toggleAbrirObjetivo(obj.id)
-                                      }
+                                  {/* OBJETIVO */}
+                                  {objetivoEstaSendoEditado ? (
+                                    // FIX ME: EDITANDO OBJETIVO
+                                    <View
+                                      style={{
+                                        flex: 1,
+                                        gap: 20,
+                                        paddingHorizontal: 12,
+                                        paddingTop: 12,
+                                      }}
                                     >
-                                      <ChevronUp color={"black"} />
-                                    </Pressable>
+                                      <View style={{ gap: 4 }}>
+                                        <Text style={styles.objetivoEditLabel}>
+                                          Título: *
+                                        </Text>
+                                        <TextInput
+                                          style={[
+                                            globalStyles.input,
+                                            {
+                                              flex: 1,
+                                              backgroundColor: "white",
+                                              color: "black",
+                                            },
+                                          ]}
+                                          value={objetivoTituloEditInput}
+                                        />
+                                      </View>
+
+                                      <View style={{ gap: 4 }}>
+                                        <Text style={styles.objetivoEditLabel}>
+                                          Descrição (opcional):
+                                        </Text>
+                                        <TextInput
+                                          style={[
+                                            globalStyles.input,
+                                            {
+                                              flex: 1,
+                                              backgroundColor: "white",
+                                              color: "black",
+                                            },
+                                          ]}
+                                          value={objetivoDescricaoEditInput}
+                                        />
+                                      </View>
+                                    </View>
                                   ) : (
-                                    <Pressable
-                                      style={(state: any) => [
-                                        globalStyles.secondaryButton,
-                                        {
-                                          width: 40,
-                                          height: 32,
-                                          paddingHorizontal: 0,
-                                          backgroundColor: state.hovered
-                                            ? "#c9cccf"
-                                            : "#fff",
-                                          transitionProperty:
-                                            "background-color",
-                                          transitionDuration: "200ms",
-                                          transitionTimingFunction:
-                                            "ease-in-out",
-                                          overflow: "hidden",
-                                        },
-                                      ]}
-                                      onPress={() =>
-                                        toggleAbrirObjetivo(obj.id)
-                                      }
+                                    <View
+                                      style={{
+                                        flex: 1,
+                                        flexDirection: "row",
+                                        gap: 8,
+                                      }}
                                     >
-                                      <ChevronDown color={"black"} />
-                                    </Pressable>
+                                      <View style={styles.check}>
+                                        {obj.concluido && (
+                                          <Check
+                                            color={colors.lightBlue}
+                                            style={{ backgroundColor: "white" }}
+                                          />
+                                        )}
+                                      </View>
+                                      <View style={{ gap: 4 }}>
+                                        <Text
+                                          style={styles.objetivoTituloText}
+                                          selectable={false}
+                                        >
+                                          {obj.titulo}
+                                        </Text>
+                                        <Text
+                                          style={styles.objetivoDescricaoText}
+                                          selectable={false}
+                                        >
+                                          {obj.descricao != "" ? (
+                                            obj.descricao
+                                          ) : (
+                                            <i>
+                                              Este objetivo ainda não possui
+                                              descrição.
+                                            </i>
+                                          )}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  )}
+
+                                  {/* ROW BOTAO EDITAR/EXCLUIR */}
+                                  {!objetivoEstaSendoEditado && (
+                                    <View
+                                      style={{
+                                        flexDirection: "row",
+                                        gap: 8,
+                                        marginLeft: 8,
+                                        justifyContent: "flex-end",
+                                        marginRight: 8,
+                                        alignSelf: "flex-end",
+                                      }}
+                                    >
+                                      {/* BOTAO EDITAR OBJETIVO */}
+                                      <Pressable
+                                        style={(state: any) => [
+                                          globalStyles.secondaryButton,
+                                          {
+                                            paddingVertical: 8,
+                                            width: 40,
+                                            height: 32,
+                                            backgroundColor: state.hovered
+                                              ? colors.lightBlue
+                                              : "#fff",
+                                            transitionProperty:
+                                              "background-color",
+                                            transitionDuration: "200ms",
+                                            transitionTimingFunction:
+                                              "ease-in-out",
+                                          },
+                                        ]}
+                                        onPress={() => {
+                                          setIdObjetivoSendoEditado(obj.id);
+                                          setObjetivoTituloEditInput(
+                                            obj.titulo,
+                                          );
+                                          setObjetivoDescricaoEditInput(
+                                            obj.descricao,
+                                          );
+                                        }}
+                                      >
+                                        {(state: any) => (
+                                          <Pencil
+                                            color={
+                                              state.hovered ? "#fff" : "#000"
+                                            }
+                                            size={16}
+                                          />
+                                        )}
+                                      </Pressable>
+
+                                      {/* BOTAO DELETAR OBJETIVO */}
+                                      <Pressable
+                                        style={(state: any) => [
+                                          globalStyles.secondaryButton,
+                                          {
+                                            paddingVertical: 8,
+                                            width: 40,
+                                            height: 32,
+                                            backgroundColor: state.hovered
+                                              ? "#ef4444"
+                                              : "#fff",
+                                            transitionProperty:
+                                              "background-color",
+                                            transitionDuration: "200ms",
+                                            transitionTimingFunction:
+                                              "ease-in-out",
+                                          },
+                                        ]}
+                                        onPress={() => {
+                                          handleDeleteObjetivo(obj.id);
+                                        }}
+                                      >
+                                        {(state: any) => (
+                                          <Trash2
+                                            color={
+                                              state.hovered ? "#fff" : "#000"
+                                            }
+                                            size={16}
+                                          />
+                                        )}
+                                      </Pressable>
+
+                                      {objetivoAberto ? (
+                                        <Pressable
+                                          style={(state: any) => [
+                                            globalStyles.secondaryButton,
+                                            {
+                                              width: 40,
+                                              height: 32,
+                                              paddingHorizontal: 0,
+                                              backgroundColor: state.hovered
+                                                ? "#c9cccf"
+                                                : "#fff",
+                                              transitionProperty:
+                                                "background-color",
+                                              transitionDuration: "200ms",
+                                              transitionTimingFunction:
+                                                "ease-in-out",
+                                              overflow: "hidden",
+                                            },
+                                          ]}
+                                          onPress={() =>
+                                            toggleAbrirObjetivo(obj.id)
+                                          }
+                                        >
+                                          <ChevronUp color={"black"} />
+                                        </Pressable>
+                                      ) : (
+                                        <Pressable
+                                          style={(state: any) => [
+                                            globalStyles.secondaryButton,
+                                            {
+                                              width: 40,
+                                              height: 32,
+                                              paddingHorizontal: 0,
+                                              backgroundColor: state.hovered
+                                                ? "#c9cccf"
+                                                : "#fff",
+                                              transitionProperty:
+                                                "background-color",
+                                              transitionDuration: "200ms",
+                                              transitionTimingFunction:
+                                                "ease-in-out",
+                                              overflow: "hidden",
+                                            },
+                                          ]}
+                                          onPress={() =>
+                                            toggleAbrirObjetivo(obj.id)
+                                          }
+                                        >
+                                          <ChevronDown color={"black"} />
+                                        </Pressable>
+                                      )}
+                                    </View>
                                   )}
                                 </View>
-                              )}
-                            </View>
 
-                            {/* ROW BOTAO SALVAR/CANCELAR */}
-                            {objetivoEstaSendoEditado && (
-                              <View
-                                style={{
-                                  flexDirection: "row",
-                                  gap: 8,
-                                  marginLeft: 8,
-                                  justifyContent: "flex-end",
-                                  marginRight: 8,
-                                  alignSelf: "flex-end",
-                                }}
-                              >
-                                {/* BOTAO SALVAR OBJETIVO */}
-                                <Pressable
-                                  style={(state: any) => [
-                                    globalStyles.secondaryButton,
-                                    {
-                                      paddingVertical: 8,
-                                      width: 40,
-                                      height: 32,
-                                      backgroundColor: state.hovered
-                                        ? colors.green
-                                        : "#fff",
-                                      transitionProperty: "background-color",
-                                      transitionDuration: "200ms",
-                                      transitionTimingFunction: "ease-in-out",
-                                    },
-                                  ]}
-                                  onPress={() => {
-                                    // FIX ME: ADCIONAR FUNCAO DE EDITAR OBJETIVO
-                                    setIdObjetivoSendoEditado(0);
-                                  }}
-                                >
-                                  {(state: any) => (
-                                    <Save
-                                      color={state.hovered ? "#fff" : "#000"}
-                                      size={16}
-                                    />
-                                  )}
-                                </Pressable>
-
-                                {/* BOTAO CANCELAR OBJETIVO */}
-                                <Pressable
-                                  style={(state: any) => [
-                                    globalStyles.secondaryButton,
-                                    {
-                                      paddingVertical: 8,
-                                      width: 40,
-                                      height: 32,
-                                      backgroundColor: state.hovered
-                                        ? "#ef4444"
-                                        : "#fff",
-                                      transitionProperty: "background-color",
-                                      transitionDuration: "200ms",
-                                      transitionTimingFunction: "ease-in-out",
-                                    },
-                                  ]}
-                                  onPress={() => {
-                                    setIdObjetivoSendoEditado(0);
-                                  }}
-                                >
-                                  {(state: any) => (
-                                    <CircleX
-                                      color={state.hovered ? "#fff" : "#000"}
-                                      size={16}
-                                    />
-                                  )}
-                                </Pressable>
-
-                                {objetivoAberto ? (
-                                  <Pressable
-                                    style={(state: any) => [
-                                      globalStyles.secondaryButton,
-                                      {
-                                        width: 40,
-                                        height: 32,
-                                        paddingHorizontal: 0,
-                                        backgroundColor: state.hovered
-                                          ? "#c9cccf"
-                                          : "#fff",
-                                        transitionProperty: "background-color",
-                                        transitionDuration: "200ms",
-                                        transitionTimingFunction: "ease-in-out",
-                                        overflow: "hidden",
-                                      },
-                                    ]}
-                                    onPress={() => toggleAbrirObjetivo(obj.id)}
-                                  >
-                                    <ChevronUp color={"black"} />
-                                  </Pressable>
-                                ) : (
-                                  <Pressable
-                                    style={(state: any) => [
-                                      globalStyles.secondaryButton,
-                                      {
-                                        width: 40,
-                                        height: 32,
-                                        paddingHorizontal: 0,
-                                        backgroundColor: state.hovered
-                                          ? "#c9cccf"
-                                          : "#fff",
-                                        transitionProperty: "background-color",
-                                        transitionDuration: "200ms",
-                                        transitionTimingFunction: "ease-in-out",
-                                        overflow: "hidden",
-                                      },
-                                    ]}
-                                    onPress={() => toggleAbrirObjetivo(obj.id)}
-                                  >
-                                    <ChevronDown color={"black"} />
-                                  </Pressable>
-                                )}
-                              </View>
-                            )}
-
-                            {objetivoAberto && (
-                              <Pressable
-                                style={{
-                                  width: "100%",
-                                  cursor: "default" as any,
-                                  paddingHorizontal: 12,
-                                  gap: 12,
-                                }}
-                                onPress={(e) => e.stopPropagation()}
-                              >
-                                <View
-                                  style={{
-                                    width: "100%",
-                                  }}
-                                >
-                                  <Text style={styles.objetivoTituloText}>
-                                    Anotações do objetivo
-                                  </Text>
-                                  <TextInput
-                                    style={[globalStyles.input, { margin: 12 }]}
-                                    numberOfLines={5}
-                                    multiline
-                                  />
-                                </View>
-
-                                <View
-                                  style={{
-                                    width: "100%",
-                                    cursor: "default" as any,
-                                  }}
-                                >
-                                  <Text style={styles.objetivoTituloText}>
-                                    Referências e Materiais
-                                  </Text>
+                                {/* ROW BOTAO SALVAR/CANCELAR */}
+                                {objetivoEstaSendoEditado && (
                                   <View
                                     style={{
                                       flexDirection: "row",
-                                      justifyContent: "space-between",
-                                      gap: 12,
-                                      height: 32,
-                                      margin: 12,
+                                      gap: 8,
+                                      marginLeft: 8,
+                                      justifyContent: "flex-end",
+                                      marginRight: 8,
+                                      alignSelf: "flex-end",
                                     }}
                                   >
+                                    {/* BOTAO SALVAR OBJETIVO */}
                                     <Pressable
-                                      style={globalStyles.secondaryButton}
+                                      style={(state: any) => [
+                                        globalStyles.secondaryButton,
+                                        {
+                                          paddingVertical: 8,
+                                          width: 40,
+                                          height: 32,
+                                          backgroundColor: state.hovered
+                                            ? colors.green
+                                            : "#fff",
+                                          transitionProperty:
+                                            "background-color",
+                                          transitionDuration: "200ms",
+                                          transitionTimingFunction:
+                                            "ease-in-out",
+                                        },
+                                      ]}
+                                      onPress={() => {
+                                        // FIX ME: ADCIONAR FUNCAO DE EDITAR OBJETIVO
+                                        setIdObjetivoSendoEditado(0);
+                                      }}
                                     >
-                                      <Newspaper color={"black"} size={16} />
-                                      <Text
-                                        style={globalStyles.secondaryButtonText}
-                                      >
-                                        Artigo
-                                      </Text>
-                                      <ChevronDown color={"black"} size={18} />
+                                      {(state: any) => (
+                                        <Save
+                                          color={
+                                            state.hovered ? "#fff" : "#000"
+                                          }
+                                          size={16}
+                                        />
+                                      )}
                                     </Pressable>
 
-                                    <TextInput
-                                      style={[globalStyles.input, { flex: 3 }]}
-                                      placeholder="Nome (ex: Artigo React)"
-                                      placeholderTextColor={
-                                        colors.placeholderTextColor
-                                      }
-                                    />
-
-                                    <TextInput
-                                      style={[globalStyles.input, { flex: 3 }]}
-                                      placeholder="URL (https://...)"
-                                      placeholderTextColor={
-                                        colors.placeholderTextColor
-                                      }
-                                    />
-
-                                    <TouchableOpacity
-                                      style={{
-                                        backgroundColor: colors.lightBlue,
-                                        paddingVertical: 8,
-                                        paddingHorizontal: 20,
-                                        borderRadius: 12,
+                                    {/* BOTAO CANCELAR OBJETIVO */}
+                                    <Pressable
+                                      style={(state: any) => [
+                                        globalStyles.secondaryButton,
+                                        {
+                                          paddingVertical: 8,
+                                          width: 40,
+                                          height: 32,
+                                          backgroundColor: state.hovered
+                                            ? "#ef4444"
+                                            : "#fff",
+                                          transitionProperty:
+                                            "background-color",
+                                          transitionDuration: "200ms",
+                                          transitionTimingFunction:
+                                            "ease-in-out",
+                                        },
+                                      ]}
+                                      onPress={() => {
+                                        setIdObjetivoSendoEditado(0);
                                       }}
-                                      onPress={() =>
-                                        addAnotacaoObjetivo(obj.id)
-                                      }
                                     >
-                                      <Text style={{ color: "white" }}>
-                                        + Add
-                                      </Text>
-                                    </TouchableOpacity>
-                                  </View>
+                                      {(state: any) => (
+                                        <CircleX
+                                          color={
+                                            state.hovered ? "#fff" : "#000"
+                                          }
+                                          size={16}
+                                        />
+                                      )}
+                                    </Pressable>
 
-                                  {obj.referencias &&
-                                  obj.referencias.length != 0 ? (
-                                    obj.referencias.map((referencia) => {
-                                      return (
-                                        <View
-                                          style={{
-                                            flexDirection: "row",
-                                            justifyContent: "space-between",
+                                    {objetivoAberto ? (
+                                      <Pressable
+                                        style={(state: any) => [
+                                          globalStyles.secondaryButton,
+                                          {
+                                            width: 40,
                                             height: 32,
-                                            marginHorizontal: 12,
-                                            paddingHorizontal: 12,
-                                            borderWidth: 1,
-                                            borderRadius: 12,
-                                            borderColor: "#DDD",
-                                            backgroundColor: "white"
-                                          }}
-                                        >
-                                          <View
-                                            style={{
-                                              flexDirection: "row",
-                                              gap: 4,
-                                              alignItems: "center",
-                                            }}
-                                          >
-                                            {getIconReferencia(referencia.tipo)}
-                                            <Text
-                                              style={
-                                                globalStyles.secondaryButtonText
-                                              }
-                                            >
-                                              {`[${referencia.tipo}] - ${referencia.nome} → `}
+                                            paddingHorizontal: 0,
+                                            backgroundColor: state.hovered
+                                              ? "#c9cccf"
+                                              : "#fff",
+                                            transitionProperty:
+                                              "background-color",
+                                            transitionDuration: "200ms",
+                                            transitionTimingFunction:
+                                              "ease-in-out",
+                                            overflow: "hidden",
+                                          },
+                                        ]}
+                                        onPress={() =>
+                                          toggleAbrirObjetivo(obj.id)
+                                        }
+                                      >
+                                        <ChevronUp color={"black"} />
+                                      </Pressable>
+                                    ) : (
+                                      <Pressable
+                                        style={(state: any) => [
+                                          globalStyles.secondaryButton,
+                                          {
+                                            width: 40,
+                                            height: 32,
+                                            paddingHorizontal: 0,
+                                            backgroundColor: state.hovered
+                                              ? "#c9cccf"
+                                              : "#fff",
+                                            transitionProperty:
+                                              "background-color",
+                                            transitionDuration: "200ms",
+                                            transitionTimingFunction:
+                                              "ease-in-out",
+                                            overflow: "hidden",
+                                          },
+                                        ]}
+                                        onPress={() =>
+                                          toggleAbrirObjetivo(obj.id)
+                                        }
+                                      >
+                                        <ChevronDown color={"black"} />
+                                      </Pressable>
+                                    )}
+                                  </View>
+                                )}
 
-                                              <Text
-                                                style={[
-                                                  {
-                                                    color: "blue",
-                                                  },
-                                                ]}
-                                                onPress={() => {
-                                                  if (referencia.url) {
-                                                    Linking.openURL(
-                                                      referencia.url,
-                                                    );
-                                                  }
+                                {objetivoAberto && (
+                                  <Pressable
+                                    style={{
+                                      width: "100%",
+                                      cursor: "default" as any,
+                                      paddingHorizontal: 12,
+                                      gap: 12,
+                                    }}
+                                    onPress={(e) => e.stopPropagation()}
+                                  >
+                                    <View
+                                      style={{
+                                        width: "100%",
+                                      }}
+                                    >
+                                      <Text style={styles.objetivoTituloText}>
+                                        Anotações do objetivo
+                                      </Text>
+                                      <TextInput
+                                        style={[
+                                          globalStyles.input,
+                                          { margin: 12 },
+                                        ]}
+                                        numberOfLines={5}
+                                        multiline
+                                        placeholder="Adicione aqui as anotações do objetivo!"
+                                        placeholderTextColor={
+                                          colors.placeholderTextColor
+                                        }
+                                      />
+                                    </View>
+
+                                    <View
+                                      style={{
+                                        width: "100%",
+                                        cursor: "default" as any,
+                                      }}
+                                    >
+                                      <Text style={styles.objetivoTituloText}>
+                                        Referências e Materiais
+                                      </Text>
+                                      <View
+                                        style={{
+                                          flexDirection: "row",
+                                          justifyContent: "space-between",
+                                          gap: 12,
+                                          height: 32,
+                                          margin: 12,
+                                        }}
+                                      >
+                                        <Pressable
+                                          style={globalStyles.secondaryButton}
+                                        >
+                                          <Newspaper
+                                            color={"black"}
+                                            size={16}
+                                          />
+                                          <Text
+                                            style={
+                                              globalStyles.secondaryButtonText
+                                            }
+                                          >
+                                            Artigo
+                                          </Text>
+                                          <ChevronDown
+                                            color={"black"}
+                                            size={18}
+                                          />
+                                        </Pressable>
+
+                                        <TextInput
+                                          style={[
+                                            globalStyles.input,
+                                            { flex: 3 },
+                                          ]}
+                                          placeholder="Nome (ex: Artigo React)"
+                                          placeholderTextColor={
+                                            colors.placeholderTextColor
+                                          }
+                                        />
+
+                                        <TextInput
+                                          style={[
+                                            globalStyles.input,
+                                            { flex: 3 },
+                                          ]}
+                                          placeholder="URL (https://...)"
+                                          placeholderTextColor={
+                                            colors.placeholderTextColor
+                                          }
+                                        />
+
+                                        <TouchableOpacity
+                                          style={{
+                                            backgroundColor: colors.lightBlue,
+                                            paddingVertical: 8,
+                                            paddingHorizontal: 20,
+                                            borderRadius: 12,
+                                          }}
+                                          onPress={() =>
+                                            addAnotacaoObjetivo(obj.id)
+                                          }
+                                        >
+                                          <Text style={{ color: "white" }}>
+                                            + Add
+                                          </Text>
+                                        </TouchableOpacity>
+                                      </View>
+
+                                      {obj.referencias &&
+                                      obj.referencias.length != 0 ? (
+                                        obj.referencias.map((referencia) => {
+                                          return (
+                                            <View
+                                              style={{
+                                                flexDirection: "row",
+                                                justifyContent: "space-between",
+                                                height: 32,
+                                                marginHorizontal: 12,
+                                                paddingHorizontal: 12,
+                                                borderWidth: 1,
+                                                borderRadius: 12,
+                                                borderColor: "#DDD",
+                                                backgroundColor: "white",
+                                              }}
+                                            >
+                                              <View
+                                                style={{
+                                                  flexDirection: "row",
+                                                  gap: 4,
+                                                  alignItems: "center",
                                                 }}
                                               >
-                                                <Link size={12}/>
-                                                {` ${referencia.url}`}
-                                              </Text>
-                                            </Text>
-                                          </View>
-                                        </View>
-                                      );
-                                    })
-                                  ) : (
-                                    <Text
-                                      style={{
-                                        color: colors.placeholderTextColor,
-                                      }}
-                                    >
-                                      Este objetivo não possui referências.
-                                    </Text>
-                                  )}
-                                </View>
+                                                {getIconReferencia(
+                                                  referencia.tipo,
+                                                )}
+                                                <Text
+                                                  style={
+                                                    globalStyles.secondaryButtonText
+                                                  }
+                                                >
+                                                  {`[${referencia.tipo}] - ${referencia.nome} → `}
+
+                                                  <Text
+                                                    style={[
+                                                      {
+                                                        color: "blue",
+                                                      },
+                                                    ]}
+                                                    onPress={() => {
+                                                      if (referencia.url) {
+                                                        Linking.openURL(
+                                                          referencia.url,
+                                                        );
+                                                      }
+                                                    }}
+                                                  >
+                                                    <Link size={12} />
+                                                    {` ${referencia.url}`}
+                                                  </Text>
+                                                </Text>
+                                              </View>
+                                            </View>
+                                          );
+                                        })
+                                      ) : (
+                                        <Text
+                                          style={{
+                                            color: colors.placeholderTextColor,
+                                          }}
+                                        >
+                                          Este objetivo ainda não possui
+                                          referências.
+                                        </Text>
+                                      )}
+                                    </View>
+                                  </Pressable>
+                                )}
                               </Pressable>
-                            )}
-                          </Pressable>
-                        );
-                      })}
+                            );
+                          })}
 
-                    {/* Adicionar novo objetivo */}
-                    {!etapaAdicionandoNovoObjetivo ? ( // NAO ESTA ADICIONANDO
-                      <View style={{ alignSelf: "flex-start" }}>
-                        <TouchableOpacity
-                          style={[
-                            globalStyles.secondaryButton,
-                            { flexDirection: "row", gap: 4 },
-                          ]}
-                          onPress={async () => {
-                            toggleAdicionandoObjetivo(etapa.id);
-                          }}
-                        >
-                          <Text
-                            style={[
-                              globalStyles.secondaryButtonText,
-                              { paddingVertical: 8 },
-                            ]}
+                        {/* Adicionar novo objetivo */}
+                        {!etapaAdicionandoNovoObjetivo ? ( // NAO ESTA ADICIONANDO
+                          <View style={{ alignSelf: "flex-start" }}>
+                            <TouchableOpacity
+                              style={[
+                                globalStyles.secondaryButton,
+                                { flexDirection: "row", gap: 4 },
+                              ]}
+                              onPress={async () => {
+                                toggleAdicionandoObjetivo(etapa.id);
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  globalStyles.secondaryButtonText,
+                                  { paddingVertical: 8 },
+                                ]}
+                              >
+                                + Adicionar novo objetivo
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          // ESTA ADICIONANDO
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              gap: 12,
+                              justifyContent: "space-between",
+                            }}
                           >
-                            + Adicionar novo objetivo
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      // ESTA ADICIONANDO
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          gap: 12,
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <View style={{ flex: 1, gap: 8 }}>
-                          {/* INPUT TITULO */}
-                          <TextInput
-                            style={globalStyles.input}
-                            placeholder="Digite o título do objetivo."
-                            placeholderTextColor={colors.placeholderTextColor}
-                            value={tituloNovoObjetivo[etapa.id] || ""}
-                            onChangeText={(text) =>
-                              setTituloNovoObjetivo((prev) => ({
-                                ...prev,
-                                [etapa.id]: text,
-                              }))
-                            }
-                          />
+                            <View style={{ flex: 1, gap: 8 }}>
+                              {/* INPUT TITULO */}
+                              <TextInput
+                                style={globalStyles.input}
+                                placeholder="Digite o título do objetivo."
+                                placeholderTextColor={
+                                  colors.placeholderTextColor
+                                }
+                                value={tituloNovoObjetivo[etapa.id] || ""}
+                                onChangeText={(text) =>
+                                  setTituloNovoObjetivo((prev) => ({
+                                    ...prev,
+                                    [etapa.id]: text,
+                                  }))
+                                }
+                              />
 
-                          {/* INPUT DESCRICAO */}
-                          <TextInput
-                            style={globalStyles.input}
-                            placeholder="Digite a descrição do objetivo."
-                            placeholderTextColor={colors.placeholderTextColor}
-                            value={descricaoNovoObjetivo[etapa.id] || ""}
-                            onChangeText={(text) =>
-                              setDescricaoNovoObjetivo((prev) => ({
-                                ...prev,
-                                [etapa.id]: text,
-                              }))
-                            }
-                          />
-                        </View>
+                              {/* INPUT DESCRICAO */}
+                              <TextInput
+                                style={globalStyles.input}
+                                placeholder="Digite a descrição do objetivo."
+                                placeholderTextColor={
+                                  colors.placeholderTextColor
+                                }
+                                value={descricaoNovoObjetivo[etapa.id] || ""}
+                                onChangeText={(text) =>
+                                  setDescricaoNovoObjetivo((prev) => ({
+                                    ...prev,
+                                    [etapa.id]: text,
+                                  }))
+                                }
+                              />
+                            </View>
 
-                        {/* Salvar */}
+                            {/* Salvar */}
+                            <MenuOptionButton
+                              containerStyle={[
+                                globalStyles.confirmButton,
+                                {
+                                  borderWidth: 0,
+                                  backgroundColor:
+                                    tituloNovoObjetivo[etapa.id] &&
+                                    descricaoNovoObjetivo[etapa.id]
+                                      ? colors.green
+                                      : "#555",
+                                  alignSelf: "flex-end",
+                                  width: 125,
+                                  opacity:
+                                    tituloNovoObjetivo[etapa.id] &&
+                                    descricaoNovoObjetivo[etapa.id]
+                                      ? 1
+                                      : 0.6,
+                                  marginTop: 0,
+                                  height: 36,
+                                },
+                              ]}
+                              enabled={
+                                !!tituloNovoObjetivo[etapa.id] &&
+                                !!descricaoNovoObjetivo[etapa.id]
+                              }
+                              label={
+                                <View style={{ flexDirection: "row", gap: 10 }}>
+                                  <Text
+                                    style={[
+                                      globalStyles.confirmButtonText,
+                                      { color: "white", marginTop: 3 },
+                                    ]}
+                                    selectable={false}
+                                  >
+                                    Salvar
+                                  </Text>
+
+                                  <Feather
+                                    name="check-circle"
+                                    size={24}
+                                    color="white"
+                                  />
+                                </View>
+                              }
+                              onPress={() => criarNovoObjetivo(etapa.id)}
+                            />
+
+                            {/* Cancelar */}
+                            <MenuOptionButton
+                              containerStyle={[
+                                globalStyles.confirmButton,
+                                {
+                                  borderWidth: 0,
+                                  backgroundColor: colors.red,
+                                  width: 125,
+                                  alignSelf: "flex-end",
+                                  height: 36,
+                                },
+                              ]}
+                              label={
+                                <View style={{ flexDirection: "row", gap: 10 }}>
+                                  <Text
+                                    style={[
+                                      globalStyles.confirmButtonText,
+                                      { color: "white" },
+                                    ]}
+                                    selectable={false}
+                                  >
+                                    Cancelar
+                                  </Text>
+                                </View>
+                              }
+                              onPress={() => {
+                                setTituloNovoObjetivo((prev) => ({
+                                  ...prev,
+                                  [etapa.id]: "",
+                                }));
+
+                                setDescricaoNovoObjetivo((prev) => ({
+                                  ...prev,
+                                  [etapa.id]: "",
+                                }));
+
+                                toggleAdicionandoObjetivo(etapa.id);
+                              }}
+                            />
+                          </View>
+                        )}
+
+                        {anotacoes[etapa.id] && (
+                          <Editor
+                            initialState={anotacoes[etapa.id].editorState}
+                            setPlainText={(text) => {
+                              atualizarAnotacao(etapa.id, {
+                                plainText: text,
+                              });
+                            }}
+                            setEditorState={(state) => {
+                              atualizarAnotacao(etapa.id, {
+                                editorState: state,
+                              });
+                            }}
+                          />
+                        )}
+
+                        {/* Salvar Anotação */}
                         <MenuOptionButton
                           containerStyle={[
                             globalStyles.confirmButton,
                             {
                               borderWidth: 0,
-                              backgroundColor:
-                                tituloNovoObjetivo[etapa.id] &&
-                                descricaoNovoObjetivo[etapa.id]
-                                  ? colors.green
-                                  : "#555",
+                              backgroundColor: alterado ? colors.green : "#555",
                               alignSelf: "flex-end",
-                              width: 125,
-                              opacity:
-                                tituloNovoObjetivo[etapa.id] &&
-                                descricaoNovoObjetivo[etapa.id]
-                                  ? 1
-                                  : 0.6,
-                              marginTop: 0,
-                              height: 36,
+                              width: 200,
+                              opacity: alterado ? 1 : 0.6,
                             },
                           ]}
-                          enabled={
-                            !!tituloNovoObjetivo[etapa.id] &&
-                            !!descricaoNovoObjetivo[etapa.id]
-                          }
+                          enabled={alterado}
                           label={
                             <View style={{ flexDirection: "row", gap: 10 }}>
                               <Text
@@ -1341,9 +1581,8 @@ export default function Visualizar() {
                                 ]}
                                 selectable={false}
                               >
-                                Salvar
+                                Salvar anotação
                               </Text>
-
                               <Feather
                                 name="check-circle"
                                 size={24}
@@ -1351,105 +1590,24 @@ export default function Visualizar() {
                               />
                             </View>
                           }
-                          onPress={() => criarNovoObjetivo(etapa.id)}
-                        />
-
-                        {/* Cancelar */}
-                        <MenuOptionButton
-                          containerStyle={[
-                            globalStyles.confirmButton,
-                            {
-                              borderWidth: 0,
-                              backgroundColor: colors.red,
-                              width: 125,
-                              alignSelf: "flex-end",
-                              height: 36,
-                            },
-                          ]}
-                          label={
-                            <View style={{ flexDirection: "row", gap: 10 }}>
-                              <Text
-                                style={[
-                                  globalStyles.confirmButtonText,
-                                  { color: "white" },
-                                ]}
-                                selectable={false}
-                              >
-                                Cancelar
-                              </Text>
-                            </View>
-                          }
-                          onPress={() => {
-                            setTituloNovoObjetivo((prev) => ({
-                              ...prev,
-                              [etapa.id]: "",
-                            }));
-
-                            setDescricaoNovoObjetivo((prev) => ({
-                              ...prev,
-                              [etapa.id]: "",
-                            }));
-
-                            toggleAdicionandoObjetivo(etapa.id);
-                          }}
+                          onPress={() => handleEditAnotacaoEtapa(etapa.id)}
                         />
                       </View>
                     )}
-
-                    {anotacoes[etapa.id] && (
-                      <Editor
-                        initialState={anotacoes[etapa.id].editorState}
-                        setPlainText={(text) => {
-                          atualizarAnotacao(etapa.id, {
-                            plainText: text,
-                          });
-                        }}
-                        setEditorState={(state) => {
-                          atualizarAnotacao(etapa.id, {
-                            editorState: state,
-                          });
-                        }}
-                      />
-                    )}
-
-                    {/* Salvar Anotação */}
-                    <MenuOptionButton
-                      containerStyle={[
-                        globalStyles.confirmButton,
-                        {
-                          borderWidth: 0,
-                          backgroundColor: alterado ? colors.green : "#555",
-                          alignSelf: "flex-end",
-                          width: 200,
-                          opacity: alterado ? 1 : 0.6,
-                        },
-                      ]}
-                      enabled={alterado}
-                      label={
-                        <View style={{ flexDirection: "row", gap: 10 }}>
-                          <Text
-                            style={[
-                              globalStyles.confirmButtonText,
-                              { color: "white", marginTop: 3 },
-                            ]}
-                            selectable={false}
-                          >
-                            Salvar anotação
-                          </Text>
-                          <Feather
-                            name="check-circle"
-                            size={24}
-                            color="white"
-                          />
-                        </View>
-                      }
-                      onPress={() => handleEditAnotacaoEtapa(etapa.id)}
-                    />
                   </View>
-                )}
-              </View>
-            );
-          })}
+                );
+              })
+          : !adicionandoEtapaModal && (
+              <Text
+                style={{
+                  fontStyle: "italic",
+                  fontSize: 16,
+                  color: colors.placeholderTextColor,
+                }}
+              >
+                Este Roadmap ainda não possui etapas.
+              </Text>
+            )}
       </View>
     </View>
   ) : null;
