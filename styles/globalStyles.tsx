@@ -91,12 +91,11 @@ export const getGlobalStyles = () =>
     secondaryButton: {
       backgroundColor: "white",
       flexDirection: "row",
-      borderRadius: 8,
+      borderRadius: 12,
       gap: 8,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 12,
-      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
     },
     secondaryButtonText: {
       color: "black",
@@ -149,5 +148,12 @@ export const getGlobalStyles = () =>
       borderColor: "rgba(61, 132, 246, 0.41)",
       borderStyle: "dashed",
       borderWidth: 2,
+    },
+    card: {
+      boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.2)",
+      justifyContent: "space-between",
+      gap: 12,
+      padding: 24,
+      borderRadius: 12,
     },
   });

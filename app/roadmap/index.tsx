@@ -15,25 +15,16 @@ import { BookOpen, Eye, Pencil, Trash2 } from "lucide-react-native";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import { router } from "expo-router";
 import { colors } from "../../styles/colors";
+import {
+  calcularProgresso,
+  getProgressColor,
+} from "../../utils/progressBarFunctions";
 
 export default function CriarRoadmap() {
-  const { usuario } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
 
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
-
-  const calcularProgresso = (roadmap: IRoadmap | null) => {
-    if (!roadmap) return 0;
-    const total = roadmap.etapas.flatMap((e) => e.objetivos).length;
-    const concluidos = roadmap.etapas
-      .flatMap((e) => e.objetivos)
-      .filter((o) => o.concluido).length;
-
-    if (total === 0) return 0;
-
-    return (concluidos / total) * 100;
-  };
 
   const getData = async () => {
     try {
@@ -173,6 +164,9 @@ export default function CriarRoadmap() {
                           styles.filledProgressBar,
                           {
                             width: `${calcularProgresso(roadmap)}%`,
+                            backgroundColor: getProgressColor(
+                              calcularProgresso(roadmap),
+                            ),
                           },
                         ]}
                       />
