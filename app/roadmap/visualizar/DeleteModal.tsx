@@ -1,17 +1,8 @@
-import { useState } from "react";
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Modal,
-  Pressable,
-} from "react-native";
+import { View, TouchableOpacity, Text, Modal, Pressable } from "react-native";
 import { useLoading } from "../../../context/providers/loading";
-import { ICriarEtapa, IEtapa } from "../../../interfaces/etapa";
-import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
-import { deleteRoadmap, updateRoadmap } from "../../../services/roadmap";
+import { IEtapa } from "../../../interfaces/etapa";
+import { IRoadmap } from "../../../interfaces/roadmap";
+import { deleteRoadmap } from "../../../services/roadmap";
 import { getGlobalStyles } from "../../../styles/globalStyles";
 import { router } from "expo-router";
 import { deleteEtapa } from "../../../services/etapa";

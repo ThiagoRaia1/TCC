@@ -91,12 +91,11 @@ export const getGlobalStyles = () =>
     secondaryButton: {
       backgroundColor: "white",
       flexDirection: "row",
-      borderRadius: 8,
+      borderRadius: 12,
       gap: 8,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 12,
-      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
     },
     secondaryButtonText: {
       color: "black",

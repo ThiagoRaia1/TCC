@@ -1,3 +1,4 @@
+//#region IMPORTS
 import { Feather } from "@expo/vector-icons";
 import {
   Pressable,
@@ -42,110 +43,78 @@ import {
 } from "lucide-react-native";
 import AdicionarEtapaModal from "./AdicionarEtapaModal";
 import DeleteModal from "./DeleteModal";
+import { ICriarObjetivo, IObjetivo } from "../../../interfaces/objetivo";
+import { ICriarReferencia } from "../../../interfaces/referencia";
+import {
+  getIconReferencia,
+  TipoReferencia,
+  tiposReferencia,
+} from "../../../utils/tiposReferencia";
+import {
+  calcularProgresso,
+  getProgressColor,
+} from "../../../utils/progressBarFunctions";
+//#endregion
 
 export default function Visualizar() {
   const { id } = useLocalSearchParams();
   const globalStyles = getGlobalStyles();
   const [roadmap, setRoadmap] = useState<IRoadmap>();
-  const [menuSelecionado, setMenuSelecionado] = useState<"Etapas" | "Quizzes">(
-    "Etapas",
-  );
-
   const { showLoading, hideLoading } = useLoading();
-  const [anotacoes, setAnotacoes] = useState<{
-    [etapaId: number]: {
-      plainText: string;
-      editorState: string | null;
-      alterado: boolean;
-    };
-  }>({});
 
-  const [objetivoTituloEditInput, setObjetivoTituloEditInput] =
-    useState<string>("");
-  const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] =
-    useState<string>("");
+  //#region TIPOS
+  type Menus = "Etapas" | "Quizzes";
+  const menus: Menus[] = ["Etapas", "Quizzes"];
+  const [menuSelecionado, setMenuSelecionado] = useState<Menus>(menus[0]);
 
-  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
-  const [tipoItemASerExcluido, setTipoItemASerExcluido] = useState<
-    "roadmap" | "etapa" | "objetivo"
-  >("roadmap");
-  const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
+  type TipoItem = "roadmap" | "etapa" | "objetivo";
+  const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
+  const [tipoItemASerExcluido, setTipoItemASerExcluido] = useState<TipoItem>(
+    tiposItem[0],
+  );
+  // TIPOS
+  //#endregion
 
+  //#region MODAIS
   const [adicionandoEtapaModal, setAdicionandoEtapaModal] =
     useState<boolean>(false);
 
-  const tiposReferencia = [
-    {
-      tipo: "Artigo",
-      icon: <ScrollText color={"black"} size={16} />,
-    },
-    {
-      tipo: "Vídeo",
-      icon: <Video color={"black"} size={16} />,
-    },
-    {
-      tipo: "Livro",
-      icon: <BookOpen color={"black"} size={16} />,
-    },
-    {
-      tipo: "Site",
-      icon: <Globe color={"black"} size={16} />,
-    },
-    {
-      tipo: "Notícia",
-      icon: <Newspaper color={"black"} size={16} />,
-    },
-    {
-      tipo: "Outro",
-      icon: <EllipsisVertical color={"black"} size={16} />,
-    },
-  ];
-
-  const getIconReferencia = (tipoReferencia?: string) => {
-    switch (tipoReferencia) {
-      case tiposReferencia[0].tipo:
-        return tiposReferencia[0].icon;
-
-      case tiposReferencia[1].tipo:
-        return tiposReferencia[1].icon;
-
-      case tiposReferencia[2].tipo:
-        return tiposReferencia[2].icon;
-
-      case tiposReferencia[3].tipo:
-        return tiposReferencia[3].icon;
-
-      case tiposReferencia[4].tipo:
-        return tiposReferencia[4].icon;
-
-      default:
-        return tiposReferencia[5].icon;
-    }
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const openDeleteModal = (tipoItem: TipoItem, etapa?: IEtapa) => {
+    if (etapa) setEtapaSelecionada(etapa);
+    setTipoItemASerExcluido(tipoItem);
+    setDeleteModalVisible(true);
   };
+  // MODAIS
+  //#endregion
 
+  //#region USE EFFECTS
   const getData = async () => {
-    showLoading();
-    const resultado = await getRoadmap(Number(id));
-    setRoadmap(resultado);
+    try {
+      showLoading();
+      const resultado = await getRoadmap(Number(id));
+      setRoadmap(resultado);
 
-    const anotacoesIniciais: {
-      [etapaId: number]: {
-        plainText: string;
-        editorState: string | null;
-        alterado: boolean;
-      };
-    } = {};
+      const anotacoesIniciais: {
+        [etapaId: number]: {
+          plainText: string;
+          editorState: string | null;
+        };
+      } = {};
 
-    resultado.etapas.forEach((etapa) => {
-      anotacoesIniciais[etapa.id] = {
-        plainText: etapa.anotacoes?.plainText ?? "",
-        editorState: etapa.anotacoes?.editorState ?? null,
-        alterado: false,
-      };
-    });
+      resultado.etapas.forEach((etapa) => {
+        anotacoesIniciais[etapa.id] = {
+          plainText: etapa.anotacoes?.plainText ?? "",
+          editorState: etapa.anotacoes?.editorState ?? null,
+        };
+      });
 
-    setAnotacoes(anotacoesIniciais);
-    hideLoading();
+      setAnotacoes(anotacoesIniciais);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
   };
 
   useEffect(() => {
@@ -161,6 +130,25 @@ export default function Visualizar() {
       getData();
     }
   }, [adicionandoEtapaModal]);
+  // USE EFFECTS
+  //#endregion
+
+  const [anotacoes, setAnotacoes] = useState<{
+    [etapaId: number]: {
+      plainText: string;
+      editorState: string | null;
+    };
+  }>({});
+  const [salvandoAnotacao, setSalvandoAnotacao] = useState<{
+    [etapaId: number]: boolean;
+  }>({});
+
+  const [objetivoTituloEditInput, setObjetivoTituloEditInput] =
+    useState<string>("");
+  const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] =
+    useState<string>("");
+
+  const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
 
   const [adicionandoObjetivo, setAdicionandoObjetivo] = useState<number[]>([]);
 
@@ -183,7 +171,6 @@ export default function Visualizar() {
       const atual = prev[etapaId] || {
         plainText: "",
         editorState: null,
-        alterado: false,
       };
 
       return {
@@ -191,7 +178,6 @@ export default function Visualizar() {
         [etapaId]: {
           plainText: dados.plainText ?? atual.plainText,
           editorState: dados.editorState ?? atual.editorState,
-          alterado: true,
         },
       };
     });
@@ -202,6 +188,21 @@ export default function Visualizar() {
 
   const [etapasAbertas, setEtapasAbertas] = useState<number[]>([]);
   const [objetivosAbertos, setObjetivosAbertos] = useState<number[]>([]);
+  const [tipoReferencia, setTipoReferencia] = useState<{
+    [objetivoId: number]: TipoReferencia;
+  }>({});
+
+  const [dropdownReferenciaAberto, setDropdownReferenciaAberto] = useState<
+    number | null
+  >(null);
+
+  const [nomeReferencia, setNomeReferencia] = useState<{
+    [objetivoId: number]: string;
+  }>({});
+
+  const [urlReferencia, setUrlReferencia] = useState<{
+    [objetivoId: number]: string;
+  }>({});
 
   const toggleEtapa = (id: number) => {
     setEtapasAbertas((prev) =>
@@ -216,23 +217,32 @@ export default function Visualizar() {
   };
 
   const handleEditAnotacaoEtapa = async (etapaId: number) => {
+    // Impede um segundo clique enquanto já está salvando
+    if (salvandoAnotacao[etapaId]) return;
+
+    const anotacao = anotacoes[etapaId];
+
+    if (!anotacao) return;
+
     try {
-      setAnotacoes((prev) => ({
+      // Desabilita o botão desta etapa
+      setSalvandoAnotacao((prev) => ({
         ...prev,
-        [etapaId]: {
-          ...prev[etapaId],
-          alterado: false,
-        },
+        [etapaId]: true,
       }));
 
-      const anotacao = anotacoes[etapaId];
-      if (!anotacao) return;
-      const atualizarAnotacao = await salvarAnotacao(etapaId, {
+      await salvarAnotacao(etapaId, {
         plainText: anotacao.plainText,
         editorState: anotacao.editorState,
       });
     } catch (erro: any) {
       alert(erro.message);
+    } finally {
+      // Libera o botão somente depois que terminar
+      setSalvandoAnotacao((prev) => ({
+        ...prev,
+        [etapaId]: false,
+      }));
     }
   };
 
@@ -252,7 +262,7 @@ export default function Visualizar() {
 
   const toggleObjetivo = async (etapaId: number, objetivoId: number) => {
     try {
-      // showLoading();
+      showLoading();
       if (!roadmap) return;
 
       const novoRoadmap = {
@@ -280,7 +290,7 @@ export default function Visualizar() {
     } catch (erro: any) {
       alert(erro.message);
     } finally {
-      // hideLoading();
+      hideLoading();
     }
   };
 
@@ -335,23 +345,66 @@ export default function Visualizar() {
     }
   };
 
-  const calcularProgresso = (roadmap: IRoadmap | null) => {
-    if (!roadmap) return 0;
-    const total = roadmap.etapas.flatMap((e) => e.objetivos).length;
-    const concluidos = roadmap.etapas
-      .flatMap((e) => e.objetivos)
-      .filter((o) => o.concluido).length;
-
-    if (total === 0) return 0;
-
-    return (concluidos / total) * 100;
-  };
-
   const porcentagemConclusaoRoadmap: number = roadmap
     ? calcularProgresso(roadmap)
     : 0;
 
-  const addAnotacaoObjetivo = (objetivoId: number) => {};
+  const addReferenciaObjetivo = async (objetivo: IObjetivo) => {
+    try {
+      showLoading();
+
+      const tipo = tipoReferencia[objetivo.id] || "Artigo";
+      const nome = nomeReferencia[objetivo.id]?.trim();
+      const url = urlReferencia[objetivo.id]?.trim() || "";
+
+      if (!nome) {
+        alert("Informe o nome da referência.");
+        return;
+      }
+
+      if (!roadmap) return;
+
+      const novaReferencia: ICriarReferencia = {
+        tipo,
+        nome,
+        url,
+      };
+
+      const objetivoAtualizado: ICriarObjetivo = {
+        ...objetivo,
+        referencias: [...(objetivo.referencias || []), novaReferencia],
+      };
+
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmap,
+        etapas: roadmap.etapas.map((etapa) => ({
+          ...etapa,
+          objetivos: etapa.objetivos.map((obj) =>
+            obj.id === objetivo.id ? objetivoAtualizado : obj,
+          ),
+        })),
+      };
+
+      const atualizado = await updateRoadmap(novoRoadmap);
+
+      setRoadmap(atualizado);
+
+      // Limpa os campos
+      setNomeReferencia((prev) => ({
+        ...prev,
+        [objetivo.id]: "",
+      }));
+
+      setUrlReferencia((prev) => ({
+        ...prev,
+        [objetivo.id]: "",
+      }));
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
 
   const handleEditObjetivo = async (objetivoId: number) => {
     try {
@@ -386,66 +439,13 @@ export default function Visualizar() {
     }
   };
 
-  const getProgressColor = (porcentagem: number) => {
-    if (porcentagem <= 25) {
-      // Vermelho -> Laranja
-      const t = porcentagem / 25;
-
-      const r = 239;
-      const g = Math.round(68 + t * (130 - 68));
-      const b = Math.round(68 - t * 68);
-
-      return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    if (porcentagem <= 50) {
-      // Laranja -> Amarelo
-      const t = (porcentagem - 25) / 25;
-
-      const r = Math.round(239 + t * (234 - 239));
-      const g = Math.round(130 + t * (179 - 130));
-      const b = Math.round(0 + t * 8);
-
-      return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    if (porcentagem <= 75) {
-      // Amarelo -> Verde claro
-      const t = (porcentagem - 50) / 25;
-
-      const r = Math.round(234 - t * (234 - 76));
-      const g = Math.round(179 + t * (175 - 179));
-      const b = Math.round(8 + t * (80 - 8));
-
-      return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    // Verde claro -> Verde
-    const t = (porcentagem - 75) / 25;
-
-    const r = Math.round(76 - t * 76);
-    const g = Math.round(175 + t * (175 - 175));
-    const b = Math.round(80 - t * 80);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  };
-
-  const openDeleteModal = (
-    tipoItem: "roadmap" | "etapa" | "objetivo",
-    etapa?: IEtapa,
-  ) => {
-    if (etapa) setEtapaSelecionada(etapa);
-    setTipoItemASerExcluido(tipoItem);
-    setDeleteModalVisible(true);
-  };
-
   return roadmap ? (
     <View
       style={{
-        maxWidth: 844,
+        maxWidth: 1350,
         paddingHorizontal: 8,
-        gap: 32,
-        paddingVertical: 40,
+        gap: 20,
+        paddingVertical: 20,
         width: "100%",
         alignSelf: "center",
         flex: 1,
@@ -502,6 +502,7 @@ export default function Visualizar() {
                   transitionProperty: "background-color",
                   transitionDuration: "200ms",
                   transitionTimingFunction: "ease-in-out",
+                  boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
                 },
               ]}
             >
@@ -529,9 +530,10 @@ export default function Visualizar() {
                   transitionProperty: "background-color",
                   transitionDuration: "200ms",
                   transitionTimingFunction: "ease-in-out",
+                  boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
                 },
               ]}
-              onPress={() => openDeleteModal("roadmap")}
+              onPress={() => openDeleteModal(tiposItem[0])}
             >
               {(state: any) => (
                 <>
@@ -583,10 +585,10 @@ export default function Visualizar() {
       {/* MENU */}
       <View style={styles.menu}>
         <TouchableOpacity
-          onPress={() => setMenuSelecionado("Etapas")}
+          onPress={() => setMenuSelecionado(menus[0])}
           style={[
             styles.menuItem,
-            menuSelecionado == "Etapas"
+            menuSelecionado == menus[0]
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -594,7 +596,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              menuSelecionado == "Etapas"
+              menuSelecionado == menus[0]
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -604,10 +606,10 @@ export default function Visualizar() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => setMenuSelecionado("Quizzes")}
+          onPress={() => setMenuSelecionado(menus[1])}
           style={[
             styles.menuItem,
-            menuSelecionado == "Quizzes"
+            menuSelecionado == menus[1]
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -615,7 +617,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              menuSelecionado == "Quizzes"
+              menuSelecionado == menus[1]
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -663,7 +665,6 @@ export default function Visualizar() {
               .map((etapa) => {
                 const aberta = etapasAbertas.includes(etapa.id);
                 const anotacaoEtapa = anotacoes[etapa.id];
-                const alterado = !!anotacaoEtapa?.alterado;
 
                 const etapaAdicionandoNovoObjetivo =
                   adicionandoObjetivo.includes(etapa.id);
@@ -727,7 +728,7 @@ export default function Visualizar() {
                             style={{
                               flexDirection: "row",
                               justifyContent: "flex-end",
-                              gap: 12,
+                              gap: 4,
                               alignItems: "flex-start",
                             }}
                           >
@@ -768,7 +769,9 @@ export default function Visualizar() {
                                   transitionTimingFunction: "ease-in-out",
                                 },
                               ]}
-                              onPress={() => openDeleteModal("etapa", etapa)}
+                              onPress={() =>
+                                openDeleteModal(tiposItem[1], etapa)
+                              }
                             >
                               {(state: any) => (
                                 <Trash2
@@ -1256,34 +1259,126 @@ export default function Visualizar() {
                                           margin: 12,
                                         }}
                                       >
-                                        <Pressable
-                                          style={globalStyles.secondaryButton}
-                                        >
-                                          <Newspaper
-                                            color={"black"}
-                                            size={16}
-                                          />
-                                          <Text
-                                            style={
-                                              globalStyles.secondaryButtonText
-                                            }
+                                        <View style={{ position: "relative" }}>
+                                          <Pressable
+                                            style={[
+                                              globalStyles.secondaryButton,
+                                              {
+                                                boxShadow:
+                                                  "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                                              },
+                                            ]}
+                                            onPress={() => {
+                                              setDropdownReferenciaAberto(
+                                                (prev) =>
+                                                  prev === obj.id
+                                                    ? null
+                                                    : obj.id,
+                                              );
+                                            }}
                                           >
-                                            Artigo
-                                          </Text>
-                                          <ChevronDown
-                                            color={"black"}
-                                            size={18}
-                                          />
-                                        </Pressable>
+                                            {getIconReferencia(
+                                              tipoReferencia[obj.id] ||
+                                                "Artigo",
+                                            )}
+
+                                            <Text
+                                              style={
+                                                globalStyles.secondaryButtonText
+                                              }
+                                            >
+                                              {tipoReferencia[obj.id] ||
+                                                "Artigo"}
+                                            </Text>
+
+                                            {dropdownReferenciaAberto ===
+                                            obj.id ? (
+                                              <ChevronUp
+                                                color="black"
+                                                size={18}
+                                              />
+                                            ) : (
+                                              <ChevronDown
+                                                color="black"
+                                                size={18}
+                                              />
+                                            )}
+                                          </Pressable>
+
+                                          {/* DROPDOWN */}
+                                          {dropdownReferenciaAberto ===
+                                            obj.id && (
+                                            <View
+                                              style={{
+                                                position: "absolute",
+                                                top: 38,
+                                                left: 0,
+                                                zIndex: 1000,
+                                                elevation: 10,
+                                                backgroundColor: "white",
+                                                borderRadius: 8,
+                                                borderWidth: 1,
+                                                borderColor: "#ddd",
+                                                width: 140,
+                                                overflow: "hidden",
+                                              }}
+                                            >
+                                              {tiposReferencia.map((item) => (
+                                                <Pressable
+                                                  key={item.tipo}
+                                                  style={({
+                                                    hovered,
+                                                  }: any) => ({
+                                                    flexDirection: "row",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 10,
+                                                    backgroundColor: hovered
+                                                      ? "#F1F5F9"
+                                                      : "white",
+                                                  })}
+                                                  onPress={() => {
+                                                    setTipoReferencia(
+                                                      (prev) => ({
+                                                        ...prev,
+                                                        [obj.id]: item.tipo,
+                                                      }),
+                                                    );
+
+                                                    setDropdownReferenciaAberto(
+                                                      null,
+                                                    );
+                                                  }}
+                                                >
+                                                  {item.icon}
+
+                                                  <Text
+                                                    style={{ color: "black" }}
+                                                  >
+                                                    {item.tipo}
+                                                  </Text>
+                                                </Pressable>
+                                              ))}
+                                            </View>
+                                          )}
+                                        </View>
 
                                         <TextInput
                                           style={[
                                             globalStyles.input,
                                             { flex: 3 },
                                           ]}
-                                          placeholder="Nome (ex: Artigo React)"
+                                          placeholder="Nome (ex: Artigo React)*"
                                           placeholderTextColor={
                                             colors.placeholderTextColor
+                                          }
+                                          value={nomeReferencia[obj.id] || ""}
+                                          onChangeText={(text) =>
+                                            setNomeReferencia((prev) => ({
+                                              ...prev,
+                                              [obj.id]: text,
+                                            }))
                                           }
                                         />
 
@@ -1296,6 +1391,13 @@ export default function Visualizar() {
                                           placeholderTextColor={
                                             colors.placeholderTextColor
                                           }
+                                          value={urlReferencia[obj.id] || ""}
+                                          onChangeText={(text) =>
+                                            setUrlReferencia((prev) => ({
+                                              ...prev,
+                                              [obj.id]: text,
+                                            }))
+                                          }
                                         />
 
                                         <TouchableOpacity
@@ -1306,7 +1408,7 @@ export default function Visualizar() {
                                             borderRadius: 12,
                                           }}
                                           onPress={() =>
-                                            addAnotacaoObjetivo(obj.id)
+                                            addReferenciaObjetivo(obj)
                                           }
                                         >
                                           <Text style={{ color: "white" }}>
@@ -1316,61 +1418,79 @@ export default function Visualizar() {
                                       </View>
 
                                       {obj.referencias &&
-                                      obj.referencias.length != 0 ? (
-                                        obj.referencias.map((referencia) => {
-                                          return (
-                                            <View
-                                              style={{
-                                                flexDirection: "row",
-                                                justifyContent: "space-between",
-                                                height: 32,
-                                                marginHorizontal: 12,
-                                                paddingHorizontal: 12,
-                                                borderWidth: 1,
-                                                borderRadius: 12,
-                                                borderColor: "#DDD",
-                                                backgroundColor: "white",
-                                              }}
-                                            >
-                                              <View
-                                                style={{
-                                                  flexDirection: "row",
-                                                  gap: 4,
-                                                  alignItems: "center",
-                                                }}
-                                              >
-                                                {getIconReferencia(
-                                                  referencia.tipo,
-                                                )}
-                                                <Text
-                                                  style={
-                                                    globalStyles.secondaryButtonText
-                                                  }
+                                      obj.referencias.length !== 0 ? (
+                                        <View
+                                          style={{
+                                            borderWidth: 1,
+                                            borderRadius: 12,
+                                            borderColor: "#ccc",
+                                            backgroundColor: "#f8f8f8",
+                                            padding: 12,
+                                            marginHorizontal: 12,
+                                            gap: 8,
+                                          }}
+                                        >
+                                          {obj.referencias.map(
+                                            (referencia, index) => {
+                                              return (
+                                                <View
+                                                  key={referencia.id}
+                                                  style={{
+                                                    flexDirection: "row",
+                                                    justifyContent:
+                                                      "space-between",
+                                                    height: 32,
+                                                    borderBottomWidth:
+                                                      index ===
+                                                      obj.referencias!.length -
+                                                        1
+                                                        ? 0
+                                                        : 2,
+                                                    borderBottomColor: "#ddd",
+                                                    paddingVertical: 12,
+                                                    alignItems: "center",
+                                                  }}
                                                 >
-                                                  {`[${referencia.tipo}] - ${referencia.nome} → `}
-
-                                                  <Text
-                                                    style={[
-                                                      {
-                                                        color: "blue",
-                                                      },
-                                                    ]}
-                                                    onPress={() => {
-                                                      if (referencia.url) {
-                                                        Linking.openURL(
-                                                          referencia.url,
-                                                        );
-                                                      }
+                                                  <View
+                                                    style={{
+                                                      flexDirection: "row",
+                                                      gap: 4,
+                                                      alignItems: "center",
                                                     }}
                                                   >
-                                                    <Link size={12} />
-                                                    {` ${referencia.url}`}
-                                                  </Text>
-                                                </Text>
-                                              </View>
-                                            </View>
-                                          );
-                                        })
+                                                    {getIconReferencia(
+                                                      referencia.tipo,
+                                                    )}
+
+                                                    <Text
+                                                      style={
+                                                        globalStyles.secondaryButtonText
+                                                      }
+                                                    >
+                                                      {`[${referencia.tipo}] - ${referencia.nome} → `}
+
+                                                      <Text
+                                                        style={{
+                                                          color: "blue",
+                                                        }}
+                                                        onPress={() => {
+                                                          if (referencia.url) {
+                                                            Linking.openURL(
+                                                              referencia.url,
+                                                            );
+                                                          }
+                                                        }}
+                                                      >
+                                                        <Link size={12} />
+                                                        {` ${referencia.url}`}
+                                                      </Text>
+                                                    </Text>
+                                                  </View>
+                                                </View>
+                                              );
+                                            },
+                                          )}
+                                        </View>
                                       ) : (
                                         <Text
                                           style={{
@@ -1565,29 +1685,46 @@ export default function Visualizar() {
                             globalStyles.confirmButton,
                             {
                               borderWidth: 0,
-                              backgroundColor: alterado ? colors.green : "#555",
+                              backgroundColor: salvandoAnotacao[etapa.id]
+                                ? "#555"
+                                : colors.green,
                               alignSelf: "flex-end",
                               width: 200,
-                              opacity: alterado ? 1 : 0.6,
+                              opacity: salvandoAnotacao[etapa.id] ? 0.6 : 1,
                             },
                           ]}
-                          enabled={alterado}
+                          enabled={!salvandoAnotacao[etapa.id]}
                           label={
                             <View style={{ flexDirection: "row", gap: 10 }}>
                               <Text
                                 style={[
                                   globalStyles.confirmButtonText,
-                                  { color: "white", marginTop: 3 },
+                                  {
+                                    color: "white",
+                                    marginTop: 3,
+                                    fontWeight: 600,
+                                  },
                                 ]}
                                 selectable={false}
                               >
-                                Salvar anotação
+                                {salvandoAnotacao[etapa.id]
+                                  ? "Salvando..."
+                                  : "Salvar anotação"}
                               </Text>
-                              <Feather
-                                name="check-circle"
-                                size={24}
-                                color="white"
-                              />
+
+                              {salvandoAnotacao[etapa.id] ? (
+                                <Feather
+                                  name="loader"
+                                  size={24}
+                                  color="white"
+                                />
+                              ) : (
+                                <Feather
+                                  name="check-circle"
+                                  size={24}
+                                  color="white"
+                                />
+                              )}
                             </View>
                           }
                           onPress={() => handleEditAnotacaoEtapa(etapa.id)}
@@ -1753,8 +1890,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 8,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
   },
 
   objetivoTituloText: {
