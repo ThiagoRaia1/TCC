@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 45,
-    justifyContent: "center",
   },
 
   roadmapCard: {

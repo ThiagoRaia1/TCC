@@ -15,7 +15,6 @@ export default function Layout() {
           <Header />
           <ScrollView
             contentContainerStyle={{
-              justifyContent: "center",
               flexGrow: 1,
             }}
           >

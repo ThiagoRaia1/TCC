@@ -19,6 +19,7 @@ import { useState } from "react";
 import { TipoItem, tiposItem } from "./[id]";
 import { salvarAnotacao, updateRoadmap } from "../../../services/roadmap";
 import { Feather } from "@expo/vector-icons";
+import { useLoading } from "../../../context/providers/loading";
 
 type EtapaCardProps = {
   etapa: IEtapa;
@@ -50,6 +51,7 @@ export default function EtapaCard({
   setAnotacoes,
 }: EtapaCardProps) {
   const globalStyles = getGlobalStyles();
+  const { showLoading, hideLoading } = useLoading();
 
   const toggleEtapa = (id: number) => {
     setEtapasAbertas((prev) =>
@@ -194,28 +196,126 @@ export default function EtapaCard({
     }
   };
 
+  const [editandoEtapa, setEditandoEtapa] = useState(false);
+  const [tituloEtapa, setTituloEtapa] = useState(etapa.titulo);
+  const [descricaoEtapa, setDescricaoEtapa] = useState(etapa.descricao);
+
+  const editarEtapa = async () => {
+    try {
+      showLoading();
+      const titulo = tituloEtapa.trim();
+      const descricao = descricaoEtapa.trim();
+
+      if (!titulo) {
+        alert("O título da etapa não pode ficar vazio.");
+        return;
+      }
+
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmap,
+
+        etapas: roadmap.etapas.map((e) => {
+          if (e.id !== etapa.id) return e;
+
+          return {
+            ...e,
+            titulo,
+            descricao,
+          };
+        }),
+      };
+
+      const atualizado = await updateRoadmap(novoRoadmap);
+
+      setRoadmap(atualizado);
+
+      setEditandoEtapa(false);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
   return (
     <View key={etapa.id} style={globalStyles.card}>
       {/* Header da etapa */}
       <Pressable
         style={styles.etapaHeader}
-        onPress={() => toggleEtapa(etapa.id)}
+        onPress={(e) => {
+          toggleEtapa(etapa.id);
+          e.stopPropagation();
+        }}
       >
         <View style={{ flex: 1, gap: 8 }}>
           <View // ORDEM TITULO DESCRICAO - BOTOES DE ACAO
             style={{ flexDirection: "row", gap: 20 }}
           >
-            <View // ORDEM, TITULO E DESCRICAO
-              style={{
-                justifyContent: "space-between",
-                flex: 1,
-                gap: 4,
-              }}
-            >
-              <View style={{ flexDirection: "row", gap: 8 }}>
+            {editandoEtapa ? (
+              <View style={{ gap: 8, flex: 1 }}>
+                <Text style={globalStyles.title}>Título</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  value={tituloEtapa}
+                  onChangeText={setTituloEtapa}
+                  placeholder="Título da etapa"
+                  placeholderTextColor={colors.placeholderTextColor}
+                />
+
+                <Text style={globalStyles.title}>Descrição</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  value={descricaoEtapa}
+                  onChangeText={setDescricaoEtapa}
+                  placeholder="Descrição da etapa"
+                  placeholderTextColor={colors.placeholderTextColor}
+                  multiline
+                  numberOfLines={5}
+                />
+
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <TouchableOpacity
+                    style={[
+                      globalStyles.confirmButton,
+                      {
+                        backgroundColor: colors.green,
+                        paddingHorizontal: 16,
+                      },
+                    ]}
+                    onPress={editarEtapa}
+                  >
+                    <Text style={globalStyles.confirmButtonText}>Salvar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      globalStyles.confirmButton,
+                      {
+                        backgroundColor: colors.red,
+                        paddingHorizontal: 16,
+                      },
+                    ]}
+                    onPress={() => {
+                      setTituloEtapa(etapa.titulo);
+                      setDescricaoEtapa(etapa.descricao);
+                      setEditandoEtapa(false);
+                    }}
+                  >
+                    <Text style={globalStyles.confirmButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  gap: 8,
+                }}
+              >
                 {aberta ? (
                   <ChevronUp
-                    color={"black"}
+                    color="black"
                     style={{
                       marginLeft: -8,
                       alignSelf: "flex-start",
@@ -223,71 +323,85 @@ export default function EtapaCard({
                   />
                 ) : (
                   <ChevronDown
-                    color={"black"}
+                    color="black"
                     style={{
                       marginLeft: -8,
                       alignSelf: "flex-start",
                     }}
                   />
                 )}
-                <Text style={styles.etapaTitulo} selectable={false}>
-                  {etapa.ordem}. {etapa.titulo}
-                </Text>
+                {/* TITULO, DESCRICAO */}
+                <View style={{ flexDirection: "row", gap: 8, flex: 1 }}>
+                  <View>
+                    <Text style={styles.etapaTitulo} selectable={false}>
+                      {etapa.ordem}. {etapa.titulo}
+                    </Text>
+
+                    <Text style={styles.etapaDescricao} selectable={false}>
+                      {etapa.descricao !== "" ? (
+                        etapa.descricao
+                      ) : (
+                        <i>Esta etapa ainda não possui descrição.</i>
+                      )}
+                    </Text>
+                  </View>
+                </View>
+
+                <View // BOTOES DE ACAO
+                  style={{
+                    flexDirection: "row",
+                    gap: 4,
+                    alignItems: "center",
+                  }}
+                >
+                  <Pressable
+                    style={(state: any) => [
+                      globalStyles.secondaryButton,
+                      {
+                        paddingVertical: 8,
+                        width: 40,
+                        backgroundColor: state.hovered
+                          ? colors.lightBlue
+                          : "#fff",
+                        transitionProperty: "background-color",
+                        transitionDuration: "200ms",
+                        transitionTimingFunction: "ease-in-out",
+                      },
+                    ]}
+                    onPress={() => setEditandoEtapa(true)}
+                  >
+                    {(state: any) => (
+                      <Pencil
+                        color={state.hovered ? "#fff" : "#000"}
+                        size={16}
+                      />
+                    )}
+                  </Pressable>
+
+                  <Pressable
+                    style={(state: any) => [
+                      globalStyles.secondaryButton,
+                      {
+                        paddingVertical: 8,
+                        width: 40,
+                        backgroundColor: state.hovered ? "#ef4444" : "#fff",
+                        transitionProperty: "background-color",
+                        transitionDuration: "200ms",
+                        transitionTimingFunction: "ease-in-out",
+                      },
+                    ]}
+                    onPress={() => openDeleteModal(tiposItem[1], etapa)}
+                  >
+                    {(state: any) => (
+                      <Trash2
+                        color={state.hovered ? "#fff" : "#000"}
+                        size={16}
+                      />
+                    )}
+                  </Pressable>
+                </View>
               </View>
-              <Text style={styles.etapaDescricao} selectable={false}>
-                {etapa.descricao != "" ? (
-                  etapa.descricao
-                ) : (
-                  <i>Esta etapa ainda não possui descrição.</i>
-                )}
-              </Text>
-            </View>
-
-            <View // BOTOES DE ACAO
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                gap: 4,
-                alignItems: "flex-start",
-              }}
-            >
-              <Pressable
-                style={(state: any) => [
-                  globalStyles.secondaryButton,
-                  {
-                    paddingVertical: 8,
-                    width: 40,
-                    backgroundColor: state.hovered ? colors.lightBlue : "#fff",
-                    transitionProperty: "background-color",
-                    transitionDuration: "200ms",
-                    transitionTimingFunction: "ease-in-out",
-                  },
-                ]}
-              >
-                {(state: any) => (
-                  <Pencil color={state.hovered ? "#fff" : "#000"} size={16} />
-                )}
-              </Pressable>
-
-              <Pressable
-                style={(state: any) => [
-                  globalStyles.secondaryButton,
-                  {
-                    paddingVertical: 8,
-                    width: 40,
-                    backgroundColor: state.hovered ? "#ef4444" : "#fff",
-                    transitionProperty: "background-color",
-                    transitionDuration: "200ms",
-                    transitionTimingFunction: "ease-in-out",
-                  },
-                ]}
-                onPress={() => openDeleteModal(tiposItem[1], etapa)}
-              >
-                {(state: any) => (
-                  <Trash2 color={state.hovered ? "#fff" : "#000"} size={16} />
-                )}
-              </Pressable>
-            </View>
+            )}
           </View>
 
           {/* Barra de progresso da etapa no header */}

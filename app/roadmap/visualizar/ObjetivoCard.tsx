@@ -223,6 +223,7 @@ export default function ObjetivoCard({
           transitionTimingFunction: "ease-in-out",
           gap: 20,
           flexDirection: "column",
+          zIndex: dropdownReferenciaAberto === objetivo.id ? 1000 : 1,
         },
         objetivoEstaSendoEditado && [
           {
@@ -558,6 +559,7 @@ export default function ObjetivoCard({
             <Text style={styles.objetivoTituloText}>
               Referências e Materiais
             </Text>
+
             <View
               style={{
                 flexDirection: "row",
@@ -565,6 +567,7 @@ export default function ObjetivoCard({
                 gap: 12,
                 height: 32,
                 margin: 12,
+                zIndex: 2,
               }}
             >
               <View style={{ position: "relative" }}>
@@ -573,6 +576,9 @@ export default function ObjetivoCard({
                     globalStyles.secondaryButton,
                     {
                       boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                      height: "100%",
+                      width: 140,
+                      zIndex: 1,
                     },
                   ]}
                   onPress={() => {
@@ -583,7 +589,10 @@ export default function ObjetivoCard({
                 >
                   {getIconReferencia(tipoReferencia[objetivo.id] || "Artigo")}
 
-                  <Text style={globalStyles.secondaryButtonText}>
+                  <Text
+                    style={globalStyles.secondaryButtonText}
+                    selectable={false}
+                  >
                     {tipoReferencia[objetivo.id] || "Artigo"}
                   </Text>
 
@@ -599,18 +608,26 @@ export default function ObjetivoCard({
                   <View
                     style={{
                       position: "absolute",
-                      top: 38,
                       left: 0,
-                      zIndex: 1000,
-                      elevation: 10,
                       backgroundColor: "white",
-                      borderRadius: 8,
+                      borderRadius: 12,
                       borderWidth: 1,
                       borderColor: "#ddd",
-                      width: 140,
+                      width: "100%",
                       overflow: "hidden",
                     }}
                   >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        backgroundColor: "white",
+                        height: 30,
+                      }}
+                    />
                     {tiposReferencia.map((item) => (
                       <Pressable
                         key={item.tipo}
@@ -633,7 +650,9 @@ export default function ObjetivoCard({
                       >
                         {item.icon}
 
-                        <Text style={{ color: "black" }}>{item.tipo}</Text>
+                        <Text style={{ color: "black" }} selectable={false}>
+                          {item.tipo}
+                        </Text>
                       </Pressable>
                     ))}
                   </View>

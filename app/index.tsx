@@ -1,15 +1,13 @@
-import React, { useActionState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   ImageBackground,
 } from "react-native";
 import { router } from "expo-router";
 import { colors } from "../styles/colors";
-import Header from "./_components/Header";
 import {
   Target,
   Zap,
@@ -30,75 +28,74 @@ export default function LandingPage() {
 
   return (
     <>
-      <ScrollView>
-        {/* HERO */}
-        <View style={styles.hero}>
-          <ImageBackground
-            source={{
-              uri: "https://images.unsplash.com/photo-1686061592689-312bbfb5c055",
-            }}
-            style={styles.heroBackgroundImage}
-          >
-            <View style={styles.overlay} />
-            <View style={styles.heroContent}>
-              <Text style={styles.title}>
-                Mapeie sua jornada{"\n"}
-                no aprendizado
-              </Text>
+      {/* HERO */}
+      <View style={styles.hero}>
+        <ImageBackground
+          source={{
+            uri: "https://images.unsplash.com/photo-1686061592689-312bbfb5c055",
+          }}
+          style={styles.heroBackgroundImage}
+        >
+          <View style={styles.overlay} />
+          <View style={styles.heroContent}>
+            <Text style={styles.title}>
+              Mapeie sua jornada{"\n"}
+              no aprendizado
+            </Text>
 
-              <Text style={styles.subtitle}>
-                Crie Roadmaps de estudo personalizados, rastreie seu progresso e
-                {"\n"}
-                conquiste seus objetivos de aprendizado com um caminho claro.
-              </Text>
+            <Text style={styles.subtitle}>
+              Crie Roadmaps de estudo personalizados, rastreie seu progresso e
+              {"\n"}
+              conquiste seus objetivos de aprendizado com um caminho claro.
+            </Text>
 
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={globalStyles.buttonWithIcon}
-                  onPress={() => router.push({ pathname: "/auth" })}
-                >
-                  <Text style={globalStyles.buttonWithIconText}>
-                    Começar a aprender
-                  </Text>
-                  <ArrowRight size={20} style={{ marginTop: 4 }} />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={globalStyles.buttonWithIcon}
+                onPress={() => router.push({ pathname: "/auth" })}
+              >
+                <Text style={globalStyles.buttonWithIconText}>
+                  Começar a aprender
+                </Text>
+                <ArrowRight size={20} style={{ marginTop: 4 }} />
+              </TouchableOpacity>
             </View>
-          </ImageBackground>
+          </View>
+        </ImageBackground>
+      </View>
+
+      {/* FEATURES */}
+      <View style={styles.featuresContainer}>
+        <View style={styles.featuresRow}>
+          <Feature
+            icon={<Zap />}
+            title="Respostas Instantâneas"
+            description="Tire dúvidas em segundos com explicações claras e diretas ao ponto."
+          />
+
+          <Feature
+            icon={<Target />}
+            title="Crie roadmaps personalizados"
+            description="Crie planos de aprendizagem personalizados, adaptados aos seus objetivos e ritmo"
+          />
         </View>
 
-        {/* FEATURES */}
-        <View style={styles.featuresContainer}>
-          <View style={styles.featuresRow}>
-            <Feature
-              icon={<Zap />}
-              title="Respostas Instantâneas"
-              description="Tire dúvidas em segundos com explicações claras e diretas ao ponto."
-            />
+        <View style={styles.featuresRow}>
+          <Feature
+            icon={<TrendingUp />}
+            title="Rastreie seu progresso"
+            description="Monitore as taxas de conclusão e mantenha-se motivado com indicadores visuais de progresso"
+          />
 
-            <Feature
-              icon={<Target />}
-              title="Crie roadmaps personalizados"
-              description="Crie planos de aprendizagem personalizados, adaptados aos seus objetivos e ritmo"
-            />
-          </View>
+          <Feature
+            icon={<CheckCircle2 />}
+            title="Gerencie seus passos"
+            description="Divida tópicos complexos em etapas gerenciáveis ​​e marque-as conforme for aprendendo"
+          />
+        </View>
 
-          <View style={styles.featuresRow}>
-            <Feature
-              icon={<TrendingUp />}
-              title="Rastreie seu progresso"
-              description="Monitore as taxas de conclusão e mantenha-se motivado com indicadores visuais de progresso"
-            />
-
-            <Feature
-              icon={<CheckCircle2 />}
-              title="Gerencie seus passos"
-              description="Divida tópicos complexos em etapas gerenciáveis ​​e marque-as conforme for aprendendo"
-            />
-          </View>
-
-          {/* CALL TO ACTION */}
-          {/* <View style={styles.ctaSection}>
+        {/* CALL TO ACTION */}
+        {/* <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>
             Comece a evoluir seus estudos hoje mesmo!
           </Text>
@@ -110,8 +107,7 @@ export default function LandingPage() {
             <Text style={styles.ctaButtonText}>Criar Conta Gratuita</Text>
           </TouchableOpacity>
         </View> */}
-        </View>
-      </ScrollView>
+      </View>
     </>
   );
 }
