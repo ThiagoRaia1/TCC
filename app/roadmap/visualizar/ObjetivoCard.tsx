@@ -30,7 +30,7 @@ import { updateRoadmap } from "../../../services/roadmap";
 import { useLoading } from "../../../context/providers/loading";
 import { ICriarReferencia } from "../../../interfaces/referencia";
 import { IUpdateRoadmap, IRoadmap } from "../../../interfaces/roadmap";
-import { deleteObjetivo } from "../../../services/objetivo";
+import { deleteObjetivo, updateObjetivo } from "../../../services/objetivo";
 
 type ObjetivoCardProps = {
   objetivo: IObjetivo;
@@ -48,10 +48,12 @@ export default function ObjetivoCard({
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
 
-  const [objetivoTituloEditInput, setObjetivoTituloEditInput] =
-    useState<string>("");
-  const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] =
-    useState<string>("");
+  const [objetivoTituloEditInput, setObjetivoTituloEditInput] = useState<{
+    [objetivoId: number]: string;
+  }>({});
+  const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] = useState<{
+    [objetivoId: number]: string;
+  }>({});
 
   const [idObjetivoSendoEditado, setIdObjetivoSendoEditado] =
     useState<number>();
@@ -172,8 +174,57 @@ export default function ObjetivoCard({
 
   const handleEditObjetivo = async (objetivoId: number) => {
     try {
+      showLoading();
+
+      const titulo = objetivoTituloEditInput[objetivoId]?.trim();
+      const descricao = objetivoDescricaoEditInput[objetivoId]?.trim() || "";
+
+      if (!titulo) {
+        alert("O título do objetivo é obrigatório.");
+        return;
+      }
+
+      const objetivoAtualizado = await updateObjetivo(objetivoId, {
+        titulo,
+        descricao,
+      });
+
+      // Atualiza o roadmap localmente
+      setRoadmap((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          etapas: prev.etapas.map((etapa) => ({
+            ...etapa,
+            objetivos: etapa.objetivos.map((obj) =>
+              obj.id === objetivoId
+                ? {
+                    ...obj,
+                    ...objetivoAtualizado,
+                  }
+                : obj,
+            ),
+          })),
+        };
+      });
+
+      // Limpa os inputs
+      setObjetivoTituloEditInput((prev) => ({
+        ...prev,
+        [objetivoId]: "",
+      }));
+
+      setObjetivoDescricaoEditInput((prev) => ({
+        ...prev,
+        [objetivoId]: "",
+      }));
+
+      setIdObjetivoSendoEditado(undefined);
     } catch (erro: any) {
       alert(erro.message);
+    } finally {
+      hideLoading();
     }
   };
 
@@ -223,6 +274,7 @@ export default function ObjetivoCard({
           transitionTimingFunction: "ease-in-out",
           gap: 20,
           flexDirection: "column",
+          zIndex: dropdownReferenciaAberto === objetivo.id ? 1000 : 1,
         },
         objetivoEstaSendoEditado && [
           {
@@ -268,7 +320,15 @@ export default function ObjetivoCard({
                     color: "black",
                   },
                 ]}
-                value={objetivoTituloEditInput}
+                value={objetivoTituloEditInput[objetivo.id] || ""}
+                onChangeText={(text) =>
+                  setObjetivoTituloEditInput((prev) => ({
+                    ...prev,
+                    [objetivo.id]: text,
+                  }))
+                }
+                placeholder="Título do objetivo"
+                placeholderTextColor={colors.placeholderTextColor}
               />
             </View>
 
@@ -285,7 +345,16 @@ export default function ObjetivoCard({
                     color: "black",
                   },
                 ]}
-                value={objetivoDescricaoEditInput}
+                value={objetivoDescricaoEditInput[objetivo.id] || ""}
+                onChangeText={(text) =>
+                  setObjetivoDescricaoEditInput((prev) => ({
+                    ...prev,
+                    [objetivo.id]: text,
+                  }))
+                }
+                placeholder="Descrição do objetivo"
+                placeholderTextColor={colors.placeholderTextColor}
+                multiline
               />
             </View>
           </View>
@@ -348,8 +417,16 @@ export default function ObjetivoCard({
               ]}
               onPress={() => {
                 setIdObjetivoSendoEditado(objetivo.id);
-                setObjetivoTituloEditInput(objetivo.titulo);
-                setObjetivoDescricaoEditInput(objetivo.descricao);
+
+                setObjetivoTituloEditInput((prev) => ({
+                  ...prev,
+                  [objetivo.id]: objetivo.titulo,
+                }));
+
+                setObjetivoDescricaoEditInput((prev) => ({
+                  ...prev,
+                  [objetivo.id]: objetivo.descricao || "",
+                }));
               }}
             >
               {(state: any) => (
@@ -371,8 +448,8 @@ export default function ObjetivoCard({
                   transitionTimingFunction: "ease-in-out",
                 },
               ]}
-              onPress={() => {
-                handleDeleteObjetivo(objetivo.id);
+              onPress={async () => {
+                await handleDeleteObjetivo(objetivo.id);
               }}
             >
               {(state: any) => (
@@ -449,9 +526,8 @@ export default function ObjetivoCard({
                 transitionTimingFunction: "ease-in-out",
               },
             ]}
-            onPress={() => {
-              // FIX ME: ADCIONAR FUNCAO DE EDITAR OBJETIVO
-              setIdObjetivoSendoEditado(0);
+            onPress={async () => {
+              await handleEditObjetivo(objetivo.id);
             }}
           >
             {(state: any) => (
@@ -474,7 +550,17 @@ export default function ObjetivoCard({
               },
             ]}
             onPress={() => {
-              setIdObjetivoSendoEditado(0);
+              setObjetivoTituloEditInput((prev) => ({
+                ...prev,
+                [objetivo.id]: "",
+              }));
+
+              setObjetivoDescricaoEditInput((prev) => ({
+                ...prev,
+                [objetivo.id]: "",
+              }));
+
+              setIdObjetivoSendoEditado(undefined);
             }}
           >
             {(state: any) => (
@@ -558,6 +644,7 @@ export default function ObjetivoCard({
             <Text style={styles.objetivoTituloText}>
               Referências e Materiais
             </Text>
+
             <View
               style={{
                 flexDirection: "row",
@@ -565,6 +652,7 @@ export default function ObjetivoCard({
                 gap: 12,
                 height: 32,
                 margin: 12,
+                zIndex: 2,
               }}
             >
               <View style={{ position: "relative" }}>
@@ -573,6 +661,9 @@ export default function ObjetivoCard({
                     globalStyles.secondaryButton,
                     {
                       boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                      height: "100%",
+                      width: 140,
+                      zIndex: 1,
                     },
                   ]}
                   onPress={() => {
@@ -583,7 +674,10 @@ export default function ObjetivoCard({
                 >
                   {getIconReferencia(tipoReferencia[objetivo.id] || "Artigo")}
 
-                  <Text style={globalStyles.secondaryButtonText}>
+                  <Text
+                    style={globalStyles.secondaryButtonText}
+                    selectable={false}
+                  >
                     {tipoReferencia[objetivo.id] || "Artigo"}
                   </Text>
 
@@ -599,18 +693,26 @@ export default function ObjetivoCard({
                   <View
                     style={{
                       position: "absolute",
-                      top: 38,
                       left: 0,
-                      zIndex: 1000,
-                      elevation: 10,
                       backgroundColor: "white",
-                      borderRadius: 8,
+                      borderRadius: 12,
                       borderWidth: 1,
                       borderColor: "#ddd",
-                      width: 140,
+                      width: "100%",
                       overflow: "hidden",
                     }}
                   >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        backgroundColor: "white",
+                        height: 30,
+                      }}
+                    />
                     {tiposReferencia.map((item) => (
                       <Pressable
                         key={item.tipo}
@@ -633,7 +735,9 @@ export default function ObjetivoCard({
                       >
                         {item.icon}
 
-                        <Text style={{ color: "black" }}>{item.tipo}</Text>
+                        <Text style={{ color: "black" }} selectable={false}>
+                          {item.tipo}
+                        </Text>
                       </Pressable>
                     ))}
                   </View>

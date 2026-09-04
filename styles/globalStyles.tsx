@@ -20,10 +20,9 @@ export const getGlobalStyles = () =>
       alignItems: "center",
     },
     title: {
-      color: "#F1F5F9",
+      color: "black",
       fontWeight: "600",
-      fontSize: 22,
-      letterSpacing: 0.5,
+      fontSize: 16,
     },
     menuOption: {
       flexDirection: "row",
