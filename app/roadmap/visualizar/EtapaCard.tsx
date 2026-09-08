@@ -20,12 +20,15 @@ import { TipoItem, tiposItem } from "./[id]";
 import { salvarAnotacao, updateRoadmap } from "../../../services/roadmap";
 import { Feather } from "@expo/vector-icons";
 import { useLoading } from "../../../context/providers/loading";
+import { TipoReferencia } from "../../../utils/tiposReferencia";
+import ReferenciasCard from "./ReferenciasCard";
 
 type EtapaCardProps = {
   etapa: IEtapa;
   roadmap: IRoadmap;
   setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   openDeleteModal: (tipoItem: TipoItem, etapa: IEtapa) => void;
+
   anotacoes: {
     [etapaId: number]: {
       plainText: string;
@@ -40,6 +43,14 @@ type EtapaCardProps = {
       };
     }>
   >;
+  addReferencia: (
+    tipoItem: "objetivo" | "etapa",
+    itemId: number,
+    tipo: TipoReferencia,
+    nome: string,
+    url: string,
+  ) => void;
+  zIndex: number;
 };
 
 export default function EtapaCard({
@@ -49,6 +60,8 @@ export default function EtapaCard({
   openDeleteModal,
   anotacoes,
   setAnotacoes,
+  addReferencia,
+  zIndex,
 }: EtapaCardProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
@@ -246,7 +259,16 @@ export default function EtapaCard({
   };
 
   return (
-    <View key={etapa.id} style={globalStyles.card}>
+    <View
+      key={etapa.id}
+      style={[
+        globalStyles.card,
+        styles.etapaCard,
+        {
+          zIndex: zIndex,
+        },
+      ]}
+    >
       {/* Header da etapa */}
       <Pressable
         style={styles.etapaHeader}
@@ -450,6 +472,7 @@ export default function EtapaCard({
                   etapaId={etapa.id}
                   roadmap={roadmap}
                   setRoadmap={setRoadmap}
+                  addReferencia={addReferencia}
                 />
               );
             })}
@@ -659,6 +682,14 @@ export default function EtapaCard({
             }
             onPress={() => handleEditAnotacaoEtapa(etapa.id)}
           />
+
+          <ReferenciasCard
+            item={etapa}
+            tipoItem="etapa"
+            onAdicionarReferencia={(id, tipo, nome, url) =>
+              addReferencia("etapa", id, tipo, nome, url)
+            }
+          />
         </View>
       )}
     </View>
@@ -667,9 +698,8 @@ export default function EtapaCard({
 
 const styles = StyleSheet.create({
   etapaCard: {
-    boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
-    borderRadius: 16,
-    padding: 16,
+    position: "relative",
+    overflow: "visible",
   },
   etapaHeader: {
     flex: 1,

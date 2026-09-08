@@ -6,37 +6,31 @@ import {
   ChevronDown,
   Save,
   CircleX,
-  Link,
 } from "lucide-react-native";
-import {
-  Pressable,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Linking,
-  Text,
-  StyleSheet,
-} from "react-native";
+import { Pressable, View, TextInput, Text, StyleSheet } from "react-native";
 import { colors } from "../../../styles/colors";
-import {
-  getIconReferencia,
-  TipoReferencia,
-  tiposReferencia,
-} from "../../../utils/tiposReferencia";
+import { TipoReferencia } from "../../../utils/tiposReferencia";
 import { getGlobalStyles } from "../../../styles/globalStyles";
-import { ICriarObjetivo, IObjetivo } from "../../../interfaces/objetivo";
+import { IObjetivo } from "../../../interfaces/objetivo";
 import { useState } from "react";
 import { updateRoadmap } from "../../../services/roadmap";
 import { useLoading } from "../../../context/providers/loading";
-import { ICriarReferencia } from "../../../interfaces/referencia";
-import { IUpdateRoadmap, IRoadmap } from "../../../interfaces/roadmap";
+import { IRoadmap } from "../../../interfaces/roadmap";
 import { deleteObjetivo, updateObjetivo } from "../../../services/objetivo";
+import ReferenciasCard from "./ReferenciasCard";
 
 type ObjetivoCardProps = {
   objetivo: IObjetivo;
   etapaId: number;
   roadmap: IRoadmap;
   setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
+  addReferencia: (
+    tipoItem: "objetivo" | "etapa",
+    itemId: number,
+    tipo: TipoReferencia,
+    nome: string,
+    url: string,
+  ) => void;
 };
 
 export default function ObjetivoCard({
@@ -44,6 +38,7 @@ export default function ObjetivoCard({
   etapaId,
   roadmap,
   setRoadmap,
+  addReferencia,
 }: ObjetivoCardProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
@@ -108,63 +103,6 @@ export default function ObjetivoCard({
       const resultado = await updateRoadmap(novoRoadmap);
 
       setRoadmap(novoRoadmap);
-    } catch (erro: any) {
-      alert(erro.message);
-    } finally {
-      hideLoading();
-    }
-  };
-
-  const addReferenciaObjetivo = async (objetivo: IObjetivo) => {
-    try {
-      showLoading();
-
-      const tipo = tipoReferencia[objetivo.id] || "Artigo";
-      const nome = nomeReferencia[objetivo.id]?.trim();
-      const url = urlReferencia[objetivo.id]?.trim() || "";
-
-      if (!nome) {
-        alert("Informe o nome da referência.");
-        return;
-      }
-
-      if (!roadmap) return;
-
-      const novaReferencia: ICriarReferencia = {
-        tipo,
-        nome,
-        url,
-      };
-
-      const objetivoAtualizado: ICriarObjetivo = {
-        ...objetivo,
-        referencias: [...(objetivo.referencias || []), novaReferencia],
-      };
-
-      const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
-        etapas: roadmap.etapas.map((etapa) => ({
-          ...etapa,
-          objetivos: etapa.objetivos.map((obj) =>
-            obj.id === objetivo.id ? objetivoAtualizado : obj,
-          ),
-        })),
-      };
-
-      const atualizado = await updateRoadmap(novoRoadmap);
-
-      setRoadmap(atualizado);
-
-      // Limpa os campos
-      setNomeReferencia((prev) => ({
-        ...prev,
-        [objetivo.id]: "",
-      }));
-
-      setUrlReferencia((prev) => ({
-        ...prev,
-        [objetivo.id]: "",
-      }));
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -635,222 +573,13 @@ export default function ObjetivoCard({
             />
           </View>
 
-          <View
-            style={{
-              width: "100%",
-              cursor: "default" as any,
-            }}
-          >
-            <Text style={styles.objetivoTituloText}>
-              Referências e Materiais
-            </Text>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: 12,
-                height: 32,
-                margin: 12,
-                zIndex: 2,
-              }}
-            >
-              <View style={{ position: "relative" }}>
-                <Pressable
-                  style={[
-                    globalStyles.secondaryButton,
-                    {
-                      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
-                      height: "100%",
-                      width: 140,
-                      zIndex: 1,
-                    },
-                  ]}
-                  onPress={() => {
-                    setDropdownReferenciaAberto((prev) =>
-                      prev === objetivo.id ? null : objetivo.id,
-                    );
-                  }}
-                >
-                  {getIconReferencia(tipoReferencia[objetivo.id] || "Artigo")}
-
-                  <Text
-                    style={globalStyles.secondaryButtonText}
-                    selectable={false}
-                  >
-                    {tipoReferencia[objetivo.id] || "Artigo"}
-                  </Text>
-
-                  {dropdownReferenciaAberto === objetivo.id ? (
-                    <ChevronUp color="black" size={18} />
-                  ) : (
-                    <ChevronDown color="black" size={18} />
-                  )}
-                </Pressable>
-
-                {/* DROPDOWN */}
-                {dropdownReferenciaAberto === objetivo.id && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      backgroundColor: "white",
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: "#ddd",
-                      width: "100%",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                        paddingHorizontal: 12,
-                        paddingVertical: 10,
-                        backgroundColor: "white",
-                        height: 30,
-                      }}
-                    />
-                    {tiposReferencia.map((item) => (
-                      <Pressable
-                        key={item.tipo}
-                        style={({ hovered }: any) => ({
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 8,
-                          paddingHorizontal: 12,
-                          paddingVertical: 10,
-                          backgroundColor: hovered ? "#F1F5F9" : "white",
-                        })}
-                        onPress={() => {
-                          setTipoReferencia((prev) => ({
-                            ...prev,
-                            [objetivo.id]: item.tipo,
-                          }));
-
-                          setDropdownReferenciaAberto(null);
-                        }}
-                      >
-                        {item.icon}
-
-                        <Text style={{ color: "black" }} selectable={false}>
-                          {item.tipo}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
-              </View>
-
-              <TextInput
-                style={[globalStyles.input, { flex: 3 }]}
-                placeholder="Nome (ex: Artigo React)*"
-                placeholderTextColor={colors.placeholderTextColor}
-                value={nomeReferencia[objetivo.id] || ""}
-                onChangeText={(text) =>
-                  setNomeReferencia((prev) => ({
-                    ...prev,
-                    [objetivo.id]: text,
-                  }))
-                }
-              />
-
-              <TextInput
-                style={[globalStyles.input, { flex: 3 }]}
-                placeholder="URL (https://...)"
-                placeholderTextColor={colors.placeholderTextColor}
-                value={urlReferencia[objetivo.id] || ""}
-                onChangeText={(text) =>
-                  setUrlReferencia((prev) => ({
-                    ...prev,
-                    [objetivo.id]: text,
-                  }))
-                }
-              />
-
-              <TouchableOpacity
-                style={{
-                  backgroundColor: colors.lightBlue,
-                  paddingVertical: 8,
-                  paddingHorizontal: 20,
-                  borderRadius: 12,
-                }}
-                onPress={() => addReferenciaObjetivo(objetivo)}
-              >
-                <Text style={{ color: "white" }}>+ Add</Text>
-              </TouchableOpacity>
-            </View>
-
-            {objetivo.referencias && objetivo.referencias.length !== 0 ? (
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  borderColor: "#ccc",
-                  backgroundColor: "#f8f8f8",
-                  padding: 12,
-                  marginHorizontal: 12,
-                  gap: 8,
-                }}
-              >
-                {objetivo.referencias.map((referencia, index) => {
-                  return (
-                    <View
-                      key={referencia.id}
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        height: 32,
-                        borderBottomWidth:
-                          index === objetivo.referencias!.length - 1 ? 0 : 2,
-                        borderBottomColor: "#ddd",
-                        paddingVertical: 12,
-                        alignItems: "center",
-                      }}
-                    >
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          gap: 4,
-                          alignItems: "center",
-                        }}
-                      >
-                        {getIconReferencia(referencia.tipo)}
-
-                        <Text style={globalStyles.secondaryButtonText}>
-                          {`[${referencia.tipo}] - ${referencia.nome} → `}
-
-                          <Text
-                            style={{
-                              color: "blue",
-                            }}
-                            onPress={() => {
-                              if (referencia.url) {
-                                Linking.openURL(referencia.url);
-                              }
-                            }}
-                          >
-                            <Link size={12} />
-                            {` ${referencia.url}`}
-                          </Text>
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <Text
-                style={{
-                  color: colors.placeholderTextColor,
-                }}
-              >
-                Este objetivo ainda não possui referências.
-              </Text>
-            )}
-          </View>
+          <ReferenciasCard
+            item={objetivo}
+            tipoItem="objetivo"
+            onAdicionarReferencia={(id, tipo, nome, url) =>
+              addReferencia("objetivo", id, tipo, nome, url)
+            }
+          />
         </Pressable>
       )}
     </Pressable>

@@ -10,8 +10,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useLoading } from "../../../context/providers/loading";
 import { IEtapa } from "../../../interfaces/etapa";
-import { IRoadmap } from "../../../interfaces/roadmap";
-import { getRoadmap } from "../../../services/roadmap";
+import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
+import { getRoadmap, updateRoadmap } from "../../../services/roadmap";
 import { colors } from "../../../styles/colors";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
 import AdicionarEtapaModal from "./AdicionarEtapaModal";
@@ -22,6 +22,7 @@ import {
   getProgressColor,
 } from "../../../utils/progressBarFunctions";
 import EtapaCard from "./EtapaCard";
+import { ICriarReferencia } from "../../../interfaces/referencia";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
@@ -121,6 +122,75 @@ export default function Visualizar() {
   const porcentagemConclusaoRoadmap: number = roadmap
     ? calcularProgresso(roadmap)
     : 0;
+
+  const addReferencia = async (
+    tipoItem: "objetivo" | "etapa",
+    itemId: number,
+    tipo: TipoReferencia,
+    nome: string,
+    url: string,
+  ) => {
+    try {
+      showLoading();
+
+      nome = nome.trim();
+      url = url.trim();
+
+      if (!nome) {
+        alert("Informe o nome da referência.");
+        return;
+      }
+
+      if (!roadmap) return;
+
+      const novaReferencia: ICriarReferencia = {
+        tipo,
+        nome,
+        url,
+      };
+
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmap,
+
+        etapas: roadmap.etapas.map((etapa) => {
+          // Se a referência for de uma ETAPA
+          if (tipoItem === "etapa" && etapa.id === itemId) {
+            return {
+              ...etapa,
+              referencias: [...(etapa.referencias || []), novaReferencia],
+            };
+          }
+
+          // Se a referência for de um OBJETIVO
+          return {
+            ...etapa,
+
+            objetivos: etapa.objetivos.map((objetivo) => {
+              if (tipoItem === "objetivo" && objetivo.id === itemId) {
+                return {
+                  ...objetivo,
+                  referencias: [
+                    ...(objetivo.referencias || []),
+                    novaReferencia,
+                  ],
+                };
+              }
+
+              return objetivo;
+            }),
+          };
+        }),
+      };
+
+      const atualizado = await updateRoadmap(novoRoadmap);
+
+      setRoadmap(atualizado);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
 
   return roadmap ? (
     <View
@@ -347,8 +417,8 @@ export default function Visualizar() {
         {roadmap.etapas.length != 0
           ? roadmap.etapas
               .sort((a, b) => a.ordem - b.ordem)
-              .map((etapa) => {
-                // const anotacaoEtapa = anotacoes[etapa.id];
+              .map((etapa, index) => {
+                const zIndex = roadmap.etapas.length - index;
 
                 return (
                   <EtapaCard
@@ -358,6 +428,8 @@ export default function Visualizar() {
                     openDeleteModal={openDeleteModal}
                     anotacoes={anotacoes}
                     setAnotacoes={setAnotacoes}
+                    addReferencia={addReferencia}
+                    zIndex={zIndex}
                   />
                 );
               })
