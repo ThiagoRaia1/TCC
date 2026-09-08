@@ -111,14 +111,6 @@ export default function Visualizar() {
 
   const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
 
-  const [tipoReferencia, setTipoReferencia] = useState<{
-    [objetivoId: number]: TipoReferencia;
-  }>({});
-
-  const [dropdownReferenciaAberto, setDropdownReferenciaAberto] = useState<
-    number | null
-  >(null);
-
   const porcentagemConclusaoRoadmap: number = roadmap
     ? calcularProgresso(roadmap)
     : 0;
@@ -208,6 +200,7 @@ export default function Visualizar() {
         <DeleteModal
           closeModal={() => setDeleteModalVisible(false)}
           roadmap={roadmap}
+          setRoadmap={setRoadmap}
           tipoItem={tipoItemASerExcluido}
           etapa={etapaSelecionada}
         />

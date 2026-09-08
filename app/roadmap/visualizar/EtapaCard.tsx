@@ -689,6 +689,8 @@ export default function EtapaCard({
             onAdicionarReferencia={(id, tipo, nome, url) =>
               addReferencia("etapa", id, tipo, nome, url)
             }
+            roadmap={roadmap}
+            setRoadmap={setRoadmap}
           />
         </View>
       )}

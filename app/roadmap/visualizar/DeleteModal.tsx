@@ -2,23 +2,29 @@ import { View, TouchableOpacity, Text, Modal, Pressable } from "react-native";
 import { useLoading } from "../../../context/providers/loading";
 import { IEtapa } from "../../../interfaces/etapa";
 import { IRoadmap } from "../../../interfaces/roadmap";
-import { deleteRoadmap } from "../../../services/roadmap";
+import { deleteRoadmap, getRoadmap } from "../../../services/roadmap";
 import { getGlobalStyles } from "../../../styles/globalStyles";
 import { router } from "expo-router";
 import { deleteEtapa } from "../../../services/etapa";
+import { IReferencia } from "../../../interfaces/referencia";
+import { deleteReferencia } from "../../../services/referecia";
 
 type DeleteModalProps = {
   closeModal: () => void;
   roadmap: IRoadmap;
-  tipoItem: "roadmap" | "etapa" | "objetivo";
+  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
+  tipoItem: "roadmap" | "etapa" | "objetivo" | "referencia";
   etapa?: IEtapa;
+  referencia?: IReferencia;
 };
 
 export default function DeleteModal({
   closeModal,
   roadmap,
+  setRoadmap,
   tipoItem,
   etapa,
+  referencia,
 }: DeleteModalProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
@@ -42,10 +48,32 @@ export default function DeleteModal({
     try {
       showLoading();
       if (!etapa) return;
+
       const resultado = await deleteEtapa(etapa.id);
       alert(`Etapa "${etapa.titulo}" excluída com sucesso!`);
 
-      router.push(`/roadmap/visualizar/${roadmap.id}`);
+      const novoRoadmap = await getRoadmap(roadmap.id);
+      setRoadmap(novoRoadmap);
+
+      closeModal();
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const onDeleteReferencia = async () => {
+    try {
+      showLoading();
+      if (!referencia) return;
+
+      const resultado = await deleteReferencia(referencia.id);
+
+      const novoRoadmap = await getRoadmap(roadmap.id);
+      setRoadmap(novoRoadmap);
+
+      closeModal();
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -87,7 +115,7 @@ export default function DeleteModal({
           {tipoItem == "roadmap" && (
             <Text style={{ fontSize: 24, textAlign: "center" }}>
               Tem certeza que deseja excluir o roadmap
-              <strong> "{roadmap.tema}"</strong>?<br />
+              <strong> "{roadmap && roadmap.tema}"</strong>?<br />
               <i>Essa ação não pode ser desfeita.</i>
             </Text>
           )}
@@ -100,6 +128,17 @@ export default function DeleteModal({
             </Text>
           )}
 
+          {tipoItem == "referencia" && (
+            <Text style={{ fontSize: 24, textAlign: "center" }}>
+              Tem certeza que deseja excluir a referência{" "}
+              <Text style={{ fontWeight: "bold" }}>"{referencia?.nome}"</Text>?
+              {"\n"}
+              <Text style={{ fontStyle: "italic" }}>
+                Essa ação não pode ser desfeita.
+              </Text>
+            </Text>
+          )}
+
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
               style={[
@@ -109,6 +148,7 @@ export default function DeleteModal({
               onPress={() => {
                 if (tipoItem == "roadmap") onDeleteRoadmap();
                 if (tipoItem == "etapa") onDeleteEtapa();
+                if (tipoItem == "referencia") onDeleteReferencia();
               }}
             >
               <Text style={{ fontSize: 16, color: "white", fontWeight: 600 }}>
