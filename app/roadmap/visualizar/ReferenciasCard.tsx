@@ -185,7 +185,7 @@ export default function ReferenciasCard({
           justifyContent: "space-between",
           gap: 12,
           height: 32,
-          margin: 12,
+          marginVertical: 12,
           zIndex: 2,
         }}
       >

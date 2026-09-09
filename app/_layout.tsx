@@ -17,6 +17,7 @@ export default function Layout() {
             contentContainerStyle={{
               flexGrow: 1,
             }}
+            style={{backgroundColor: "#F8F9FA"}}
           >
             <Slot />
           </ScrollView>

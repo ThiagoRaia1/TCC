@@ -214,10 +214,12 @@ export default function Visualizar() {
       >
         <ArrowLeft size={20} style={{ marginTop: 4 }} color={"black"} />
         <Text
-          style={[
-            globalStyles.buttonWithIconText,
-            { color: "black", fontSize: 16 },
-          ]}
+          style={{
+            color: "black",
+            fontSize: 16,
+            fontWeight: 600,
+            paddingVertical: 12,
+          }}
         >
           Voltar ao dashboard
         </Text>
@@ -449,7 +451,7 @@ export default function Visualizar() {
 const styles = StyleSheet.create({
   buttonWithIcon: {
     height: 48,
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     alignSelf: "flex-start",
     paddingHorizontal: 0,
   },
@@ -491,7 +493,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 12,
     padding: 4,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#e7eaee",
   },
 
   menuItem: {

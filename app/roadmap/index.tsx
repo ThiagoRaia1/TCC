@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
   },
 
   noRoadmapsContainer: {
+    backgroundColor: "white",
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
     alignItems: "center",
     justifyContent: "center",
@@ -300,6 +301,7 @@ const styles = StyleSheet.create({
   },
 
   roadmapCard: {
+    backgroundColor: "white",
     width: 420,
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
     justifyContent: "space-between",

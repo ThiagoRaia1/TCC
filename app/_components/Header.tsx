@@ -1,8 +1,7 @@
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
-import { Menu, X, BookOpen } from "lucide-react-native";
+import { BookOpen } from "lucide-react-native";
 import { router, usePathname } from "expo-router";
 import { useAuth } from "../../context/auth";
-import { pageNames } from "../../utils/pageNames";
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
@@ -26,8 +25,8 @@ export default function Header() {
           <Text style={styles.logo}>StudyPath</Text>
         </TouchableOpacity>
 
-        {pathname !== "/login" &&
-          (!isAuthenticated ? (
+        {pathname !== "/auth" ? (
+          !isAuthenticated ? (
             <TouchableOpacity
               style={styles.loginButton}
               onPress={() => router.push("/auth")}
@@ -44,7 +43,17 @@ export default function Header() {
             >
               <Text style={styles.loginButtonText}>Logout</Text>
             </TouchableOpacity>
-          ))}
+          )
+        ) : (
+          <TouchableOpacity
+            style={{ alignSelf: "center", marginRight: 14 }}
+            onPress={() => {
+              router.push("/");
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: 600 }}>← Voltar</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

@@ -84,6 +84,7 @@ export default function NovoRoadmap() {
       gap: 8,
     },
     sectionContainer: {
+      backgroundColor: "white",
       boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
       gap: 24,
       paddingVertical: 24,

@@ -83,12 +83,6 @@ export default function Login() {
   return (
     <>
       <View style={styles.container}>
-        <TouchableOpacity
-          style={{ position: "absolute", left: 30, top: 30 }}
-          onPress={() => router.push("/")}
-        >
-          <FontAwesome6 name="circle-chevron-left" size={48} color="white" />
-        </TouchableOpacity>
         <View style={styles.card}>
           <View>
             <Text style={styles.title}>
@@ -207,7 +201,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   card: {
     width: "100%",
     maxWidth: 450,
@@ -215,15 +208,14 @@ const styles = StyleSheet.create({
     padding: 24,
     boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
     justifyContent: "space-between",
+    backgroundColor: "white"
   },
-
   title: {
     fontSize: 28,
     fontWeight: 600,
     color: "black",
     textAlign: "left",
   },
-
   subtitle: {
     fontSize: 14,
     color: "#94a3b8",
@@ -249,14 +241,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 12,
   },
-
   passwordInput: {
     flex: 1,
     height: "100%",
     fontSize: 16,
     outlineStyle: "none" as any,
   },
-
   cadastreText: {
     color: colors.lightBlue,
     fontWeight: 600,
