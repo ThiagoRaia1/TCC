@@ -232,11 +232,22 @@ export default function Visualizar() {
             justifyContent: "space-between",
           }}
         >
-          <Text style={styles.titulo}>{roadmap.tema}</Text>
+          <View>
+            <Text style={styles.titulo}>{roadmap.tema}</Text>
+
+            <Text style={styles.descricao}>
+              {roadmap.descricaoGeral ? (
+                roadmap.descricaoGeral
+              ) : (
+                <i>Este roadmap ainda não possui descrição.</i>
+              )}
+            </Text>
+          </View>
           <View
             style={{
               flexDirection: "row",
               gap: 20,
+              alignItems: "center",
             }}
           >
             <Pressable
@@ -297,14 +308,6 @@ export default function Visualizar() {
             </Pressable>
           </View>
         </View>
-        <Text style={styles.nivel}>Nível: {roadmap.nivel}</Text>
-        <Text style={styles.descricao}>
-          {roadmap.descricaoGeral ? (
-            roadmap.descricaoGeral
-          ) : (
-            <i>Este roadmap ainda não possui descrição.</i>
-          )}
-        </Text>
 
         {/* Barra de progresso */}
         <View style={styles.progressContainer}>

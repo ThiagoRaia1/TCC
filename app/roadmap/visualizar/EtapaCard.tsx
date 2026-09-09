@@ -477,221 +477,224 @@ export default function EtapaCard({
               );
             })}
 
-          {/* Adicionar novo objetivo */}
-          {!etapaAdicionandoNovoObjetivo ? ( // NAO ESTA ADICIONANDO
-            <View style={{ alignSelf: "flex-start" }}>
-              <TouchableOpacity
-                style={[
-                  globalStyles.secondaryButton,
-                  { flexDirection: "row", gap: 4 },
-                ]}
-                onPress={async () => {
-                  toggleAdicionandoObjetivo(etapa.id);
+          {/* ETAPA ADD NOVO OBJETIVO, ANOTACOES E REFERENCIAS */}
+          <View>
+            {/* Adicionar novo objetivo */}
+            {!etapaAdicionandoNovoObjetivo ? ( // NAO ESTA ADICIONANDO
+              <View style={{ alignSelf: "flex-start" }}>
+                <TouchableOpacity
+                  style={[
+                    globalStyles.secondaryButton,
+                    { flexDirection: "row", gap: 4 },
+                  ]}
+                  onPress={async () => {
+                    toggleAdicionandoObjetivo(etapa.id);
+                  }}
+                >
+                  <Text
+                    style={[
+                      globalStyles.secondaryButtonText,
+                      { paddingVertical: 8 },
+                    ]}
+                  >
+                    + Adicionar novo objetivo
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              // ESTA ADICIONANDO
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 12,
+                  justifyContent: "space-between",
                 }}
               >
-                <Text
-                  style={[
-                    globalStyles.secondaryButtonText,
-                    { paddingVertical: 8 },
-                  ]}
-                >
-                  + Adicionar novo objetivo
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            // ESTA ADICIONANDO
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 12,
-                justifyContent: "space-between",
-              }}
-            >
-              <View style={{ flex: 1, gap: 8 }}>
-                {/* INPUT TITULO */}
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="Digite o título do objetivo."
-                  placeholderTextColor={colors.placeholderTextColor}
-                  value={tituloNovoObjetivo[etapa.id] || ""}
-                  onChangeText={(text) =>
-                    setTituloNovoObjetivo((prev) => ({
-                      ...prev,
-                      [etapa.id]: text,
-                    }))
-                  }
-                />
+                <View style={{ flex: 1, gap: 8 }}>
+                  {/* INPUT TITULO */}
+                  <TextInput
+                    style={globalStyles.input}
+                    placeholder="Digite o título do objetivo."
+                    placeholderTextColor={colors.placeholderTextColor}
+                    value={tituloNovoObjetivo[etapa.id] || ""}
+                    onChangeText={(text) =>
+                      setTituloNovoObjetivo((prev) => ({
+                        ...prev,
+                        [etapa.id]: text,
+                      }))
+                    }
+                  />
 
-                {/* INPUT DESCRICAO */}
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="Digite a descrição do objetivo."
-                  placeholderTextColor={colors.placeholderTextColor}
-                  value={descricaoNovoObjetivo[etapa.id] || ""}
-                  onChangeText={(text) =>
-                    setDescricaoNovoObjetivo((prev) => ({
-                      ...prev,
-                      [etapa.id]: text,
-                    }))
-                  }
-                />
-              </View>
+                  {/* INPUT DESCRICAO */}
+                  <TextInput
+                    style={globalStyles.input}
+                    placeholder="Digite a descrição do objetivo."
+                    placeholderTextColor={colors.placeholderTextColor}
+                    value={descricaoNovoObjetivo[etapa.id] || ""}
+                    onChangeText={(text) =>
+                      setDescricaoNovoObjetivo((prev) => ({
+                        ...prev,
+                        [etapa.id]: text,
+                      }))
+                    }
+                  />
+                </View>
 
-              {/* Salvar */}
-              <MenuOptionButton
-                containerStyle={[
-                  globalStyles.confirmButton,
-                  {
-                    borderWidth: 0,
-                    backgroundColor:
-                      tituloNovoObjetivo[etapa.id] &&
-                      descricaoNovoObjetivo[etapa.id]
-                        ? colors.green
-                        : "#555",
-                    alignSelf: "flex-end",
-                    width: 125,
-                    opacity:
-                      tituloNovoObjetivo[etapa.id] &&
-                      descricaoNovoObjetivo[etapa.id]
-                        ? 1
-                        : 0.6,
-                    marginTop: 0,
-                    height: 36,
-                  },
-                ]}
-                enabled={
-                  !!tituloNovoObjetivo[etapa.id] &&
-                  !!descricaoNovoObjetivo[etapa.id]
-                }
-                label={
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <Text
-                      style={[
-                        globalStyles.confirmButtonText,
-                        { color: "white", marginTop: 3 },
-                      ]}
-                      selectable={false}
-                    >
-                      Salvar
-                    </Text>
-
-                    <Feather name="check-circle" size={24} color="white" />
-                  </View>
-                }
-                onPress={() => criarNovoObjetivo(etapa.id)}
-              />
-
-              {/* Cancelar */}
-              <MenuOptionButton
-                containerStyle={[
-                  globalStyles.confirmButton,
-                  {
-                    borderWidth: 0,
-                    backgroundColor: colors.red,
-                    width: 125,
-                    alignSelf: "flex-end",
-                    height: 36,
-                  },
-                ]}
-                label={
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <Text
-                      style={[
-                        globalStyles.confirmButtonText,
-                        { color: "white" },
-                      ]}
-                      selectable={false}
-                    >
-                      Cancelar
-                    </Text>
-                  </View>
-                }
-                onPress={() => {
-                  setTituloNovoObjetivo((prev) => ({
-                    ...prev,
-                    [etapa.id]: "",
-                  }));
-
-                  setDescricaoNovoObjetivo((prev) => ({
-                    ...prev,
-                    [etapa.id]: "",
-                  }));
-
-                  toggleAdicionandoObjetivo(etapa.id);
-                }}
-              />
-            </View>
-          )}
-
-          {anotacoes[etapa.id] && (
-            <Editor
-              initialState={anotacoes[etapa.id].editorState}
-              setPlainText={(text) => {
-                atualizarAnotacao(etapa.id, {
-                  plainText: text,
-                });
-              }}
-              setEditorState={(state) => {
-                atualizarAnotacao(etapa.id, {
-                  editorState: state,
-                });
-              }}
-            />
-          )}
-
-          {/* Salvar Anotação */}
-          <MenuOptionButton
-            containerStyle={[
-              globalStyles.confirmButton,
-              {
-                borderWidth: 0,
-                backgroundColor: salvandoAnotacao[etapa.id]
-                  ? "#555"
-                  : colors.green,
-                alignSelf: "flex-end",
-                width: 200,
-                opacity: salvandoAnotacao[etapa.id] ? 0.6 : 1,
-              },
-            ]}
-            enabled={!salvandoAnotacao[etapa.id]}
-            label={
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <Text
-                  style={[
-                    globalStyles.confirmButtonText,
+                {/* Salvar */}
+                <MenuOptionButton
+                  containerStyle={[
+                    globalStyles.confirmButton,
                     {
-                      color: "white",
-                      marginTop: 3,
-                      fontWeight: 600,
+                      borderWidth: 0,
+                      backgroundColor:
+                        tituloNovoObjetivo[etapa.id] &&
+                        descricaoNovoObjetivo[etapa.id]
+                          ? colors.green
+                          : "#555",
+                      alignSelf: "flex-end",
+                      width: 125,
+                      opacity:
+                        tituloNovoObjetivo[etapa.id] &&
+                        descricaoNovoObjetivo[etapa.id]
+                          ? 1
+                          : 0.6,
+                      marginTop: 0,
+                      height: 36,
                     },
                   ]}
-                  selectable={false}
-                >
-                  {salvandoAnotacao[etapa.id]
-                    ? "Salvando..."
-                    : "Salvar anotação"}
-                </Text>
+                  enabled={
+                    !!tituloNovoObjetivo[etapa.id] &&
+                    !!descricaoNovoObjetivo[etapa.id]
+                  }
+                  label={
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      <Text
+                        style={[
+                          globalStyles.confirmButtonText,
+                          { color: "white", marginTop: 3 },
+                        ]}
+                        selectable={false}
+                      >
+                        Salvar
+                      </Text>
 
-                {salvandoAnotacao[etapa.id] ? (
-                  <Feather name="loader" size={24} color="white" />
-                ) : (
-                  <Feather name="check-circle" size={24} color="white" />
-                )}
+                      <Feather name="check-circle" size={24} color="white" />
+                    </View>
+                  }
+                  onPress={() => criarNovoObjetivo(etapa.id)}
+                />
+
+                {/* Cancelar */}
+                <MenuOptionButton
+                  containerStyle={[
+                    globalStyles.confirmButton,
+                    {
+                      borderWidth: 0,
+                      backgroundColor: colors.red,
+                      width: 125,
+                      alignSelf: "flex-end",
+                      height: 36,
+                    },
+                  ]}
+                  label={
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      <Text
+                        style={[
+                          globalStyles.confirmButtonText,
+                          { color: "white" },
+                        ]}
+                        selectable={false}
+                      >
+                        Cancelar
+                      </Text>
+                    </View>
+                  }
+                  onPress={() => {
+                    setTituloNovoObjetivo((prev) => ({
+                      ...prev,
+                      [etapa.id]: "",
+                    }));
+
+                    setDescricaoNovoObjetivo((prev) => ({
+                      ...prev,
+                      [etapa.id]: "",
+                    }));
+
+                    toggleAdicionandoObjetivo(etapa.id);
+                  }}
+                />
               </View>
-            }
-            onPress={() => handleEditAnotacaoEtapa(etapa.id)}
-          />
+            )}
 
-          <ReferenciasCard
-            item={etapa}
-            tipoItem="etapa"
-            onAdicionarReferencia={(id, tipo, nome, url) =>
-              addReferencia("etapa", id, tipo, nome, url)
-            }
-            roadmap={roadmap}
-            setRoadmap={setRoadmap}
-          />
+            {anotacoes[etapa.id] && (
+              <Editor
+                initialState={anotacoes[etapa.id].editorState}
+                setPlainText={(text) => {
+                  atualizarAnotacao(etapa.id, {
+                    plainText: text,
+                  });
+                }}
+                setEditorState={(state) => {
+                  atualizarAnotacao(etapa.id, {
+                    editorState: state,
+                  });
+                }}
+              />
+            )}
+
+            {/* Salvar Anotação */}
+            <MenuOptionButton
+              containerStyle={[
+                globalStyles.confirmButton,
+                {
+                  borderWidth: 0,
+                  backgroundColor: salvandoAnotacao[etapa.id]
+                    ? "#555"
+                    : colors.green,
+                  alignSelf: "flex-end",
+                  width: 200,
+                  opacity: salvandoAnotacao[etapa.id] ? 0.6 : 1,
+                },
+              ]}
+              enabled={!salvandoAnotacao[etapa.id]}
+              label={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Text
+                    style={[
+                      globalStyles.confirmButtonText,
+                      {
+                        color: "white",
+                        marginTop: 3,
+                        fontWeight: 600,
+                      },
+                    ]}
+                    selectable={false}
+                  >
+                    {salvandoAnotacao[etapa.id]
+                      ? "Salvando..."
+                      : "Salvar anotação"}
+                  </Text>
+
+                  {salvandoAnotacao[etapa.id] ? (
+                    <Feather name="loader" size={24} color="white" />
+                  ) : (
+                    <Feather name="check-circle" size={24} color="white" />
+                  )}
+                </View>
+              }
+              onPress={() => handleEditAnotacaoEtapa(etapa.id)}
+            />
+
+            <ReferenciasCard
+              item={etapa}
+              tipoItem="etapa"
+              onAdicionarReferencia={(id, tipo, nome, url) =>
+                addReferencia("etapa", id, tipo, nome, url)
+              }
+              roadmap={roadmap}
+              setRoadmap={setRoadmap}
+            />
+          </View>
         </View>
       )}
     </View>

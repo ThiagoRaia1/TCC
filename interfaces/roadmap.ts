@@ -1,14 +1,10 @@
 import { ICriarEtapa, IEtapa, IUpdateEtapa } from "./etapa";
 import { IUsuario } from "./usuario";
 
-type Nivel = "iniciante" | "intermediario" | "avancado";
-
 export interface IRoadmap {
   id: number;
   tema: string;
   descricaoGeral: string;
-  duracaoEstimada: string;
-  nivel: Nivel;
   etapas: IEtapa[];
   usuario: IUsuario;
 }
@@ -16,8 +12,6 @@ export interface IRoadmap {
 export interface ICriarRoadmap {
   tema: string;
   descricaoGeral?: string;
-  duracaoEstimada?: string;
-  nivel?: Nivel;
   etapas?: ICriarEtapa[];
   usuarioId: number;
 }
@@ -26,8 +20,6 @@ export interface IUpdateRoadmap {
   id: number;
   tema?: string;
   descricaoGeral?: string;
-  duracaoEstimada?: string;
-  nivel?: Nivel;
   etapas?: IUpdateEtapa[];
   usuario: IUsuario;
 }

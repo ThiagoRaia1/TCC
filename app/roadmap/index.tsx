@@ -72,24 +72,26 @@ export default function CriarRoadmap() {
             </Text>
           </View>
 
-          <View
-            style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
-          >
-            <TouchableOpacity
-              style={globalStyles.confirmButton}
-              onPress={() => router.push("/roadmap/novo")}
+          {!isLoading && roadmaps.length != 0 && (
+            <View
+              style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
             >
-              <Text style={globalStyles.confirmButtonText}>
-                + Criar Roadmap
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={globalStyles.confirmButton}
+                onPress={() => router.push("/roadmap/novo")}
+              >
+                <Text style={globalStyles.confirmButtonText}>
+                  + Criar Roadmap
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={globalStyles.confirmButton}>
-              <Text style={globalStyles.confirmButtonText}>
-                Gerar com inteligência artificial
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={globalStyles.confirmButton}>
+                <Text style={globalStyles.confirmButtonText}>
+                  Gerar com inteligência artificial
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {roadmaps.length == 0 ? (

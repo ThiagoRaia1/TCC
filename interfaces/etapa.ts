@@ -19,7 +19,7 @@ export interface IEtapa {
 export interface ICriarEtapa {
   titulo: string;
   ordem: number;
-  descricao: string;
+  descricao?: string;
   objetivos?: ICriarObjetivo[];
   referencias?: ICriarReferencia[];
   concluido: boolean;

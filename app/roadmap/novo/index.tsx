@@ -14,6 +14,7 @@ import { ICriarRoadmap } from "../../../interfaces/roadmap";
 import { useState } from "react";
 import { salvarRoadmap } from "../../../services/roadmap";
 import { useAuth } from "../../../context/auth";
+import { ICriarEtapa } from "../../../interfaces/etapa";
 
 export default function NovoRoadmap() {
   const { showLoading, hideLoading } = useLoading();
@@ -22,6 +23,61 @@ export default function NovoRoadmap() {
 
   const [temaRoadmap, setTemaRoadmap] = useState<string>("");
   const [descricaoRoadmap, setDescricaoRoadmap] = useState<string>("");
+  const [etapas, setEtapas] = useState<ICriarEtapa[]>([]);
+
+  const [tituloEtapa, setTituloEtapa] = useState("");
+  const [descricaoEtapa, setDescricaoEtapa] = useState("");
+
+  const addEtapa = () => {
+    const titulo = tituloEtapa.trim();
+    const descricao = descricaoEtapa.trim();
+
+    if (!titulo) {
+      alert("O título da etapa é obrigatório.");
+      return;
+    }
+
+    const novaEtapa: ICriarEtapa = {
+      titulo,
+      ordem: etapas.length + 1,
+      descricao,
+      concluido: false,
+      objetivos: [],
+      referencias: [],
+      anotacoes: {
+        plainText: "",
+        editorState: null,
+      },
+    };
+
+    setEtapas((prev) => [...prev, novaEtapa]);
+
+    // Limpa os campos para adicionar outra etapa
+    setTituloEtapa("");
+    setDescricaoEtapa("");
+  };
+
+  const handleCriarRoadmap = async () => {
+    try {
+      showLoading();
+      if (usuario) {
+        const roadmap: ICriarRoadmap = {
+          tema: temaRoadmap,
+          descricaoGeral: descricaoRoadmap,
+          etapas: etapas,
+          usuarioId: usuario.sub,
+        };
+
+        const resultado = await salvarRoadmap(roadmap);
+
+        router.push(`roadmap/visualizar/${resultado.id}`);
+      }
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
 
   const style = StyleSheet.create({
     labelInputContainer: {
@@ -39,28 +95,6 @@ export default function NovoRoadmap() {
       fontWeight: 600,
     },
   });
-
-  const handleCriarRoadmap = async () => {
-    try {
-      if (usuario) {
-        // FIX ME: Consertar criacao do roadmap
-        const roadmap: ICriarRoadmap = {
-          tema: temaRoadmap,
-          descricaoGeral: descricaoRoadmap,
-          duracaoEstimada: "1 Mes",
-          nivel: "iniciante",
-          etapas: [],
-          usuarioId: usuario.sub,
-        };
-
-        const resultado = await salvarRoadmap(roadmap);
-
-        router.push(`roadmap/visualizar/${resultado.id}`);
-      }
-    } catch (erro: any) {
-      alert(erro.message);
-    }
-  };
 
   return (
     <ScrollView style={{ paddingHorizontal: 40 }}>
@@ -143,16 +177,127 @@ export default function NovoRoadmap() {
 
         <View style={style.sectionContainer}>
           <Text style={style.sectionTitle}>Etapas iniciais (opcional)</Text>
-          <View style={{ flexDirection: "row", gap: 20 }}>
+          <View style={{ gap: 12 }}>
+            {/* TÍTULO DA ETAPA */}
             <TextInput
-              style={[globalStyles.input, { flex: 1 }]}
+              style={globalStyles.input}
               placeholder="Insira o título da etapa"
               placeholderTextColor={colors.placeholderTextColor}
+              value={tituloEtapa}
+              onChangeText={setTituloEtapa}
             />
-            <TouchableOpacity style={globalStyles.confirmButton}>
-              <Text style={globalStyles.confirmButtonText}>+ Add</Text>
+
+            {/* DESCRIÇÃO DA ETAPA */}
+            <TextInput
+              style={[
+                globalStyles.input,
+                {
+                  minHeight: 90,
+                  textAlignVertical: "top",
+                },
+              ]}
+              placeholder="Descreva o que será estudado nesta etapa"
+              placeholderTextColor={colors.placeholderTextColor}
+              value={descricaoEtapa}
+              onChangeText={setDescricaoEtapa}
+              multiline
+              numberOfLines={4}
+            />
+
+            <TouchableOpacity
+              style={[
+                globalStyles.confirmButton,
+                {
+                  alignSelf: "flex-start",
+                },
+              ]}
+              onPress={addEtapa}
+            >
+              <Text style={globalStyles.confirmButtonText}>
+                + Adicionar etapa
+              </Text>
             </TouchableOpacity>
           </View>
+          {etapas.length > 0 && (
+            <View style={{ gap: 12 }}>
+              <Text style={style.sectionTitle}>Etapas adicionadas</Text>
+
+              {etapas.map((etapa) => (
+                <View
+                  key={etapa.ordem}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#ddd",
+                    borderRadius: 8,
+                    padding: 16,
+                    gap: 6,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {etapa.ordem}. {etapa.titulo}
+                      </Text>
+
+                      {etapa.descricao ? (
+                        <Text
+                          style={{
+                            color: "#545454",
+                            fontSize: 13,
+                          }}
+                        >
+                          {etapa.descricao}
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{
+                            color: "#545454",
+                            fontSize: 13,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          Etapa sem descrição
+                        </Text>
+                      )}
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        setEtapas((prev) =>
+                          prev
+                            .filter((item) => item.ordem !== etapa.ordem)
+                            .map((item, index) => ({
+                              ...item,
+                              ordem: index + 1,
+                            })),
+                        );
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#ef4444",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Remover
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>

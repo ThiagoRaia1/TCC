@@ -241,7 +241,7 @@ export default function ObjetivoCard({
       key={objetivo.id}
       style={(state: any) => [
         state.hovered && {
-          backgroundColor: "#F1F5F9",
+          backgroundColor: "#91c8ff1a",
         },
         styles.objetivoRow,
         {
@@ -683,6 +683,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 8,
     borderRadius: 12,
+    boxShadow: "0px 0px 2px rgb(0, 26, 255, 0.6)",
   },
   objetivoTituloText: {
     color: "black",
