@@ -11,8 +11,8 @@ import { deleteReferencia } from "../../../services/referecia";
 
 type DeleteModalProps = {
   closeModal: () => void;
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
+  roadmap?: IRoadmap;
+  setRoadmap?: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   tipoItem: "roadmap" | "etapa" | "objetivo" | "referencia";
   etapa?: IEtapa;
   referencia?: IReferencia;
@@ -32,6 +32,7 @@ export default function DeleteModal({
   const onDeleteRoadmap = async () => {
     try {
       showLoading();
+      if (!roadmap) return;
 
       const resultado = await deleteRoadmap(roadmap.id);
       alert(`Roadmap "${roadmap.tema}" excluído com sucesso!`);
@@ -47,7 +48,7 @@ export default function DeleteModal({
   const onDeleteEtapa = async () => {
     try {
       showLoading();
-      if (!etapa) return;
+      if (!roadmap || !setRoadmap || !etapa) return;
 
       const resultado = await deleteEtapa(etapa.id);
       alert(`Etapa "${etapa.titulo}" excluída com sucesso!`);
@@ -66,7 +67,7 @@ export default function DeleteModal({
   const onDeleteReferencia = async () => {
     try {
       showLoading();
-      if (!referencia) return;
+      if (!roadmap || !setRoadmap || !referencia) return;
 
       const resultado = await deleteReferencia(referencia.id);
 

@@ -415,6 +415,7 @@ export default function Visualizar() {
 
                 return (
                   <EtapaCard
+                    key={etapa.id}
                     etapa={etapa}
                     roadmap={roadmap}
                     setRoadmap={setRoadmap}

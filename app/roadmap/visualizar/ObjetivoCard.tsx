@@ -18,6 +18,8 @@ import { useLoading } from "../../../context/providers/loading";
 import { IRoadmap } from "../../../interfaces/roadmap";
 import { deleteObjetivo, updateObjetivo } from "../../../services/objetivo";
 import ReferenciasCard from "./ReferenciasCard";
+import MenuOptionButton from "../../_components/MenuOptionButton";
+import { Feather } from "@expo/vector-icons";
 
 type ObjetivoCardProps = {
   objetivo: IObjetivo;
@@ -49,27 +51,22 @@ export default function ObjetivoCard({
   const [objetivoDescricaoEditInput, setObjetivoDescricaoEditInput] = useState<{
     [objetivoId: number]: string;
   }>({});
+  const [anotacaoInput, setAnotacaoInput] = useState<{
+    [objetivoId: number]: string;
+  }>({});
+
+  const [salvandoAnotacao, setSalvandoAnotacao] = useState<{
+    [objetivoId: number]: boolean;
+  }>({});
 
   const [idObjetivoSendoEditado, setIdObjetivoSendoEditado] =
     useState<number>();
 
   const [objetivosAbertos, setObjetivosAbertos] = useState<number[]>([]);
 
-  const [tipoReferencia, setTipoReferencia] = useState<{
-    [objetivoId: number]: TipoReferencia;
-  }>({});
-
   const [dropdownReferenciaAberto, setDropdownReferenciaAberto] = useState<
     number | null
   >(null);
-
-  const [nomeReferencia, setNomeReferencia] = useState<{
-    [objetivoId: number]: string;
-  }>({});
-
-  const [urlReferencia, setUrlReferencia] = useState<{
-    [objetivoId: number]: string;
-  }>({});
 
   const objetivoEstaSendoEditado: boolean =
     objetivo.id === idObjetivoSendoEditado;
@@ -114,7 +111,7 @@ export default function ObjetivoCard({
     try {
       showLoading();
 
-      const titulo = objetivoTituloEditInput[objetivoId]?.trim();
+      const titulo = objetivoTituloEditInput[objetivoId].trim();
       const descricao = objetivoDescricaoEditInput[objetivoId]?.trim() || "";
 
       if (!titulo) {
@@ -189,6 +186,47 @@ export default function ObjetivoCard({
       alert(erro.message);
     } finally {
       hideLoading();
+    }
+  };
+
+  const handleSalvarAnotacao = async (objetivoId: number) => {
+    try {
+      setSalvandoAnotacao((prev) => ({
+        ...prev,
+        [objetivoId]: true,
+      }));
+
+      const anotacao = anotacaoInput[objetivoId]?.trim() || "";
+
+      const objetivoAtualizado = await updateObjetivo(objetivoId, {
+        anotacao,
+      });
+
+      setRoadmap((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          etapas: prev.etapas.map((etapa) => ({
+            ...etapa,
+            objetivos: etapa.objetivos.map((obj) =>
+              obj.id === objetivoId
+                ? {
+                    ...obj,
+                    ...objetivoAtualizado,
+                  }
+                : obj,
+            ),
+          })),
+        };
+      });
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      setSalvandoAnotacao((prev) => ({
+        ...prev,
+        [objetivoId]: false,
+      }));
     }
   };
 
@@ -312,7 +350,7 @@ export default function ObjetivoCard({
                 />
               )}
             </View>
-            <View style={{ gap: 4 }}>
+            <View style={{ gap: 4, flex: 1 }}>
               <Text style={styles.objetivoTituloText} selectable={false}>
                 {objetivo.titulo}
               </Text>
@@ -336,7 +374,7 @@ export default function ObjetivoCard({
               marginLeft: 8,
               justifyContent: "flex-end",
               marginRight: 8,
-              alignSelf: "flex-end",
+              alignSelf: "center",
             }}
           >
             {/* BOTAO EDITAR OBJETIVO */}
@@ -450,7 +488,7 @@ export default function ObjetivoCard({
             alignSelf: "flex-end",
           }}
         >
-          {/* BOTAO SALVAR OBJETIVO */}
+          {/* BOTAO SALVAR EDICAO OBJETIVO */}
           <Pressable
             style={(state: any) => [
               globalStyles.secondaryButton,
@@ -473,7 +511,7 @@ export default function ObjetivoCard({
             )}
           </Pressable>
 
-          {/* BOTAO CANCELAR OBJETIVO */}
+          {/* BOTAO CANCELAR EDICAO OBJETIVO */}
           <Pressable
             style={(state: any) => [
               globalStyles.secondaryButton,
@@ -553,23 +591,73 @@ export default function ObjetivoCard({
           style={{
             width: "100%",
             cursor: "default" as any,
-            paddingHorizontal: 12,
             gap: 12,
+            paddingHorizontal: 32,
           }}
           onPress={(e) => e.stopPropagation()}
         >
+          <Text style={styles.objetivoTituloText}>Anotações do objetivo</Text>
           <View
             style={{
               width: "100%",
+              paddingHorizontal: 12,
+              gap: 12,
             }}
           >
-            <Text style={styles.objetivoTituloText}>Anotações do objetivo</Text>
             <TextInput
-              style={[globalStyles.input, { margin: 12 }]}
+              style={globalStyles.input}
               numberOfLines={5}
               multiline
               placeholder="Adicione aqui as anotações do objetivo!"
               placeholderTextColor={colors.placeholderTextColor}
+              value={anotacaoInput[objetivo.id] ?? objetivo.anotacao ?? ""}
+              onChangeText={(text) =>
+                setAnotacaoInput((prev) => ({
+                  ...prev,
+                  [objetivo.id]: text,
+                }))
+              }
+            />
+            {/* Salvar Anotação */}
+            <MenuOptionButton
+              containerStyle={[
+                globalStyles.confirmButton,
+                {
+                  borderWidth: 0,
+                  backgroundColor: salvandoAnotacao[objetivo.id]
+                    ? "#555"
+                    : colors.green,
+                  alignSelf: "flex-end",
+                  opacity: salvandoAnotacao[objetivo.id] ? 0.6 : 1,
+                },
+              ]}
+              enabled={!salvandoAnotacao[objetivo.id]}
+              label={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Text
+                    style={[
+                      globalStyles.confirmButtonText,
+                      {
+                        color: "white",
+                        marginTop: 3,
+                        fontWeight: 600,
+                      },
+                    ]}
+                    selectable={false}
+                  >
+                    {salvandoAnotacao[objetivo.id]
+                      ? "Salvando..."
+                      : "Salvar anotação"}
+                  </Text>
+
+                  {salvandoAnotacao[objetivo.id] ? (
+                    <Feather name="loader" size={24} color="white" />
+                  ) : (
+                    <Feather name="check-circle" size={24} color="white" />
+                  )}
+                </View>
+              }
+              onPress={() => handleSalvarAnotacao(objetivo.id)}
             />
           </View>
 
@@ -579,6 +667,8 @@ export default function ObjetivoCard({
             onAdicionarReferencia={(id, tipo, nome, url) =>
               addReferencia("objetivo", id, tipo, nome, url)
             }
+            roadmap={roadmap}
+            setRoadmap={setRoadmap}
           />
         </Pressable>
       )}

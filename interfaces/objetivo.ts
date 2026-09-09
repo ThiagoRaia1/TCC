@@ -4,6 +4,7 @@ export interface IObjetivo {
   id: number;
   titulo: string;
   descricao: string;
+  anotacao: string;
   concluido: boolean;
   referencias?: IReferencia[];
 }
@@ -11,6 +12,7 @@ export interface IObjetivo {
 export interface ICriarObjetivo {
   titulo: string;
   descricao?: string;
+  anotacao?: string;
   concluido: boolean;
   referencias?: ICriarReferencia[];
 }
@@ -18,6 +20,7 @@ export interface ICriarObjetivo {
 export interface IUpdateObjetivo {
   titulo?: string;
   descricao?: string;
+  anotacao?: string;
   concluido?: boolean;
   referencias?: IUpdateReferencia[];
 }

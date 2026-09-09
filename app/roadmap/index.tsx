@@ -8,10 +8,9 @@ import {
   Pressable,
 } from "react-native";
 import { useLoading } from "../../context/providers/loading";
-import { useAuth } from "../../context/auth";
 import { IRoadmap } from "../../interfaces/roadmap";
 import { getAllRoadmap } from "../../services/roadmap";
-import { BookOpen, Eye, Pencil, Trash2 } from "lucide-react-native";
+import { BookOpen, Eye, Trash2 } from "lucide-react-native";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import { router } from "expo-router";
 import { colors } from "../../styles/colors";
@@ -19,15 +18,20 @@ import {
   calcularProgresso,
   getProgressColor,
 } from "../../utils/progressBarFunctions";
+import DeleteModal from "./visualizar/DeleteModal";
 
 export default function CriarRoadmap() {
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
+  const [roadmapSelecionado, setRoadmapSelecionado] = useState<IRoadmap>();
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 
   const getData = async () => {
     try {
+      setIsLoading(true);
       showLoading();
       const resultado = await getAllRoadmap();
 
@@ -36,6 +40,7 @@ export default function CriarRoadmap() {
       alert(erro.message);
     } finally {
       hideLoading();
+      setIsLoading(false);
     }
   };
 
@@ -44,7 +49,7 @@ export default function CriarRoadmap() {
   }, []);
 
   return (
-    <ScrollView style={{ paddingHorizontal: 40 }} contentContainerStyle={{}}>
+    <ScrollView style={{ paddingHorizontal: 40 }}>
       <View
         style={{
           maxWidth: 1350,
@@ -67,58 +72,77 @@ export default function CriarRoadmap() {
             </Text>
           </View>
 
-          {roadmaps && (
-            <View
-              style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
+          <View
+            style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
+          >
+            <TouchableOpacity
+              style={globalStyles.confirmButton}
+              onPress={() => router.push("/roadmap/novo")}
             >
-              <TouchableOpacity
-                style={globalStyles.confirmButton}
-                onPress={() => router.push("/roadmap/novo")}
-              >
-                <Text style={globalStyles.confirmButtonText}>
-                  + Criar Roadmap
-                </Text>
-              </TouchableOpacity>
+              <Text style={globalStyles.confirmButtonText}>
+                + Criar Roadmap
+              </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={globalStyles.confirmButton}>
-                <Text style={globalStyles.confirmButtonText}>
-                  Gerar com inteligência artificial
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            <TouchableOpacity style={globalStyles.confirmButton}>
+              <Text style={globalStyles.confirmButtonText}>
+                Gerar com inteligência artificial
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {roadmaps.length == 0 ? (
-          <View style={styles.noRoadmapsContainer}>
-            <BookOpen size={60} color="#3D84F6" />
-            <Text
-              style={{ fontSize: 20, fontWeight: 600, textAlign: "center" }}
-            >
-              Ainda não há roadmaps
-            </Text>
-            <Text
-              style={{ fontSize: 16, color: "#525252", textAlign: "center" }}
-            >
-              Crie seu primeiro roteiro de aprendizado para começar.
-            </Text>
+          <View
+            style={[
+              styles.noRoadmapsContainer,
+              isLoading && {
+                backgroundColor: "#f7f7f7",
+                boxShadow: "0px 0px 2px rgba(0, 0, 0, 1)",
+                height: 378,
+              },
+            ]}
+          >
+            {!isLoading && (
+              <>
+                <BookOpen size={60} color="#3D84F6" />
+                <Text
+                  style={{ fontSize: 20, fontWeight: 600, textAlign: "center" }}
+                >
+                  Ainda não há roadmaps
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: "#525252",
+                    textAlign: "center",
+                  }}
+                >
+                  Crie seu primeiro roteiro de aprendizado para começar.
+                </Text>
 
-            <TouchableOpacity
-              style={[globalStyles.confirmButton, styles.button]}
-              onPress={() => router.push("/roadmap/novo")}
-            >
-              <Text style={[globalStyles.confirmButtonText, styles.buttonText]}>
-                + Crie seu primeiro roadmap
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[globalStyles.confirmButton, styles.button]}
+                  onPress={() => router.push("/roadmap/novo")}
+                >
+                  <Text
+                    style={[globalStyles.confirmButtonText, styles.buttonText]}
+                  >
+                    + Crie seu primeiro roadmap
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[globalStyles.confirmButton, styles.button]}
-            >
-              <Text style={[globalStyles.confirmButtonText, styles.buttonText]}>
-                Gere com inteligência artificial
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[globalStyles.confirmButton, styles.button]}
+                >
+                  <Text
+                    style={[globalStyles.confirmButtonText, styles.buttonText]}
+                  >
+                    Gere com inteligência artificial
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         ) : (
           <View style={styles.roadmapsContainer}>
@@ -192,15 +216,6 @@ export default function CriarRoadmap() {
                       </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={[
-                        globalStyles.secondaryButton,
-                        styles.secundaryButton,
-                      ]}
-                    >
-                      <Pencil color={"black"} size={18} />
-                    </TouchableOpacity>
-
                     <Pressable
                       style={(state: any) => [
                         globalStyles.secondaryButton,
@@ -214,6 +229,10 @@ export default function CriarRoadmap() {
                           transitionTimingFunction: "ease-in-out",
                         },
                       ]}
+                      onPress={() => {
+                        setRoadmapSelecionado(roadmap);
+                        setDeleteModalVisible(true);
+                      }}
                     >
                       {(state: any) => (
                         <Trash2
@@ -230,6 +249,14 @@ export default function CriarRoadmap() {
           </View>
         )}
       </View>
+
+      {deleteModalVisible && (
+        <DeleteModal
+          closeModal={() => setDeleteModalVisible(false)}
+          roadmap={roadmapSelecionado}
+          tipoItem="roadmap"
+        />
+      )}
     </ScrollView>
   );
 }
