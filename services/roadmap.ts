@@ -4,7 +4,9 @@ import { httpClient } from "./httpclient";
 export async function criarRoadmap(tema: string) {
   return await httpClient("/roadmap", {
     method: "POST",
-    body: JSON.stringify(tema),
+    body: JSON.stringify({
+      tema,
+    }),
   });
 }
 

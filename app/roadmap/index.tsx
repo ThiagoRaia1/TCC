@@ -9,7 +9,11 @@ import {
 } from "react-native";
 import { useLoading } from "../../context/providers/loading";
 import { IRoadmap } from "../../interfaces/roadmap";
-import { getAllRoadmap } from "../../services/roadmap";
+import {
+  criarRoadmap,
+  getAllRoadmap,
+  salvarRoadmap,
+} from "../../services/roadmap";
 import { BookOpen, Eye, Trash2 } from "lucide-react-native";
 import { getGlobalStyles } from "../../styles/globalStyles";
 import { router } from "expo-router";
@@ -19,15 +23,20 @@ import {
   getProgressColor,
 } from "../../utils/progressBarFunctions";
 import DeleteModal from "./visualizar/DeleteModal";
+import { useAuth } from "../../context/auth";
+import GerarRoadmapModal from "./GerarRoadmapModal";
 
 export default function CriarRoadmap() {
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { usuario } = useAuth();
 
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
   const [roadmapSelecionado, setRoadmapSelecionado] = useState<IRoadmap>();
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+
+  const [modalGerarRoadmap, setModalGerarRoadmap] = useState(false);
 
   const getData = async () => {
     try {
@@ -85,7 +94,10 @@ export default function CriarRoadmap() {
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={globalStyles.confirmButton}>
+              <TouchableOpacity
+                style={globalStyles.confirmButton}
+                onPress={async () => setModalGerarRoadmap(true)}
+              >
                 <Text style={globalStyles.confirmButtonText}>
                   Gerar com inteligência artificial
                 </Text>
@@ -136,11 +148,12 @@ export default function CriarRoadmap() {
 
                 <TouchableOpacity
                   style={[globalStyles.confirmButton, styles.button]}
+                  onPress={() => setModalGerarRoadmap(true)}
                 >
                   <Text
                     style={[globalStyles.confirmButtonText, styles.buttonText]}
                   >
-                    Gere com inteligência artificial
+                    Gerar com inteligência artificial
                   </Text>
                 </TouchableOpacity>
               </>
@@ -181,7 +194,7 @@ export default function CriarRoadmap() {
                           { color: "black", fontWeight: "bold" },
                         ]}
                       >
-                        {calcularProgresso(roadmap)}%
+                        {calcularProgresso(roadmap).toFixed(0)}%
                       </Text>
                     </View>
                     <View style={styles.emptyProgressBar}>
@@ -200,12 +213,16 @@ export default function CriarRoadmap() {
                   </View>
 
                   <View style={styles.cardActionsRow}>
-                    <TouchableOpacity
-                      style={[
+                    <Pressable
+                      style={(state: any) => [
                         globalStyles.secondaryButton,
                         {
                           flex: 1,
                           paddingVertical: 8,
+                          backgroundColor: state.hovered ? "#3d84f618" : "#fff",
+                          transitionProperty: "background-color",
+                          transitionDuration: "200ms",
+                          transitionTimingFunction: "ease-in-out",
                         },
                       ]}
                       onPress={() =>
@@ -216,7 +233,7 @@ export default function CriarRoadmap() {
                       <Text style={globalStyles.secondaryButtonText}>
                         Visualizar
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
 
                     <Pressable
                       style={(state: any) => [
@@ -251,6 +268,28 @@ export default function CriarRoadmap() {
           </View>
         )}
       </View>
+
+      <GerarRoadmapModal
+        visible={modalGerarRoadmap}
+        onClose={() => setModalGerarRoadmap(false)}
+        onGerar={async (tema) => {
+          try {
+            showLoading();
+            setModalGerarRoadmap(false);
+            if (!usuario) return;
+            const roadmapGerado = await criarRoadmap(tema);
+            const roadmapSalvo = await salvarRoadmap({
+              ...roadmapGerado,
+              usuarioId: usuario.sub,
+            });
+            router.push(`/roadmap/visualizar/${roadmapSalvo.id}`);
+          } catch (erro: any) {
+            alert(erro.message);
+          } finally {
+            hideLoading();
+          }
+        }}
+      />
 
       {deleteModalVisible && (
         <DeleteModal
@@ -298,6 +337,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 45,
+    paddingBottom: 40,
   },
 
   roadmapCard: {

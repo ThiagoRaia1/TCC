@@ -232,9 +232,14 @@ export default function Visualizar() {
             flexDirection: "row",
             flex: 1,
             justifyContent: "space-between",
+            gap: 20,
           }}
         >
-          <View>
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
             <Text style={styles.titulo}>{roadmap.tema}</Text>
 
             <Text style={styles.descricao}>
