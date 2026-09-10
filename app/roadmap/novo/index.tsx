@@ -65,7 +65,7 @@ export default function NovoRoadmap() {
           tema: temaRoadmap,
           descricaoGeral: descricaoRoadmap,
           etapas: etapas,
-          usuarioId: usuario.sub,
+          usuario: usuario.sub,
         };
 
         const resultado = await salvarRoadmap(roadmap);

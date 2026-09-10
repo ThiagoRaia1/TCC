@@ -42,7 +42,9 @@ export default function CriarRoadmap() {
     try {
       setIsLoading(true);
       showLoading();
-      const resultado = await getAllRoadmap();
+      if (!usuario) return;
+
+      const resultado = await getAllRoadmap(usuario.sub);
 
       setRoadmaps(resultado);
     } catch (erro: any) {
@@ -280,7 +282,7 @@ export default function CriarRoadmap() {
             const roadmapGerado = await criarRoadmap(tema);
             const roadmapSalvo = await salvarRoadmap({
               ...roadmapGerado,
-              usuarioId: usuario.sub,
+              usuario: usuario.sub,
             });
             router.push(`/roadmap/visualizar/${roadmapSalvo.id}`);
           } catch (erro: any) {

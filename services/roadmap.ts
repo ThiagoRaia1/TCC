@@ -23,8 +23,8 @@ export async function getRoadmap(id: number): Promise<IRoadmap> {
   });
 }
 
-export async function getAllRoadmap(): Promise<IRoadmap[]> {
-  return await httpClient("/roadmap", {
+export async function getAllRoadmap(usuarioId: number): Promise<IRoadmap[]> {
+  return await httpClient(`/roadmap/usuario/${usuarioId}`, {
     method: "GET",
   });
 }

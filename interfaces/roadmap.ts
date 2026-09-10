@@ -13,7 +13,7 @@ export interface ICriarRoadmap {
   tema: string;
   descricaoGeral?: string;
   etapas?: ICriarEtapa[];
-  usuarioId: number;
+  usuario: number;
 }
 
 export interface IUpdateRoadmap {
