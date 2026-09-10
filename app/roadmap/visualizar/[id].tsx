@@ -4,6 +4,7 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { getGlobalStyles } from "../../../styles/globalStyles";
 import { router, useLocalSearchParams } from "expo-router";
@@ -32,6 +33,10 @@ export default function Visualizar() {
   const globalStyles = getGlobalStyles();
   const [roadmap, setRoadmap] = useState<IRoadmap>();
   const { showLoading, hideLoading } = useLoading();
+
+  const [editandoRoadmap, setEditandoRoadmap] = useState(false);
+  const [novoTema, setNovoTema] = useState("");
+  const [novaDescricao, setNovaDescricao] = useState("");
 
   //#region TIPOS
   type Menus = "Etapas" | "Quizzes";
@@ -184,6 +189,62 @@ export default function Visualizar() {
     }
   };
 
+  const editarRoadmap = async (novoTema: string, novaDescricao: string) => {
+    try {
+      if (!roadmap) return;
+
+      const tema = novoTema.trim();
+      const descricaoGeral = novaDescricao.trim();
+
+      if (!tema) {
+        alert("O título do roadmap não pode ficar vazio.");
+        return;
+      }
+
+      showLoading();
+
+      const roadmapAtualizado: IUpdateRoadmap = {
+        ...roadmap,
+        tema,
+        descricaoGeral,
+      };
+
+      const atualizado = await updateRoadmap(roadmapAtualizado);
+
+      setRoadmap(atualizado);
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const iniciarEdicaoRoadmap = () => {
+    if (!roadmap) return;
+
+    setNovoTema(roadmap.tema);
+    setNovaDescricao(roadmap.descricaoGeral ?? "");
+
+    setEditandoRoadmap(true);
+  };
+
+  const cancelarEdicaoRoadmap = () => {
+    if (!roadmap) return;
+
+    setNovoTema(roadmap.tema);
+    setNovaDescricao(roadmap.descricaoGeral ?? "");
+
+    setEditandoRoadmap(false);
+  };
+
+  const salvarEdicaoRoadmap = async () => {
+    if (!roadmap) return;
+
+    await editarRoadmap(novoTema, novaDescricao);
+
+    setEditandoRoadmap(false);
+  };
+
   return roadmap ? (
     <View
       style={{
@@ -191,6 +252,7 @@ export default function Visualizar() {
         paddingHorizontal: 8,
         gap: 20,
         paddingVertical: 20,
+        paddingBottom: 40,
         width: "100%",
         alignSelf: "center",
         flex: 1,
@@ -225,7 +287,7 @@ export default function Visualizar() {
         </Text>
       </TouchableOpacity>
 
-      {/* HEADER DO ROADMAP*/}
+      {/* HEADER DO ROADMAP */}
       <View style={globalStyles.card}>
         <View
           style={{
@@ -238,18 +300,53 @@ export default function Visualizar() {
           <View
             style={{
               flex: 1,
+              gap: 14,
             }}
           >
-            <Text style={styles.titulo}>{roadmap.tema}</Text>
+            {editandoRoadmap ? (
+              <>
+                {/* TÍTULO */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Título</Text>
 
-            <Text style={styles.descricao}>
-              {roadmap.descricaoGeral ? (
-                roadmap.descricaoGeral
-              ) : (
-                <i>Este roadmap ainda não possui descrição.</i>
-              )}
-            </Text>
+                  <TextInput
+                    value={novoTema}
+                    onChangeText={setNovoTema}
+                    placeholder="Digite o título do roadmap"
+                    style={globalStyles.input}
+                    autoFocus
+                  />
+                </View>
+
+                {/* DESCRIÇÃO */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Descrição</Text>
+
+                  <TextInput
+                    value={novaDescricao}
+                    onChangeText={setNovaDescricao}
+                    placeholder="Digite uma descrição para o roadmap"
+                    style={globalStyles.input}
+                    multiline
+                    numberOfLines={5}
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.titulo}>{roadmap.tema}</Text>
+
+                <Text style={styles.descricao}>
+                  {roadmap.descricaoGeral ? (
+                    roadmap.descricaoGeral
+                  ) : (
+                    <i>Este roadmap ainda não possui descrição.</i>
+                  )}
+                </Text>
+              </>
+            )}
           </View>
+
           <View
             style={{
               flexDirection: "row",
@@ -257,6 +354,7 @@ export default function Visualizar() {
               alignItems: "center",
             }}
           >
+            {/* EDITAR / SALVAR */}
             <Pressable
               style={(state: any) => [
                 globalStyles.secondaryButton,
@@ -269,50 +367,82 @@ export default function Visualizar() {
                   boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
                 },
               ]}
+              onPress={
+                editandoRoadmap ? salvarEdicaoRoadmap : iniciarEdicaoRoadmap
+              }
             >
               {(state: any) => (
                 <>
                   <Pencil color={state.hovered ? "#fff" : "#000"} size={16} />
+
                   <Text
                     style={[
                       globalStyles.secondaryButtonText,
-                      { color: state.hovered ? "#FFF" : "#000" },
+                      {
+                        color: state.hovered ? "#FFF" : "#000",
+                      },
                     ]}
                   >
-                    Editar
+                    {editandoRoadmap ? "Salvar" : "Editar"}
                   </Text>
                 </>
               )}
             </Pressable>
 
-            <Pressable
-              style={(state: any) => [
-                globalStyles.secondaryButton,
-                {
-                  paddingVertical: 8,
-                  backgroundColor: state.hovered ? "#ef4444" : "#fff",
-                  transitionProperty: "background-color",
-                  transitionDuration: "200ms",
-                  transitionTimingFunction: "ease-in-out",
-                  boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
-                },
-              ]}
-              onPress={() => openDeleteModal(tiposItem[0])}
-            >
-              {(state: any) => (
-                <>
-                  <Trash2 color={state.hovered ? "#fff" : "#000"} size={16} />
-                  <Text
-                    style={[
-                      globalStyles.secondaryButtonText,
-                      { color: state.hovered ? "#fff" : "#000" },
-                    ]}
-                  >
-                    Deletar
-                  </Text>
-                </>
-              )}
-            </Pressable>
+            {/* CANCELAR */}
+            {editandoRoadmap && (
+              <Pressable
+                style={(state: any) => [
+                  globalStyles.secondaryButton,
+                  {
+                    paddingVertical: 8,
+                    backgroundColor: state.hovered ? "#e5e5e5" : "#fff",
+                    transitionProperty: "background-color",
+                    transitionDuration: "200ms",
+                    transitionTimingFunction: "ease-in-out",
+                    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                  },
+                ]}
+                onPress={cancelarEdicaoRoadmap}
+              >
+                <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
+              </Pressable>
+            )}
+
+            {/* DELETAR */}
+            {!editandoRoadmap && (
+              <Pressable
+                style={(state: any) => [
+                  globalStyles.secondaryButton,
+                  {
+                    paddingVertical: 8,
+                    backgroundColor: state.hovered ? "#ef4444" : "#fff",
+                    transitionProperty: "background-color",
+                    transitionDuration: "200ms",
+                    transitionTimingFunction: "ease-in-out",
+                    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                  },
+                ]}
+                onPress={() => openDeleteModal(tiposItem[0])}
+              >
+                {(state: any) => (
+                  <>
+                    <Trash2 color={state.hovered ? "#fff" : "#000"} size={16} />
+
+                    <Text
+                      style={[
+                        globalStyles.secondaryButtonText,
+                        {
+                          color: state.hovered ? "#fff" : "#000",
+                        },
+                      ]}
+                    >
+                      Deletar
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            )}
           </View>
         </View>
 
@@ -538,5 +668,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 40,
     borderRadius: 20,
+  },
+
+  inputContainer: {
+    gap: 6,
+  },
+
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#444",
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 18,
+    color: "#000",
+    backgroundColor: "#fff",
+  },
+
+  inputDescricao: {
+    minHeight: 80,
+    fontSize: 16,
+    textAlignVertical: "top",
   },
 });
