@@ -10,8 +10,8 @@ import {
   View,
 } from "react-native";
 import { CircleX, Sparkles } from "lucide-react-native";
-import { getGlobalStyles } from "../../styles/globalStyles";
-import { colors } from "../../styles/colors";
+import { getGlobalStyles } from "../../../styles/globalStyles";
+import { colors } from "../../../styles/colors";
 
 type GerarRoadmapModalProps = {
   visible: boolean;

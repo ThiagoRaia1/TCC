@@ -24,7 +24,7 @@ import {
 } from "../../utils/progressBarFunctions";
 import DeleteModal from "./visualizar/components/DeleteModal";
 import { useAuth } from "../../context/auth";
-import GerarRoadmapModal from "./GerarRoadmapModal";
+import GerarRoadmapModal from "./components/GerarRoadmapModal";
 
 export default function CriarRoadmap() {
   const { showLoading, hideLoading } = useLoading();

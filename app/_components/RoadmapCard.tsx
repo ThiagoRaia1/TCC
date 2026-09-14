@@ -10,6 +10,7 @@ import { useLoading } from "../../context/providers/loading";
 import { router } from "expo-router";
 import { pageNames } from "../../utils/pageNames";
 import { useRoadmap } from "../../context/providers/roadmap";
+import { calcularProgresso } from "../../utils/progressBarFunctions";
 
 const styles = StyleSheet.create({
   roadmapsContainer: {
@@ -117,13 +118,7 @@ export default function RoadmapCard({ roadmap }: { roadmap: IRoadmap }) {
         <View style={styles.roadmapCardDados}>
           <View style={styles.roadmapCardColumn}>
             <Text style={styles.roadmapCardDadosText}>
-              Nível: {roadmap.nivel}
-            </Text>
-            <Text style={styles.roadmapCardDadosText}>
-              Duração Estimada: {roadmap.duracaoEstimada}
-            </Text>
-            <Text style={styles.roadmapCardDadosText}>
-              Porcentagem de Conclusão: {roadmap.porcentagemConclusao}%
+              Porcentagem de Conclusão: {calcularProgresso(roadmap)}%
             </Text>
           </View>
 

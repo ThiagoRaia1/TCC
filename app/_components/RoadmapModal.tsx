@@ -36,10 +36,8 @@ export default function RoadmapModal({ visible, roadmap, onClose }: Props) {
       const roadmapDto: ICriarRoadmap = {
         tema: roadmap.tema,
         descricaoGeral: roadmap.descricaoGeral,
-        duracaoEstimada: roadmap.duracaoEstimada,
-        nivel: roadmap.nivel,
         etapas: roadmap.etapas,
-        usuarioId: usuario.sub,
+        usuario: usuario.sub,
       };
 
       const resultado = await salvarRoadmap(roadmapDto);
@@ -77,10 +75,6 @@ export default function RoadmapModal({ visible, roadmap, onClose }: Props) {
             {/* INFO GERAL */}
             <View style={styles.section}>
               <Text style={styles.label}>Nível</Text>
-              <Text style={styles.text}>{roadmap.nivel}</Text>
-
-              <Text style={styles.label}>Duração estimada</Text>
-              <Text style={styles.text}>{roadmap.duracaoEstimada}</Text>
 
               <Text style={styles.label}>Descrição</Text>
               <Text style={styles.text}>{roadmap.descricaoGeral}</Text>
@@ -90,34 +84,34 @@ export default function RoadmapModal({ visible, roadmap, onClose }: Props) {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Etapas</Text>
 
-              {roadmap.etapas.map((etapa) => (
-                <View key={etapa.ordem} style={styles.etapaCard}>
-                  <Text style={styles.etapaTitulo}>
-                    {etapa.ordem}. {etapa.titulo}
-                  </Text>
-
-                  <Text style={styles.etapaDuracao}>⏱ {etapa.duracao}</Text>
-
-                  <Text style={styles.text}>{etapa.descricao}</Text>
-
-                  {/* OBJETIVOS */}
-                  <Text style={styles.subTitle}>Objetivos</Text>
-                  {etapa.objetivos.map((obj, i) => (
-                    <Text key={i} style={styles.listItem}>
-                      • {obj.descricao}
+              {roadmap.etapas &&
+                roadmap.etapas.map((etapa) => (
+                  <View key={etapa.ordem} style={styles.etapaCard}>
+                    <Text style={styles.etapaTitulo}>
+                      {etapa.ordem}. {etapa.titulo}
                     </Text>
-                  ))}
-                </View>
-              ))}
+
+                    <Text style={styles.text}>{etapa.descricao}</Text>
+
+                    {/* OBJETIVOS */}
+                    <Text style={styles.subTitle}>Objetivos</Text>
+                    {etapa.objetivos &&
+                      etapa.objetivos.map((obj, i) => (
+                        <Text key={i} style={styles.listItem}>
+                          • {obj.descricao}
+                        </Text>
+                      ))}
+                  </View>
+                ))}
             </View>
           </ScrollView>
 
           <View style={{ flexDirection: "row", gap: 20 }}>
             <TouchableOpacity
-              style={[globalStyles.button, { flex: 1 }]}
+              style={[globalStyles.buttonWithIcon, { flex: 1 }]}
               onPress={handleSalvarRoadmap}
             >
-              <Text style={globalStyles.buttonText}>Salvar</Text>
+              <Text style={globalStyles.buttonWithIconText}>Salvar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
