@@ -22,7 +22,7 @@ import {
   calcularProgresso,
   getProgressColor,
 } from "../../utils/progressBarFunctions";
-import DeleteModal from "./visualizar/DeleteModal";
+import DeleteModal from "./visualizar/components/DeleteModal";
 import { useAuth } from "../../context/auth";
 import GerarRoadmapModal from "./GerarRoadmapModal";
 

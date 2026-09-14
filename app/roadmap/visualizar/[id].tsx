@@ -15,14 +15,14 @@ import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
 import { getRoadmap, updateRoadmap } from "../../../services/roadmap";
 import { colors } from "../../../styles/colors";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
-import AdicionarEtapaModal from "./AdicionarEtapaModal";
-import DeleteModal from "./DeleteModal";
+import AdicionarEtapaModal from "./components/AdicionarEtapaModal";
+import DeleteModal from "./components/DeleteModal";
 import { TipoReferencia } from "../../../utils/tiposReferencia";
 import {
   calcularProgresso,
   getProgressColor,
 } from "../../../utils/progressBarFunctions";
-import EtapaCard from "./EtapaCard";
+import EtapaCard from "./components/EtapaCard";
 import { ICriarReferencia } from "../../../interfaces/referencia";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";

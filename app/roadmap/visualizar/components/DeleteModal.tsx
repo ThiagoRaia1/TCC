@@ -1,13 +1,13 @@
 import { View, TouchableOpacity, Text, Modal, Pressable } from "react-native";
-import { useLoading } from "../../../context/providers/loading";
-import { IEtapa } from "../../../interfaces/etapa";
-import { IRoadmap } from "../../../interfaces/roadmap";
-import { deleteRoadmap, getRoadmap } from "../../../services/roadmap";
-import { getGlobalStyles } from "../../../styles/globalStyles";
+import { useLoading } from "../../../../context/providers/loading";
+import { IEtapa } from "../../../../interfaces/etapa";
+import { IRoadmap } from "../../../../interfaces/roadmap";
+import { deleteRoadmap, getRoadmap } from "../../../../services/roadmap";
+import { getGlobalStyles } from "../../../../styles/globalStyles";
 import { router } from "expo-router";
-import { deleteEtapa } from "../../../services/etapa";
-import { IReferencia } from "../../../interfaces/referencia";
-import { deleteReferencia } from "../../../services/referecia";
+import { deleteEtapa } from "../../../../services/etapa";
+import { IReferencia } from "../../../../interfaces/referencia";
+import { deleteReferencia } from "../../../../services/referecia";
 
 type DeleteModalProps = {
   closeModal: () => void;

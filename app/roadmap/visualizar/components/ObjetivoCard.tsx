@@ -8,17 +8,17 @@ import {
   CircleX,
 } from "lucide-react-native";
 import { Pressable, View, TextInput, Text, StyleSheet } from "react-native";
-import { colors } from "../../../styles/colors";
-import { TipoReferencia } from "../../../utils/tiposReferencia";
-import { getGlobalStyles } from "../../../styles/globalStyles";
-import { IObjetivo } from "../../../interfaces/objetivo";
+import { colors } from "../../../../styles/colors";
+import { TipoReferencia } from "../../../../utils/tiposReferencia";
+import { getGlobalStyles } from "../../../../styles/globalStyles";
+import { IObjetivo } from "../../../../interfaces/objetivo";
 import { useState } from "react";
-import { updateRoadmap } from "../../../services/roadmap";
-import { useLoading } from "../../../context/providers/loading";
-import { IRoadmap } from "../../../interfaces/roadmap";
-import { deleteObjetivo, updateObjetivo } from "../../../services/objetivo";
+import { updateRoadmap } from "../../../../services/roadmap";
+import { useLoading } from "../../../../context/providers/loading";
+import { IRoadmap } from "../../../../interfaces/roadmap";
+import { deleteObjetivo, updateObjetivo } from "../../../../services/objetivo";
 import ReferenciasCard from "./ReferenciasCard";
-import MenuOptionButton from "../../_components/MenuOptionButton";
+import MenuOptionButton from "../../../_components/MenuOptionButton";
 import { Feather } from "@expo/vector-icons";
 
 type ObjetivoCardProps = {

@@ -5,12 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { getGlobalStyles } from "../../../styles/globalStyles";
+import { getGlobalStyles } from "../../../../styles/globalStyles";
 import { useState } from "react";
-import { updateRoadmap } from "../../../services/roadmap";
-import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
-import { ICriarEtapa } from "../../../interfaces/etapa";
-import { useLoading } from "../../../context/providers/loading";
+import { updateRoadmap } from "../../../../services/roadmap";
+import { IRoadmap, IUpdateRoadmap } from "../../../../interfaces/roadmap";
+import { ICriarEtapa } from "../../../../interfaces/etapa";
+import { useLoading } from "../../../../context/providers/loading";
 
 type AdicionarEtapaModalProps = {
   closeModal: () => void;

@@ -7,20 +7,20 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { colors } from "../../../styles/colors";
-import { getProgressColor } from "../../../utils/progressBarFunctions";
-import Editor from "../../_components/dom-components/hello-dom";
-import MenuOptionButton from "../../_components/MenuOptionButton";
+import { colors } from "../../../../styles/colors";
+import { getProgressColor } from "../../../../utils/progressBarFunctions";
+import Editor from "../../../_components/dom-components/hello-dom";
+import MenuOptionButton from "../../../_components/MenuOptionButton";
 import ObjetivoCard from "./ObjetivoCard";
-import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
-import { IEtapa } from "../../../interfaces/etapa";
-import { getGlobalStyles } from "../../../styles/globalStyles";
+import { IRoadmap, IUpdateRoadmap } from "../../../../interfaces/roadmap";
+import { IEtapa } from "../../../../interfaces/etapa";
+import { getGlobalStyles } from "../../../../styles/globalStyles";
 import { useState } from "react";
-import { TipoItem, tiposItem } from "./[id]";
-import { salvarAnotacao, updateRoadmap } from "../../../services/roadmap";
+import { TipoItem, tiposItem } from "../[id]";
+import { salvarAnotacao, updateRoadmap } from "../../../../services/roadmap";
 import { Feather } from "@expo/vector-icons";
-import { useLoading } from "../../../context/providers/loading";
-import { TipoReferencia } from "../../../utils/tiposReferencia";
+import { useLoading } from "../../../../context/providers/loading";
+import { TipoReferencia } from "../../../../utils/tiposReferencia";
 import ReferenciasCard from "./ReferenciasCard";
 
 type EtapaCardProps = {

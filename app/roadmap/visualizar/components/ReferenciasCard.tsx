@@ -8,19 +8,19 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { colors } from "../../../styles/colors";
+import { colors } from "../../../../styles/colors";
 import {
   getIconReferencia,
   TipoReferencia,
   tiposReferencia,
-} from "../../../utils/tiposReferencia";
-import { getGlobalStyles } from "../../../styles/globalStyles";
+} from "../../../../utils/tiposReferencia";
+import { getGlobalStyles } from "../../../../styles/globalStyles";
 import { useState } from "react";
-import { IReferencia } from "../../../interfaces/referencia";
+import { IReferencia } from "../../../../interfaces/referencia";
 import DeleteModal from "./DeleteModal";
-import { IRoadmap } from "../../../interfaces/roadmap";
-import { updateReferencia } from "../../../services/referecia";
-import { useLoading } from "../../../context/providers/loading";
+import { IRoadmap } from "../../../../interfaces/roadmap";
+import { updateReferencia } from "../../../../services/referecia";
+import { useLoading } from "../../../../context/providers/loading";
 
 const styles = StyleSheet.create({
   cardTitulo: {
