@@ -150,7 +150,7 @@ export const getGlobalStyles = () =>
     },
     card: {
       backgroundColor: "white",
-      boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.2)",
+      boxShadow: "0px 4px 8px rgba(88, 88, 88, 0.2)",
       justifyContent: "space-between",
       gap: 12,
       padding: 24,
