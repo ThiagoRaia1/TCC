@@ -1,29 +1,26 @@
 import {
   Pressable,
-  Text,
-  View,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
+  View,
+  Text,
 } from "react-native";
 import { getGlobalStyles } from "../../../styles/globalStyles";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useLoading } from "../../../context/providers/loading";
-import { IEtapa } from "../../../interfaces/etapa";
 import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
 import { getRoadmap, updateRoadmap } from "../../../services/roadmap";
 import { colors } from "../../../styles/colors";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
-import AdicionarEtapaModal from "./components/AdicionarEtapaModal";
-import DeleteModal from "./components/DeleteModal";
-import { TipoReferencia } from "../../../utils/tiposReferencia";
 import {
   calcularProgresso,
   getProgressColor,
 } from "../../../utils/progressBarFunctions";
-import EtapaCard from "./components/EtapaCard";
-import { ICriarReferencia } from "../../../interfaces/referencia";
+import Roadmap from "./Roadmap";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
+import DeleteModal from "./components/DeleteModal";
+import { IEtapa } from "../../../interfaces/etapa";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
@@ -38,6 +35,21 @@ export default function Visualizar() {
   const [novoTema, setNovoTema] = useState("");
   const [novaDescricao, setNovaDescricao] = useState("");
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const openDeleteModal = (tipoItem: TipoItem) => {
+    setTipoItemASerExcluido(tipoItem);
+    setDeleteModalVisible(true);
+  };
+
+  const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
+
+  const [anotacoes, setAnotacoes] = useState<{
+    [etapaId: number]: {
+      plainText: string;
+      editorState: string | null;
+    };
+  }>({});
+
   //#region TIPOS
   type Menus = "Etapas" | "Quizzes";
   const menus: Menus[] = ["Etapas", "Quizzes"];
@@ -47,19 +59,6 @@ export default function Visualizar() {
     tiposItem[0],
   );
   // TIPOS
-  //#endregion
-
-  //#region MODAIS
-  const [adicionandoEtapaModal, setAdicionandoEtapaModal] =
-    useState<boolean>(false);
-
-  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
-  const openDeleteModal = (tipoItem: TipoItem, etapa?: IEtapa) => {
-    if (etapa) setEtapaSelecionada(etapa);
-    setTipoItemASerExcluido(tipoItem);
-    setDeleteModalVisible(true);
-  };
-  // MODAIS
   //#endregion
 
   //#region USE EFFECTS
@@ -98,95 +97,37 @@ export default function Visualizar() {
   useEffect(() => {
     if (roadmap) calcularProgresso(roadmap);
   }, [roadmap]);
-
-  useEffect(() => {
-    if (!adicionandoEtapaModal) {
-      getData();
-    }
-  }, [adicionandoEtapaModal]);
   // USE EFFECTS
   //#endregion
-
-  const [anotacoes, setAnotacoes] = useState<{
-    [etapaId: number]: {
-      plainText: string;
-      editorState: string | null;
-    };
-  }>({});
-
-  const [etapaSelecionada, setEtapaSelecionada] = useState<IEtapa>();
 
   const porcentagemConclusaoRoadmap: number = roadmap
     ? calcularProgresso(roadmap)
     : 0;
 
-  const addReferencia = async (
-    tipoItem: "objetivo" | "etapa",
-    itemId: number,
-    tipo: TipoReferencia,
-    nome: string,
-    url: string,
-  ) => {
-    try {
-      showLoading();
+  const iniciarEdicaoRoadmap = () => {
+    if (!roadmap) return;
 
-      nome = nome.trim();
-      url = url.trim();
+    setNovoTema(roadmap.tema);
+    setNovaDescricao(roadmap.descricaoGeral ?? "");
 
-      if (!nome) {
-        alert("Informe o nome da referência.");
-        return;
-      }
+    setEditandoRoadmap(true);
+  };
 
-      if (!roadmap) return;
+  const cancelarEdicaoRoadmap = () => {
+    if (!roadmap) return;
 
-      const novaReferencia: ICriarReferencia = {
-        tipo,
-        nome,
-        url,
-      };
+    setNovoTema(roadmap.tema);
+    setNovaDescricao(roadmap.descricaoGeral ?? "");
 
-      const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
+    setEditandoRoadmap(false);
+  };
 
-        etapas: roadmap.etapas.map((etapa) => {
-          // Se a referência for de uma ETAPA
-          if (tipoItem === "etapa" && etapa.id === itemId) {
-            return {
-              ...etapa,
-              referencias: [...(etapa.referencias || []), novaReferencia],
-            };
-          }
+  const salvarEdicaoRoadmap = async () => {
+    if (!roadmap) return;
 
-          // Se a referência for de um OBJETIVO
-          return {
-            ...etapa,
+    await editarRoadmap(novoTema, novaDescricao);
 
-            objetivos: etapa.objetivos.map((objetivo) => {
-              if (tipoItem === "objetivo" && objetivo.id === itemId) {
-                return {
-                  ...objetivo,
-                  referencias: [
-                    ...(objetivo.referencias || []),
-                    novaReferencia,
-                  ],
-                };
-              }
-
-              return objetivo;
-            }),
-          };
-        }),
-      };
-
-      const atualizado = await updateRoadmap(novoRoadmap);
-
-      setRoadmap(atualizado);
-    } catch (erro: any) {
-      alert(erro.message);
-    } finally {
-      hideLoading();
-    }
+    setEditandoRoadmap(false);
   };
 
   const editarRoadmap = async (novoTema: string, novaDescricao: string) => {
@@ -219,376 +160,291 @@ export default function Visualizar() {
     }
   };
 
-  const iniciarEdicaoRoadmap = () => {
-    if (!roadmap) return;
-
-    setNovoTema(roadmap.tema);
-    setNovaDescricao(roadmap.descricaoGeral ?? "");
-
-    setEditandoRoadmap(true);
-  };
-
-  const cancelarEdicaoRoadmap = () => {
-    if (!roadmap) return;
-
-    setNovoTema(roadmap.tema);
-    setNovaDescricao(roadmap.descricaoGeral ?? "");
-
-    setEditandoRoadmap(false);
-  };
-
-  const salvarEdicaoRoadmap = async () => {
-    if (!roadmap) return;
-
-    await editarRoadmap(novoTema, novaDescricao);
-
-    setEditandoRoadmap(false);
-  };
-
   return roadmap ? (
-    <>
-      <View
-        style={{
-          maxWidth: 1350,
-          paddingHorizontal: 8,
-          gap: 20,
-          paddingVertical: 12,
-          paddingBottom: 40,
-          width: "100%",
-          alignSelf: "center",
-          flex: 1,
+    <View
+      style={{
+        maxWidth: 1350,
+        paddingHorizontal: 8,
+        gap: 20,
+        paddingVertical: 12,
+        paddingBottom: 40,
+        width: "100%",
+        alignSelf: "center",
+        flex: 1,
+      }}
+    >
+      {deleteModalVisible && (
+        <DeleteModal
+          closeModal={() => setDeleteModalVisible(false)}
+          roadmap={roadmap}
+          setRoadmap={setRoadmap}
+          tipoItem={tipoItemASerExcluido}
+          etapa={etapaSelecionada}
+        />
+      )}
+
+      <TouchableOpacity // VOLTAR AO DASHBOARD
+        style={[globalStyles.buttonWithIcon, styles.buttonWithIcon]}
+        onPress={() => {
+          router.push("/roadmap");
         }}
       >
-        {deleteModalVisible && (
-          <DeleteModal
-            closeModal={() => setDeleteModalVisible(false)}
-            roadmap={roadmap}
-            setRoadmap={setRoadmap}
-            tipoItem={tipoItemASerExcluido}
-            etapa={etapaSelecionada}
-          />
-        )}
-
-        <TouchableOpacity // VOLTAR AO DASHBOARD
-          style={[globalStyles.buttonWithIcon, styles.buttonWithIcon]}
-          onPress={() => {
-            router.push("/roadmap");
+        <ArrowLeft
+          size={20}
+          style={{ marginTop: 4 }}
+          color={colors.lightBlue}
+        />
+        <Text
+          style={{
+            color: "black",
+            fontSize: 16,
+            fontWeight: 600,
+            paddingVertical: 12,
           }}
         >
-          <ArrowLeft
-            size={20}
-            style={{ marginTop: 4 }}
-            color={colors.lightBlue}
-          />
-          <Text
+          Voltar ao dashboard
+        </Text>
+      </TouchableOpacity>
+
+      {/* HEADER DO ROADMAP */}
+      <View style={globalStyles.card}>
+        <View
+          style={{
+            flexDirection: "row",
+            flex: 1,
+            justifyContent: "space-between",
+            gap: 20,
+          }}
+        >
+          <View
             style={{
-              color: "black",
-              fontSize: 16,
-              fontWeight: 600,
-              paddingVertical: 12,
+              flex: 1,
+              gap: 14,
             }}
           >
-            Voltar ao dashboard
-          </Text>
-        </TouchableOpacity>
+            {editandoRoadmap ? (
+              <>
+                {/* TÍTULO */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Título</Text>
 
-        {/* HEADER DO ROADMAP */}
-        <View style={globalStyles.card}>
+                  <TextInput
+                    value={novoTema}
+                    onChangeText={setNovoTema}
+                    placeholder="Digite o título do roadmap"
+                    style={globalStyles.input}
+                    autoFocus
+                  />
+                </View>
+
+                {/* DESCRIÇÃO */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Descrição</Text>
+
+                  <TextInput
+                    value={novaDescricao}
+                    onChangeText={setNovaDescricao}
+                    placeholder="Digite uma descrição para o roadmap"
+                    style={globalStyles.input}
+                    multiline
+                    numberOfLines={5}
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.titulo}>{roadmap.tema}</Text>
+
+                <Text style={styles.descricao}>
+                  {roadmap.descricaoGeral ? (
+                    roadmap.descricaoGeral
+                  ) : (
+                    <i>Este roadmap ainda não possui descrição.</i>
+                  )}
+                </Text>
+              </>
+            )}
+          </View>
+
           <View
             style={{
               flexDirection: "row",
-              flex: 1,
-              justifyContent: "space-between",
               gap: 20,
+              alignItems: editandoRoadmap ? "flex-end" : "center",
             }}
           >
-            <View
-              style={{
-                flex: 1,
-                gap: 14,
-              }}
+            {/* EDITAR / SALVAR */}
+            <Pressable
+              style={(state: any) => [
+                globalStyles.secondaryButton,
+                {
+                  paddingVertical: 8,
+                  backgroundColor: state.hovered ? colors.lightBlue : "#fff",
+                  transitionProperty: "background-color",
+                  transitionDuration: "200ms",
+                  transitionTimingFunction: "ease-in-out",
+                  boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                },
+              ]}
+              onPress={
+                editandoRoadmap ? salvarEdicaoRoadmap : iniciarEdicaoRoadmap
+              }
             >
-              {editandoRoadmap ? (
+              {(state: any) => (
                 <>
-                  {/* TÍTULO */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Título</Text>
+                  <Pencil color={state.hovered ? "#fff" : "#000"} size={16} />
 
-                    <TextInput
-                      value={novoTema}
-                      onChangeText={setNovoTema}
-                      placeholder="Digite o título do roadmap"
-                      style={globalStyles.input}
-                      autoFocus
-                    />
-                  </View>
-
-                  {/* DESCRIÇÃO */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Descrição</Text>
-
-                    <TextInput
-                      value={novaDescricao}
-                      onChangeText={setNovaDescricao}
-                      placeholder="Digite uma descrição para o roadmap"
-                      style={globalStyles.input}
-                      multiline
-                      numberOfLines={5}
-                    />
-                  </View>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.titulo}>{roadmap.tema}</Text>
-
-                  <Text style={styles.descricao}>
-                    {roadmap.descricaoGeral ? (
-                      roadmap.descricaoGeral
-                    ) : (
-                      <i>Este roadmap ainda não possui descrição.</i>
-                    )}
+                  <Text
+                    style={[
+                      globalStyles.secondaryButtonText,
+                      {
+                        color: state.hovered ? "#FFF" : "#000",
+                      },
+                    ]}
+                  >
+                    {editandoRoadmap ? "Salvar" : "Editar"}
                   </Text>
                 </>
               )}
-            </View>
+            </Pressable>
 
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 20,
-                alignItems: editandoRoadmap ? "flex-end" : "center",
-              }}
-            >
-              {/* EDITAR / SALVAR */}
+            {/* CANCELAR */}
+            {editandoRoadmap && (
               <Pressable
                 style={(state: any) => [
                   globalStyles.secondaryButton,
                   {
                     paddingVertical: 8,
-                    backgroundColor: state.hovered ? colors.lightBlue : "#fff",
+                    backgroundColor: state.hovered ? "#e5e5e5" : "#fff",
                     transitionProperty: "background-color",
                     transitionDuration: "200ms",
                     transitionTimingFunction: "ease-in-out",
                     boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
                   },
                 ]}
-                onPress={
-                  editandoRoadmap ? salvarEdicaoRoadmap : iniciarEdicaoRoadmap
-                }
+                onPress={cancelarEdicaoRoadmap}
+              >
+                <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
+              </Pressable>
+            )}
+
+            {/* DELETAR */}
+            {!editandoRoadmap && (
+              <Pressable
+                style={(state: any) => [
+                  globalStyles.secondaryButton,
+                  {
+                    paddingVertical: 8,
+                    backgroundColor: state.hovered ? "#ef4444" : "#fff",
+                    transitionProperty: "background-color",
+                    transitionDuration: "200ms",
+                    transitionTimingFunction: "ease-in-out",
+                    boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
+                  },
+                ]}
+                onPress={() => openDeleteModal(tiposItem[0])}
               >
                 {(state: any) => (
                   <>
-                    <Pencil color={state.hovered ? "#fff" : "#000"} size={16} />
+                    <Trash2 color={state.hovered ? "#fff" : "#000"} size={16} />
 
                     <Text
                       style={[
                         globalStyles.secondaryButtonText,
                         {
-                          color: state.hovered ? "#FFF" : "#000",
+                          color: state.hovered ? "#fff" : "#000",
                         },
                       ]}
                     >
-                      {editandoRoadmap ? "Salvar" : "Editar"}
+                      Deletar
                     </Text>
                   </>
                 )}
               </Pressable>
-
-              {/* CANCELAR */}
-              {editandoRoadmap && (
-                <Pressable
-                  style={(state: any) => [
-                    globalStyles.secondaryButton,
-                    {
-                      paddingVertical: 8,
-                      backgroundColor: state.hovered ? "#e5e5e5" : "#fff",
-                      transitionProperty: "background-color",
-                      transitionDuration: "200ms",
-                      transitionTimingFunction: "ease-in-out",
-                      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
-                    },
-                  ]}
-                  onPress={cancelarEdicaoRoadmap}
-                >
-                  <Text style={globalStyles.secondaryButtonText}>Cancelar</Text>
-                </Pressable>
-              )}
-
-              {/* DELETAR */}
-              {!editandoRoadmap && (
-                <Pressable
-                  style={(state: any) => [
-                    globalStyles.secondaryButton,
-                    {
-                      paddingVertical: 8,
-                      backgroundColor: state.hovered ? "#ef4444" : "#fff",
-                      transitionProperty: "background-color",
-                      transitionDuration: "200ms",
-                      transitionTimingFunction: "ease-in-out",
-                      boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.4)",
-                    },
-                  ]}
-                  onPress={() => openDeleteModal(tiposItem[0])}
-                >
-                  {(state: any) => (
-                    <>
-                      <Trash2
-                        color={state.hovered ? "#fff" : "#000"}
-                        size={16}
-                      />
-
-                      <Text
-                        style={[
-                          globalStyles.secondaryButtonText,
-                          {
-                            color: state.hovered ? "#fff" : "#000",
-                          },
-                        ]}
-                      >
-                        Deletar
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
-              )}
-            </View>
-          </View>
-
-          {/* Barra de progresso */}
-          <View style={styles.progressContainer}>
-            {porcentagemConclusaoRoadmap > 0 && (
-              <View
-                style={[
-                  styles.progressBar,
-                  {
-                    width: `${porcentagemConclusaoRoadmap}%`,
-                    backgroundColor: getProgressColor(
-                      porcentagemConclusaoRoadmap,
-                    ),
-                  },
-                ]}
-              />
             )}
           </View>
-
-          <Text style={styles.progressText}>
-            {porcentagemConclusaoRoadmap.toFixed(0)}% concluído
-          </Text>
         </View>
 
-        {/* MENU */}
-        <View style={styles.menu}>
-          <TouchableOpacity
-            onPress={() => setMenuSelecionado(menus[0])}
-            style={[
-              styles.menuItem,
-              menuSelecionado == menus[0]
-                ? styles.menuItemSelecionado
-                : styles.menuItemDesselecionado,
-            ]}
-          >
-            <Text
+        {/* Barra de progresso */}
+        <View style={styles.progressContainer}>
+          {porcentagemConclusaoRoadmap > 0 && (
+            <View
               style={[
-                styles.menuItemText,
-                menuSelecionado == menus[0]
-                  ? styles.menuItemSelecionadoText
-                  : styles.menuItemDesselecionadoText,
+                styles.progressBar,
+                {
+                  width: `${porcentagemConclusaoRoadmap}%`,
+                  backgroundColor: getProgressColor(
+                    porcentagemConclusaoRoadmap,
+                  ),
+                },
               ]}
-            >
-              Etapas do Roadmap
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setMenuSelecionado(menus[1])}
-            style={[
-              styles.menuItem,
-              menuSelecionado == menus[1]
-                ? styles.menuItemSelecionado
-                : styles.menuItemDesselecionado,
-            ]}
-          >
-            <Text
-              style={[
-                styles.menuItemText,
-                menuSelecionado == menus[1]
-                  ? styles.menuItemSelecionadoText
-                  : styles.menuItemDesselecionadoText,
-              ]}
-            >
-              Quizzes e Avaliações
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ETAPAS */}
-        <View style={{ gap: 20 }}>
-          {/* TITULO + ADICIONAR ETAPAS */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text style={styles.titulo}>Etapas</Text>
-            {!adicionandoEtapaModal && (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: colors.lightBlue,
-                  paddingVertical: 8,
-                  paddingHorizontal: 20,
-                  borderRadius: 12,
-                }}
-                onPress={() => setAdicionandoEtapaModal(true)}
-              >
-                <Text style={{ color: "white" }}>+ Adicionar Etapa</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* ADICIONAR ETAPA MODAL */}
-          {adicionandoEtapaModal && (
-            <AdicionarEtapaModal
-              closeModal={() => setAdicionandoEtapaModal(false)}
-              roadmap={roadmap}
             />
           )}
-
-          {roadmap.etapas.length != 0
-            ? roadmap.etapas
-                .sort((a, b) => a.ordem - b.ordem)
-                .map((etapa, index) => {
-                  const zIndex = roadmap.etapas.length - index;
-
-                  return (
-                    <EtapaCard
-                      key={etapa.id}
-                      etapa={etapa}
-                      roadmap={roadmap}
-                      setRoadmap={setRoadmap}
-                      openDeleteModal={openDeleteModal}
-                      anotacoes={anotacoes}
-                      setAnotacoes={setAnotacoes}
-                      addReferencia={addReferencia}
-                      zIndex={zIndex}
-                    />
-                  );
-                })
-            : !adicionandoEtapaModal && (
-                <Text
-                  style={{
-                    fontStyle: "italic",
-                    fontSize: 16,
-                    color: colors.placeholderTextColor,
-                  }}
-                >
-                  Este Roadmap ainda não possui etapas.
-                </Text>
-              )}
         </View>
+
+        <Text style={styles.progressText}>
+          {porcentagemConclusaoRoadmap.toFixed(0)}% concluído
+        </Text>
       </View>
-    </>
+
+      {/* MENU */}
+      <View style={styles.menu}>
+        <TouchableOpacity
+          onPress={() => setMenuSelecionado(menus[0])}
+          style={[
+            styles.menuItem,
+            menuSelecionado == menus[0]
+              ? styles.menuItemSelecionado
+              : styles.menuItemDesselecionado,
+          ]}
+        >
+          <Text
+            style={[
+              styles.menuItemText,
+              menuSelecionado == menus[0]
+                ? styles.menuItemSelecionadoText
+                : styles.menuItemDesselecionadoText,
+            ]}
+          >
+            Etapas do Roadmap
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setMenuSelecionado(menus[1])}
+          style={[
+            styles.menuItem,
+            menuSelecionado == menus[1]
+              ? styles.menuItemSelecionado
+              : styles.menuItemDesselecionado,
+          ]}
+        >
+          <Text
+            style={[
+              styles.menuItemText,
+              menuSelecionado == menus[1]
+                ? styles.menuItemSelecionadoText
+                : styles.menuItemDesselecionadoText,
+            ]}
+          >
+            Quizzes e Avaliações
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Roadmap
+        roadmap={roadmap}
+        setRoadmap={setRoadmap}
+        tipoItemASerExcluido={tipoItemASerExcluido}
+        setTipoItemASerExcluido={setTipoItemASerExcluido}
+        deleteModalVisible={deleteModalVisible}
+        setDeleteModalVisible={setDeleteModalVisible}
+        getData={getData}
+        anotacoes={anotacoes}
+        setAnotacoes={setAnotacoes}
+        setEtapaSelecionada={setEtapaSelecionada}
+      />
+    </View>
   ) : null;
 }
 

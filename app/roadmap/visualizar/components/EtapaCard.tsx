@@ -26,8 +26,8 @@ import ReferenciasCard from "./ReferenciasCard";
 type EtapaCardProps = {
   etapa: IEtapa;
   roadmap: IRoadmap;
+
   setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
-  openDeleteModal: (tipoItem: TipoItem, etapa: IEtapa) => void;
 
   anotacoes: {
     [etapaId: number]: {
@@ -35,6 +35,7 @@ type EtapaCardProps = {
       editorState: string | null;
     };
   };
+
   setAnotacoes: React.Dispatch<
     React.SetStateAction<{
       [etapaId: number]: {
@@ -43,6 +44,7 @@ type EtapaCardProps = {
       };
     }>
   >;
+
   addReferencia: (
     tipoItem: "objetivo" | "etapa",
     itemId: number,
@@ -50,30 +52,36 @@ type EtapaCardProps = {
     nome: string,
     url: string,
   ) => void;
+
   zIndex: number;
+
+  aberta: boolean;
+
+  toggleEtapa: (id: number) => void;
+
+  setEtapaSelecionada: React.Dispatch<React.SetStateAction<IEtapa | undefined>>;
+
+  setTipoItemASerExcluido: React.Dispatch<React.SetStateAction<TipoItem>>;
+
+  setDeleteModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function EtapaCard({
   etapa,
   roadmap,
   setRoadmap,
-  openDeleteModal,
   anotacoes,
   setAnotacoes,
   addReferencia,
   zIndex,
+  aberta,
+  toggleEtapa,
+  setEtapaSelecionada,
+  setTipoItemASerExcluido,
+  setDeleteModalVisible,
 }: EtapaCardProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
-
-  const toggleEtapa = (id: number) => {
-    setEtapasAbertas((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const [etapasAbertas, setEtapasAbertas] = useState<number[]>([]);
-  const aberta = etapasAbertas.includes(etapa.id);
 
   const calcularProgressoEtapa = (etapa: IEtapa): number => {
     const total = etapa.objetivos.length;
@@ -214,16 +222,12 @@ export default function EtapaCard({
   const [descricaoEtapa, setDescricaoEtapa] = useState(etapa.descricao);
 
   const iniciarEdicaoEtapa = () => {
-    // Fecha a etapa
-    setEtapasAbertas((prev) => prev.filter((id) => id !== etapa.id));
-
     // Entra no modo de edição
     setEditandoEtapa(true);
   };
 
   const editarEtapa = async () => {
     try {
-      showLoading();
       const titulo = tituloEtapa.trim();
       const descricao = descricaoEtapa.trim();
 
@@ -231,6 +235,8 @@ export default function EtapaCard({
         alert("O título da etapa não pode ficar vazio.");
         return;
       }
+
+      showLoading();
 
       const novoRoadmap: IUpdateRoadmap = {
         ...roadmap,
@@ -256,6 +262,12 @@ export default function EtapaCard({
     } finally {
       hideLoading();
     }
+  };
+
+  const openDeleteModal = () => {
+    setEtapaSelecionada(etapa);
+    setTipoItemASerExcluido("etapa");
+    setDeleteModalVisible(true);
   };
 
   return (
@@ -424,7 +436,7 @@ export default function EtapaCard({
                         transitionTimingFunction: "ease-in-out",
                       },
                     ]}
-                    onPress={() => openDeleteModal(tiposItem[1], etapa)}
+                    onPress={openDeleteModal}
                   >
                     {(state: any) => (
                       <Trash2
@@ -468,6 +480,7 @@ export default function EtapaCard({
             .map((obj) => {
               return (
                 <ObjetivoCard
+                  key={obj.id}
                   objetivo={obj}
                   etapaId={etapa.id}
                   roadmap={roadmap}
