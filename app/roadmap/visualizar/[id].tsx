@@ -21,6 +21,7 @@ import Roadmap from "./Roadmap";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
 import DeleteModal from "./components/DeleteModal";
 import { IEtapa } from "../../../interfaces/etapa";
+import Quizzes from "./Quizzes";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
@@ -432,18 +433,22 @@ export default function Visualizar() {
         </TouchableOpacity>
       </View>
 
-      <Roadmap
-        roadmap={roadmap}
-        setRoadmap={setRoadmap}
-        tipoItemASerExcluido={tipoItemASerExcluido}
-        setTipoItemASerExcluido={setTipoItemASerExcluido}
-        deleteModalVisible={deleteModalVisible}
-        setDeleteModalVisible={setDeleteModalVisible}
-        getData={getData}
-        anotacoes={anotacoes}
-        setAnotacoes={setAnotacoes}
-        setEtapaSelecionada={setEtapaSelecionada}
-      />
+      {menuSelecionado == menus[0] && (
+        <Roadmap
+          roadmap={roadmap}
+          setRoadmap={setRoadmap}
+          tipoItemASerExcluido={tipoItemASerExcluido}
+          setTipoItemASerExcluido={setTipoItemASerExcluido}
+          deleteModalVisible={deleteModalVisible}
+          setDeleteModalVisible={setDeleteModalVisible}
+          getData={getData}
+          anotacoes={anotacoes}
+          setAnotacoes={setAnotacoes}
+          setEtapaSelecionada={setEtapaSelecionada}
+        />
+      )}
+
+      {menuSelecionado == menus[1] && <Quizzes />}
     </View>
   ) : null;
 }
