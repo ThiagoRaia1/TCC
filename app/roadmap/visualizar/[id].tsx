@@ -21,7 +21,7 @@ import Roadmap from "./Roadmap";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
 import DeleteModal from "./components/DeleteModal";
 import { IEtapa } from "../../../interfaces/etapa";
-import Quizzes from "./Quizzes";
+import Quizzes from "./quiz/Quizzes";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
@@ -52,9 +52,9 @@ export default function Visualizar() {
   }>({});
 
   //#region TIPOS
-  type Menus = "Etapas" | "Quizzes";
-  const menus: Menus[] = ["Etapas", "Quizzes"];
-  const [menuSelecionado, setMenuSelecionado] = useState<Menus>(menus[0]);
+  type Abas = "Etapas" | "Quizzes";
+  const abas: Abas[] = ["Etapas", "Quizzes"];
+  const [abaSelecionada, setAbaSelecionada] = useState<Abas>(abas[0]);
 
   const [tipoItemASerExcluido, setTipoItemASerExcluido] = useState<TipoItem>(
     tiposItem[0],
@@ -391,10 +391,10 @@ export default function Visualizar() {
       {/* MENU */}
       <View style={styles.menu}>
         <TouchableOpacity
-          onPress={() => setMenuSelecionado(menus[0])}
+          onPress={() => setAbaSelecionada(abas[0])}
           style={[
             styles.menuItem,
-            menuSelecionado == menus[0]
+            abaSelecionada == abas[0]
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -402,7 +402,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              menuSelecionado == menus[0]
+              abaSelecionada == abas[0]
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -412,10 +412,10 @@ export default function Visualizar() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => setMenuSelecionado(menus[1])}
+          onPress={() => setAbaSelecionada(abas[1])}
           style={[
             styles.menuItem,
-            menuSelecionado == menus[1]
+            abaSelecionada == abas[1]
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -423,7 +423,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              menuSelecionado == menus[1]
+              abaSelecionada == abas[1]
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -433,7 +433,7 @@ export default function Visualizar() {
         </TouchableOpacity>
       </View>
 
-      {menuSelecionado == menus[0] && (
+      {abaSelecionada == abas[0] && (
         <Roadmap
           roadmap={roadmap}
           setRoadmap={setRoadmap}
@@ -448,7 +448,7 @@ export default function Visualizar() {
         />
       )}
 
-      {menuSelecionado == menus[1] && <Quizzes />}
+      {abaSelecionada == abas[1] && <Quizzes roadmap={roadmap} />}
     </View>
   ) : null;
 }
