@@ -8,8 +8,11 @@ export async function criarQuiz(quiz: ICriarQuiz): Promise<IQuiz> {
   });
 }
 
-export async function getAllQuizzes(usuarioId: number): Promise<IQuiz[]> {
-  return await httpClient(`/quiz/usuario/${usuarioId}`, {
+export async function getAllQuizzes(
+  usuarioId: number,
+  roadmapId: number,
+): Promise<IQuiz[]> {
+  return await httpClient(`/quiz/usuario/${usuarioId}/${roadmapId}`, {
     method: "GET",
   });
 }

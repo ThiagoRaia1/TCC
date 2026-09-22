@@ -17,20 +17,20 @@ import { X, ClipboardList, Plus, Check, Layers } from "lucide-react-native";
 import { IEtapa } from "../../../../../interfaces/etapa";
 import { router } from "expo-router";
 import { criarQuiz } from "../../../../../services/quiz/quiz";
-import { IQuiz } from "../../../../../interfaces/quiz/quiz";
+import { ICriarQuiz, IQuiz } from "../../../../../interfaces/quiz/quiz";
 import { useAuth } from "../../../../../context/auth";
 import { IRoadmap } from "../../../../../interfaces/roadmap";
 
 interface CriarQuizModalProps {
   visible: boolean;
   closeModal: () => void;
-  roadmap: IRoadmap
+  roadmap: IRoadmap;
 }
 
 export default function CriarQuizModal({
   visible,
   closeModal,
-  roadmap
+  roadmap,
 }: CriarQuizModalProps) {
   const { usuario } = useAuth();
   const translateY = useRef(new Animated.Value(700)).current;
@@ -130,7 +130,7 @@ export default function CriarQuizModal({
       descricao: descricaoTratada,
 
       // Roadmap inteiro
-      roadmapId: quizDoRoadmap ? roadmap.id : undefined,
+      roadmapId: roadmap.id,
 
       // Etapas específicas
       etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,

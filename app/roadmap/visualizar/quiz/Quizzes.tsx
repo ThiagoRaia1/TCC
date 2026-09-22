@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { IQuiz } from "../../../../interfaces/quiz/quiz";
 import { IRoadmap } from "../../../../interfaces/roadmap";
 import { colors } from "../../../../styles/colors";
-import CriarQuizModal from "../components/quiz/CriarQuizModal";
+import CriarQuizModal from "./components/CriarQuizModal";
 import { useLoading } from "../../../../context/providers/loading";
 import { getAllQuizzes } from "../../../../services/quiz/quiz";
 import { useAuth } from "../../../../context/auth";
@@ -30,10 +30,9 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
 
   const getData = async () => {
     if (!usuario) return;
-    const resultado: IQuiz[] = await getAllQuizzes(usuario.sub);
+    const resultado: IQuiz[] = await getAllQuizzes(usuario.sub, roadmap.id);
 
     setQuizzes(resultado);
-    console.log(resultado);
   };
 
   useEffect(() => {
@@ -41,6 +40,7 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
       showLoading();
       getData();
     } catch (erro: any) {
+      alert(erro.message);
     } finally {
       hideLoading();
     }
@@ -173,9 +173,9 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
                         ? "QUIZ DE 1 ETAPA"
                         : `QUIZ DE ${quiz.etapas.length} ETAPAS`}
                     </Text>
-                  ) : quiz.roadmap ? (
+                  ) : (
                     <Text style={styles.quizEtapa}>QUIZ DO ROADMAP</Text>
-                  ) : null}
+                  )}
 
                   <Text style={styles.quizTitulo}>{quiz.titulo}</Text>
 
