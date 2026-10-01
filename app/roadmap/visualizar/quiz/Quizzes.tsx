@@ -16,6 +16,10 @@ import CriarQuizModal from "./components/CriarQuizModal";
 import { useLoading } from "../../../../context/providers/loading";
 import { getAllQuizzes } from "../../../../services/quiz/quiz";
 import { useAuth } from "../../../../context/auth";
+import { router } from "expo-router";
+
+export type OpcoesAdicionarQuiz = "Etapas" | "Quizzes";
+export const opcoesAdicionarQuiz: OpcoesAdicionarQuiz[] = ["Etapas", "Quizzes"];
 
 interface QuizzesProps {
   roadmap: IRoadmap;
@@ -27,6 +31,8 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
 
   const [quizzes, setQuizzes] = useState<IQuiz[]>();
   const [modalCriarQuiz, setModalCriarQuiz] = useState(false);
+  const [opcaoSelecionadaAdicionarQuiz, setOpcaoSelecionadaAdicionarQuiz] =
+    useState<OpcoesAdicionarQuiz>(opcoesAdicionarQuiz[0]);
 
   const getData = async () => {
     if (!usuario) return;
@@ -130,14 +136,20 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Pressable
               style={styles.adicionarQuizButton}
-              onPress={() => setModalCriarQuiz(true)}
+              onPress={() => {
+                setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[0]);
+                setModalCriarQuiz(true);
+              }}
             >
               <Text style={styles.adicionarQuizButtonText}>Criar quiz</Text>
             </Pressable>
 
             <Pressable
               style={styles.adicionarQuizButton}
-              onPress={() => alert("Gerar novo quiz")}
+              onPress={() => {
+                setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[1]);
+                setModalCriarQuiz(true);
+              }}
             >
               <Text style={styles.adicionarQuizButtonText}>
                 Gerar quiz com inteligência artificial
@@ -219,7 +231,26 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
                       </Text>
                     </Pressable>
                   ) : (
-                    <View style={{ flex: 1 }} />
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.quizFooterButton,
+                        styles.quizFooterButtonSecondary,
+                        pressed && styles.quizFooterButtonPressed,
+                      ]}
+                      onPress={() => {
+                        router.push(`roadmap/visualizar/quiz/${quiz.id}`);
+                      }}
+                    >
+                      <Eye
+                        size={16}
+                        color={colors.lightBlue}
+                        style={{ marginTop: 2 }}
+                      />
+
+                      <Text style={styles.quizFooterButtonSecondaryText}>
+                        Visualizar
+                      </Text>
+                    </Pressable>
                   )}
 
                   <Pressable
@@ -263,6 +294,7 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
           visible={modalCriarQuiz}
           closeModal={() => setModalCriarQuiz(false)}
           roadmap={roadmap}
+          opcaoSelecionadaAdicionarQuiz={opcaoSelecionadaAdicionarQuiz}
         />
       </View>
     )

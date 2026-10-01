@@ -8,6 +8,21 @@ export async function criarQuiz(quiz: ICriarQuiz): Promise<IQuiz> {
   });
 }
 
+interface CriarQuizData {
+  titulo: string;
+  descricao?: string;
+  roadmapId: number;
+  etapaIds?: number[];
+  usuarioId: number
+}
+
+export async function gerarQuiz(data: CriarQuizData) {
+  return await httpClient("/quiz/gerar", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function getAllQuizzes(
   usuarioId: number,
   roadmapId: number,

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-
 import {
   Animated,
   KeyboardAvoidingView,
@@ -12,27 +11,30 @@ import {
   TextInput,
   View,
 } from "react-native";
-
 import { X, ClipboardList, Plus, Check, Layers } from "lucide-react-native";
-import { IEtapa } from "../../../../../interfaces/etapa";
 import { router } from "expo-router";
-import { criarQuiz } from "../../../../../services/quiz/quiz";
-import { ICriarQuiz, IQuiz } from "../../../../../interfaces/quiz/quiz";
+import { criarQuiz, gerarQuiz } from "../../../../../services/quiz/quiz";
+import { IQuiz } from "../../../../../interfaces/quiz/quiz";
 import { useAuth } from "../../../../../context/auth";
 import { IRoadmap } from "../../../../../interfaces/roadmap";
+import { opcoesAdicionarQuiz, OpcoesAdicionarQuiz } from "../Quizzes";
+import { useLoading } from "../../../../../context/providers/loading";
 
 interface CriarQuizModalProps {
   visible: boolean;
   closeModal: () => void;
   roadmap: IRoadmap;
+  opcaoSelecionadaAdicionarQuiz: OpcoesAdicionarQuiz;
 }
 
 export default function CriarQuizModal({
   visible,
   closeModal,
   roadmap,
+  opcaoSelecionadaAdicionarQuiz,
 }: CriarQuizModalProps) {
   const { usuario } = useAuth();
+  const { showLoading, hideLoading } = useLoading();
   const translateY = useRef(new Animated.Value(700)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -106,45 +108,101 @@ export default function CriarQuizModal({
   };
 
   const handleCriarQuiz = async () => {
-    const tituloTratado = titulo.trim();
-    const descricaoTratada = descricao.trim();
+    try {
+      showLoading();
+      const tituloTratado = titulo.trim();
+      const descricaoTratada = descricao.trim();
 
-    if (!tituloTratado) {
-      alert("Informe um título para o quiz.");
-      return;
+      if (!tituloTratado) {
+        alert("Informe um título para o quiz.");
+        return;
+      }
+
+      if (!usuario) return;
+
+      // Nenhuma etapa selecionada = roadmap inteiro
+      const quizDoRoadmap = etapasSelecionadas === null;
+
+      // Etapas selecionadas, mas array vazio
+      if (!quizDoRoadmap && etapasSelecionadas.length === 0) {
+        alert("Selecione pelo menos uma etapa ou escolha o roadmap inteiro.");
+        return;
+      }
+
+      const resultado: IQuiz = await criarQuiz({
+        titulo: tituloTratado,
+        descricao: descricaoTratada,
+
+        // Roadmap inteiro
+        roadmapId: roadmap.id,
+
+        // Etapas específicas
+        etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,
+
+        usuarioId: usuario.sub,
+      });
+
+      setTitulo("");
+      setDescricao("");
+      setEtapasSelecionadas(null);
+
+      router.push(`roadmap/visualizar/quiz/${resultado.id}`);
+
+      fecharModal();
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
     }
+  };
 
-    if (!usuario) return;
+  const handleGerarQuiz = async () => {
+    try {
+      showLoading();
+      const tituloTratado = titulo.trim();
+      const descricaoTratada = descricao.trim();
 
-    // Nenhuma etapa selecionada = roadmap inteiro
-    const quizDoRoadmap = etapasSelecionadas === null;
+      if (!tituloTratado) {
+        alert("Informe um título para o quiz.");
+        return;
+      }
 
-    // Etapas selecionadas, mas array vazio
-    if (!quizDoRoadmap && etapasSelecionadas.length === 0) {
-      alert("Selecione pelo menos uma etapa ou escolha o roadmap inteiro.");
-      return;
+      if (!usuario) return;
+
+      // Nenhuma etapa selecionada = roadmap inteiro
+      const quizDoRoadmap = etapasSelecionadas === null;
+
+      // Etapas selecionadas, mas array vazio
+      if (!quizDoRoadmap && etapasSelecionadas.length === 0) {
+        alert("Selecione pelo menos uma etapa ou escolha o roadmap inteiro.");
+        return;
+      }
+
+      const resultado = await gerarQuiz({
+        titulo: tituloTratado,
+        descricao: descricaoTratada,
+
+        // Roadmap inteiro
+        roadmapId: roadmap.id,
+
+        // Etapas específicas
+        etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,
+
+        usuarioId: usuario.sub,
+      });
+
+      setTitulo("");
+      setDescricao("");
+      setEtapasSelecionadas(null);
+
+      router.push(`roadmap/visualizar/quiz/${resultado.id}`);
+
+      fecharModal();
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
     }
-
-    const resultado: IQuiz = await criarQuiz({
-      titulo: tituloTratado,
-      descricao: descricaoTratada,
-
-      // Roadmap inteiro
-      roadmapId: roadmap.id,
-
-      // Etapas específicas
-      etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,
-
-      usuarioId: usuario.sub,
-    });
-
-    setTitulo("");
-    setDescricao("");
-    setEtapasSelecionadas(null);
-
-    router.push(`roadmap/visualizar/quiz/${resultado.id}`);
-
-    fecharModal();
   };
 
   return (
@@ -185,7 +243,11 @@ export default function CriarQuizModal({
               </View>
 
               <View>
-                <Text style={styles.tituloModal}>Criar Quiz</Text>
+                <Text style={styles.tituloModal}>
+                  {opcaoSelecionadaAdicionarQuiz == opcoesAdicionarQuiz[0]
+                    ? "Criar Quiz"
+                    : "Gerar Quiz"}
+                </Text>
 
                 <Text style={styles.subtituloModal}>
                   Crie uma nova avaliação
@@ -360,7 +422,11 @@ export default function CriarQuizModal({
             </Pressable>
 
             <Pressable
-              onPress={handleCriarQuiz}
+              onPress={
+                opcaoSelecionadaAdicionarQuiz == opcoesAdicionarQuiz[0]
+                  ? handleCriarQuiz
+                  : handleGerarQuiz
+              }
               style={({ pressed }) => [
                 styles.botaoCriar,
                 pressed && styles.botaoPressionado,
@@ -368,7 +434,11 @@ export default function CriarQuizModal({
             >
               <Plus size={20} color="#FFFFFF" />
 
-              <Text style={styles.textoCriar}>Criar Quiz</Text>
+              <Text style={styles.textoCriar}>
+                {opcaoSelecionadaAdicionarQuiz == opcoesAdicionarQuiz[0]
+                  ? "Criar Quiz"
+                  : "Gerar Quiz"}
+              </Text>
             </Pressable>
           </View>
         </Animated.View>

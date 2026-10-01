@@ -16,26 +16,18 @@ import { IEtapa } from "../../../interfaces/etapa";
 
 type RoadmapProps = {
   roadmap: IRoadmap;
-
   setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
-
   tipoItemASerExcluido: TipoItem;
-
   setTipoItemASerExcluido: React.Dispatch<React.SetStateAction<TipoItem>>;
-
   deleteModalVisible: boolean;
-
   setDeleteModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-
   getData: () => void;
-
   anotacoes: {
     [etapaId: number]: {
       plainText: string;
       editorState: string | null;
     };
   };
-
   setAnotacoes: React.Dispatch<
     React.SetStateAction<{
       [etapaId: number]: {
@@ -44,7 +36,6 @@ type RoadmapProps = {
       };
     }>
   >;
-
   setEtapaSelecionada: React.Dispatch<React.SetStateAction<IEtapa | undefined>>;
 };
 

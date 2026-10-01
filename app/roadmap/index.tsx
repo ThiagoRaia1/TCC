@@ -26,7 +26,7 @@ import DeleteModal from "./visualizar/components/DeleteModal";
 import { useAuth } from "../../context/auth";
 import GerarRoadmapModal from "./components/GerarRoadmapModal";
 
-export default function CriarRoadmap() {
+export default function SeusRoadmaps() {
   const { showLoading, hideLoading } = useLoading();
   const globalStyles = getGlobalStyles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -46,7 +46,11 @@ export default function CriarRoadmap() {
 
       const resultado = await getAllRoadmap(usuario.sub);
 
-      setRoadmaps(resultado);
+      setRoadmaps(
+        resultado.sort((a, b) =>
+          a.tema.localeCompare(b.tema, "pt-BR", { sensitivity: "base" }),
+        ),
+      );
     } catch (erro: any) {
       alert(erro.message);
     } finally {
