@@ -13,7 +13,7 @@ interface CriarQuizData {
   descricao?: string;
   roadmapId: number;
   etapaIds?: number[];
-  usuarioId: number
+  usuarioId: number;
 }
 
 export async function gerarQuiz(data: CriarQuizData) {
@@ -29,5 +29,11 @@ export async function getAllQuizzes(
 ): Promise<IQuiz[]> {
   return await httpClient(`/quiz/usuario/${usuarioId}/${roadmapId}`, {
     method: "GET",
+  });
+}
+
+export async function excluirQuiz(quizId: number) {
+  return await httpClient(`/quiz/${quizId}`, {
+    method: "DELETE",
   });
 }

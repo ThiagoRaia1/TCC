@@ -8,14 +8,17 @@ import { router } from "expo-router";
 import { deleteEtapa } from "../../../../services/etapa";
 import { IReferencia } from "../../../../interfaces/referencia";
 import { deleteReferencia } from "../../../../services/referecia";
+import { IQuiz } from "../../../../interfaces/quiz/quiz";
+import { excluirQuiz } from "../../../../services/quiz/quiz";
 
 type DeleteModalProps = {
   closeModal: () => void;
   roadmap?: IRoadmap;
   setRoadmap?: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
-  tipoItem: "roadmap" | "etapa" | "objetivo" | "referencia";
+  tipoItem: "roadmap" | "etapa" | "objetivo" | "referencia" | "quiz";
   etapa?: IEtapa;
   referencia?: IReferencia;
+  quiz?: IQuiz;
 };
 
 export default function DeleteModal({
@@ -25,6 +28,7 @@ export default function DeleteModal({
   tipoItem,
   etapa,
   referencia,
+  quiz,
 }: DeleteModalProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
@@ -70,6 +74,26 @@ export default function DeleteModal({
       if (!roadmap || !setRoadmap || !referencia) return;
 
       const resultado = await deleteReferencia(referencia.id);
+
+      const novoRoadmap = await getRoadmap(roadmap.id);
+      setRoadmap(novoRoadmap);
+
+      closeModal();
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const onDeleteQuiz = async () => {
+    try {
+      showLoading();
+      if (!roadmap || !setRoadmap || !quiz) return;
+
+      const resultado = await excluirQuiz(quiz.id);
+
+      console.log(resultado);
 
       const novoRoadmap = await getRoadmap(roadmap.id);
       setRoadmap(novoRoadmap);
@@ -140,6 +164,17 @@ export default function DeleteModal({
             </Text>
           )}
 
+          {tipoItem == "quiz" && (
+            <Text style={{ fontSize: 24, textAlign: "center" }}>
+              Tem certeza que deseja excluir o quiz{" "}
+              <Text style={{ fontWeight: "bold" }}>"{quiz?.titulo}"</Text>?
+              {"\n"}
+              <Text style={{ fontStyle: "italic" }}>
+                Essa ação não pode ser desfeita.
+              </Text>
+            </Text>
+          )}
+
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
               style={[
@@ -150,6 +185,7 @@ export default function DeleteModal({
                 if (tipoItem == "roadmap") onDeleteRoadmap();
                 if (tipoItem == "etapa") onDeleteEtapa();
                 if (tipoItem == "referencia") onDeleteReferencia();
+                if (tipoItem == "quiz") onDeleteQuiz();
               }}
             >
               <Text style={{ fontSize: 16, color: "white", fontWeight: 600 }}>

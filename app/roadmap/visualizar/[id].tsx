@@ -448,7 +448,9 @@ export default function Visualizar() {
         />
       )}
 
-      {abaSelecionada == abas[1] && <Quizzes roadmap={roadmap} />}
+      {abaSelecionada == abas[1] && (
+        <Quizzes roadmap={roadmap} setRoadmap={setRoadmap} />
+      )}
     </View>
   ) : null;
 }

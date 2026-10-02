@@ -6,6 +6,7 @@ import {
   Eye,
   Play,
   RotateCcw,
+  Trash2,
   Trophy,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -17,20 +18,24 @@ import { useLoading } from "../../../../context/providers/loading";
 import { getAllQuizzes } from "../../../../services/quiz/quiz";
 import { useAuth } from "../../../../context/auth";
 import { router } from "expo-router";
+import DeleteModal from "../components/DeleteModal";
 
 export type OpcoesAdicionarQuiz = "Etapas" | "Quizzes";
 export const opcoesAdicionarQuiz: OpcoesAdicionarQuiz[] = ["Etapas", "Quizzes"];
 
 interface QuizzesProps {
   roadmap: IRoadmap;
+  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
 }
 
-export default function Quizzes({ roadmap }: QuizzesProps) {
+export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
   const { showLoading, hideLoading } = useLoading();
   const { usuario } = useAuth();
 
   const [quizzes, setQuizzes] = useState<IQuiz[]>();
+  const [quizSelecionado, setQuizSelecionado] = useState<IQuiz>();
   const [modalCriarQuiz, setModalCriarQuiz] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [opcaoSelecionadaAdicionarQuiz, setOpcaoSelecionadaAdicionarQuiz] =
     useState<OpcoesAdicionarQuiz>(opcoesAdicionarQuiz[0]);
 
@@ -50,254 +55,287 @@ export default function Quizzes({ roadmap }: QuizzesProps) {
     } finally {
       hideLoading();
     }
-  }, []);
+  }, [roadmap]);
 
   const visualizarQuiz = (quiz: IQuiz) => {
     alert(`Visualizar quiz: ${quiz.id}`);
     // router.push(`/quiz/${quiz.id}`);
   };
 
+  const handleExcluirQuiz = async (quizId: number) => {
+    try {
+      // setQuizSelecionado();
+    } catch (erro: any) {
+      alert(erro.message);
+    } finally {
+      hideLoading();
+    }
+  };
+
   return (
-    quizzes && (
-      <View style={styles.container}>
-        {/* CABEÇALHO */}
-        <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <CircleHelp size={25} color={colors.lightBlue} />
-          </View>
-
-          <View style={styles.headerContent}>
-            <Text style={styles.titulo}>Quizzes e Avaliações</Text>
-
-            <Text style={styles.descricao}>
-              Teste seus conhecimentos e acompanhe seu desempenho ao longo do
-              roadmap.
-            </Text>
-          </View>
+    <View style={styles.container}>
+      {/* CABEÇALHO */}
+      <View style={styles.header}>
+        <View style={styles.headerIcon}>
+          <CircleHelp size={25} color={colors.lightBlue} />
         </View>
 
-        {/* RESUMO */}
-        <View style={styles.resumoContainer}>
-          <View style={styles.resumoItem}>
-            <View style={styles.resumoIcon}>
-              <BookOpen size={20} color={colors.lightBlue} />
-            </View>
+        <View style={styles.headerContent}>
+          <Text style={styles.titulo}>Quizzes e Avaliações</Text>
 
-            <View>
-              <Text style={styles.resumoValor}>{quizzes.length}</Text>
-              <Text style={styles.resumoLabel}>Quizzes disponíveis</Text>
-            </View>
-          </View>
-
-          <View style={styles.resumoDivider} />
-
-          <View style={styles.resumoItem}>
-            <View style={styles.resumoIcon}>
-              <CheckCircle2 size={20} color="#16a34a" />
-            </View>
-
-            <View>
-              <Text style={styles.resumoValor}>
-                {
-                  quizzes.filter((quiz) =>
-                    quiz.tentativas?.some((tentativa) => tentativa.concluido),
-                  ).length
-                }
-              </Text>
-
-              <Text style={styles.resumoLabel}>Concluídos</Text>
-            </View>
-          </View>
-
-          <View style={styles.resumoDivider} />
-
-          <View style={styles.resumoItem}>
-            <View style={styles.resumoIcon}>
-              <Trophy size={20} color="#ca8a04" />
-            </View>
-
-            <View>
-              <Text style={styles.resumoValor}>Quizzes Concluídos</Text>
-
-              <Text style={styles.resumoLabel}>Progresso médio</Text>
-            </View>
-          </View>
+          <Text style={styles.descricao}>
+            Teste seus conhecimentos e acompanhe seu desempenho ao longo do
+            roadmap.
+          </Text>
         </View>
+      </View>
 
-        {/* TÍTULO DA LISTA */}
-        <View style={styles.listaHeader}>
+      {/* RESUMO */}
+      <View style={styles.resumoContainer}>
+        <View style={styles.resumoItem}>
+          <View style={styles.resumoIcon}>
+            <BookOpen size={20} color={colors.lightBlue} />
+          </View>
+
           <View>
-            <Text style={styles.listaTitulo}>Seus quizzes</Text>
-            <Text style={styles.listaDescricao}>
-              Escolha um quiz para começar ou continuar seus estudos.
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Pressable
-              style={styles.adicionarQuizButton}
-              onPress={() => {
-                setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[0]);
-                setModalCriarQuiz(true);
-              }}
-            >
-              <Text style={styles.adicionarQuizButtonText}>Criar quiz</Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.adicionarQuizButton}
-              onPress={() => {
-                setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[1]);
-                setModalCriarQuiz(true);
-              }}
-            >
-              <Text style={styles.adicionarQuizButtonText}>
-                Gerar quiz com inteligência artificial
-              </Text>
-            </Pressable>
+            <Text style={styles.resumoValor}>{quizzes && quizzes.length}</Text>
+            <Text style={styles.resumoLabel}>Quizzes disponíveis</Text>
           </View>
         </View>
 
-        {/* QUIZZES */}
-        {quizzes.length > 0 ? (
-          <View style={styles.grid}>
-            {quizzes.map((quiz) => (
-              <View key={quiz.id} style={styles.quizCard}>
-                {/* TOPO DO CARD */}
-                <View style={styles.quizCardHeader}>
-                  <View style={styles.quizIcon}>
-                    <CircleHelp size={22} color={colors.lightBlue} />
-                  </View>
+        <View style={styles.resumoDivider} />
 
+        <View style={styles.resumoItem}>
+          <View style={styles.resumoIcon}>
+            <CheckCircle2 size={20} color="#16a34a" />
+          </View>
+
+          <View>
+            <Text style={styles.resumoValor}>
+              {quizzes &&
+                quizzes.filter((quiz) =>
+                  quiz.tentativas?.some((tentativa) => tentativa.concluido),
+                ).length}
+            </Text>
+
+            <Text style={styles.resumoLabel}>Concluídos</Text>
+          </View>
+        </View>
+
+        <View style={styles.resumoDivider} />
+
+        <View style={styles.resumoItem}>
+          <View style={styles.resumoIcon}>
+            <Trophy size={20} color="#ca8a04" />
+          </View>
+
+          <View>
+            <Text style={styles.resumoValor}>Quizzes Concluídos</Text>
+
+            <Text style={styles.resumoLabel}>Progresso médio</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* TÍTULO DA LISTA */}
+      <View style={styles.listaHeader}>
+        <View>
+          <Text style={styles.listaTitulo}>Seus quizzes</Text>
+          <Text style={styles.listaDescricao}>
+            Escolha um quiz para começar ou continuar seus estudos.
+          </Text>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Pressable
+            style={styles.adicionarQuizButton}
+            onPress={() => {
+              setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[0]);
+              setModalCriarQuiz(true);
+            }}
+          >
+            <Text style={styles.adicionarQuizButtonText}>Criar quiz</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.adicionarQuizButton}
+            onPress={() => {
+              setOpcaoSelecionadaAdicionarQuiz(opcoesAdicionarQuiz[1]);
+              setModalCriarQuiz(true);
+            }}
+          >
+            <Text style={styles.adicionarQuizButtonText}>
+              Gerar quiz com inteligência artificial
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* QUIZZES */}
+      {quizzes && quizzes.length > 0 ? (
+        <View style={styles.grid}>
+          {quizzes.map((quiz) => (
+            <View key={quiz.id} style={styles.quizCard}>
+              {/* TOPO DO CARD */}
+              <View style={styles.quizCardHeader}>
+                <View style={styles.quizIcon}>
+                  <CircleHelp size={22} color={colors.lightBlue} />
+                </View>
+
+                <View style={styles.quizCardHeaderRight}>
                   {quiz.tentativas?.length != 0 && (
                     <View style={styles.concluidoBadge}>
                       <CheckCircle2 size={14} color="#15803d" />
                       <Text style={styles.concluidoText}>Concluído</Text>
                     </View>
                   )}
-                </View>
-
-                {/* CONTEÚDO */}
-                <View style={styles.quizContent}>
-                  {quiz.etapas?.length ? (
-                    <Text style={styles.quizEtapa}>
-                      {quiz.etapas.length === 1
-                        ? "QUIZ DE 1 ETAPA"
-                        : `QUIZ DE ${quiz.etapas.length} ETAPAS`}
-                    </Text>
-                  ) : (
-                    <Text style={styles.quizEtapa}>QUIZ DO ROADMAP</Text>
-                  )}
-
-                  <Text style={styles.quizTitulo}>{quiz.titulo}</Text>
-
-                  <Text style={styles.quizDescricao} numberOfLines={2}>
-                    {quiz.descricao || "Sem descrição"}
-                  </Text>
-                </View>
-
-                {/* INFORMAÇÕES */}
-                <View style={styles.infoContainer}>
-                  <View style={styles.infoItem}>
-                    <CircleHelp size={15} color="#6b7280" />
-
-                    <Text style={styles.infoText}>
-                      {quiz.quantidadeQuestoes} questões
-                    </Text>
-                  </View>
-                </View>
-
-                {/* BOTÃO */}
-                <View style={styles.quizFooter}>
-                  {quiz.tentativas?.length != 0 ? (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.quizFooterButton,
-                        styles.quizFooterButtonSecondary,
-                        pressed && styles.quizFooterButtonPressed,
-                      ]}
-                      onPress={() => {
-                        alert(`Refazer teste ${quiz.id}`);
-                      }}
-                    >
-                      <RotateCcw
-                        size={16}
-                        color={colors.lightBlue}
-                        style={{ marginTop: 2 }}
-                      />
-
-                      <Text style={styles.quizFooterButtonSecondaryText}>
-                        Refazer
-                      </Text>
-                    </Pressable>
-                  ) : (
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.quizFooterButton,
-                        styles.quizFooterButtonSecondary,
-                        pressed && styles.quizFooterButtonPressed,
-                      ]}
-                      onPress={() => {
-                        router.push(`roadmap/visualizar/quiz/${quiz.id}`);
-                      }}
-                    >
-                      <Eye
-                        size={16}
-                        color={colors.lightBlue}
-                        style={{ marginTop: 2 }}
-                      />
-
-                      <Text style={styles.quizFooterButtonSecondaryText}>
-                        Visualizar
-                      </Text>
-                    </Pressable>
-                  )}
 
                   <Pressable
                     style={({ pressed }) => [
-                      styles.quizFooterButton,
-                      styles.quizFooterButtonPrimary,
+                      styles.handleExcluirQuizButton,
                       pressed && styles.quizFooterButtonPressed,
                     ]}
-                    onPress={() => visualizarQuiz(quiz)}
+                    onPress={() => {
+                      setQuizSelecionado(quiz);
+                      setDeleteModalVisible(true);
+                      // handleExcluirQuiz(quiz.id);
+                    }}
                   >
-                    {quiz.tentativas?.length != 0 ? (
-                      <Eye size={16} color="#fff" style={{ marginTop: 2 }} />
-                    ) : (
-                      <Play size={16} color="#fff" style={{ marginTop: 2 }} />
-                    )}
-
-                    <Text style={styles.quizFooterButtonPrimaryText}>
-                      {quiz.tentativas?.length != 0
-                        ? "Ver resultado"
-                        : "Iniciar quiz"}
-                    </Text>
+                    <Trash2 size={17} color="#dc2626" />
                   </Pressable>
                 </View>
               </View>
-            ))}
-          </View>
-        ) : (
-          /* ESTADO VAZIO */
-          <View style={styles.emptyContainer}>
-            <CircleHelp size={42} color="#9ca3af" />
 
-            <Text style={styles.emptyTitulo}>Nenhum quiz disponível</Text>
+              {/* CONTEÚDO */}
+              <View style={styles.quizContent}>
+                {quiz.etapas?.length ? (
+                  <Text style={styles.quizEtapa}>
+                    {quiz.etapas.length === 1
+                      ? "QUIZ DE 1 ETAPA"
+                      : `QUIZ DE ${quiz.etapas.length} ETAPAS`}
+                  </Text>
+                ) : (
+                  <Text style={styles.quizEtapa}>QUIZ DO ROADMAP</Text>
+                )}
 
-            <Text style={styles.emptyDescricao}>
-              Ainda não existem quizzes disponíveis para este roadmap.
-            </Text>
-          </View>
-        )}
+                <Text style={styles.quizTitulo}>{quiz.titulo}</Text>
 
-        <CriarQuizModal
-          visible={modalCriarQuiz}
-          closeModal={() => setModalCriarQuiz(false)}
+                <Text style={styles.quizDescricao} numberOfLines={2}>
+                  {quiz.descricao || "Sem descrição"}
+                </Text>
+              </View>
+
+              {/* INFORMAÇÕES */}
+              <View style={styles.infoContainer}>
+                <View style={styles.infoItem}>
+                  <CircleHelp size={15} color="#6b7280" />
+
+                  <Text style={styles.infoText}>
+                    {quiz.quantidadeQuestoes} questões
+                  </Text>
+                </View>
+              </View>
+
+              {/* BOTÃO */}
+              <View style={styles.quizFooter}>
+                {quiz.tentativas?.length != 0 ? (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.quizFooterButton,
+                      styles.quizFooterButtonSecondary,
+                      pressed && styles.quizFooterButtonPressed,
+                    ]}
+                    onPress={() => {
+                      alert(`Refazer teste ${quiz.id}`);
+                    }}
+                  >
+                    <RotateCcw
+                      size={16}
+                      color={colors.lightBlue}
+                      style={{ marginTop: 2 }}
+                    />
+
+                    <Text style={styles.quizFooterButtonSecondaryText}>
+                      Refazer
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.quizFooterButton,
+                      styles.quizFooterButtonSecondary,
+                      pressed && styles.quizFooterButtonPressed,
+                    ]}
+                    onPress={() => {
+                      router.push(`roadmap/visualizar/quiz/${quiz.id}`);
+                    }}
+                  >
+                    <Eye
+                      size={16}
+                      color={colors.lightBlue}
+                      style={{ marginTop: 2 }}
+                    />
+
+                    <Text style={styles.quizFooterButtonSecondaryText}>
+                      Visualizar
+                    </Text>
+                  </Pressable>
+                )}
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.quizFooterButton,
+                    styles.quizFooterButtonPrimary,
+                    pressed && styles.quizFooterButtonPressed,
+                  ]}
+                  onPress={() => visualizarQuiz(quiz)}
+                >
+                  {quiz.tentativas?.length != 0 ? (
+                    <Eye size={16} color="#fff" style={{ marginTop: 2 }} />
+                  ) : (
+                    <Play size={16} color="#fff" style={{ marginTop: 2 }} />
+                  )}
+
+                  <Text style={styles.quizFooterButtonPrimaryText}>
+                    {quiz.tentativas?.length != 0
+                      ? "Ver resultado"
+                      : "Iniciar quiz"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        /* ESTADO VAZIO */
+        <View style={styles.emptyContainer}>
+          <CircleHelp size={42} color="#9ca3af" />
+
+          <Text style={styles.emptyTitulo}>Nenhum quiz disponível</Text>
+
+          <Text style={styles.emptyDescricao}>
+            Ainda não existem quizzes disponíveis para este roadmap.
+          </Text>
+        </View>
+      )}
+
+      <CriarQuizModal
+        visible={modalCriarQuiz}
+        closeModal={() => setModalCriarQuiz(false)}
+        roadmap={roadmap}
+        opcaoSelecionadaAdicionarQuiz={opcaoSelecionadaAdicionarQuiz}
+      />
+
+      {deleteModalVisible && (
+        <DeleteModal
+          closeModal={() => setDeleteModalVisible(false)}
           roadmap={roadmap}
-          opcaoSelecionadaAdicionarQuiz={opcaoSelecionadaAdicionarQuiz}
+          setRoadmap={setRoadmap}
+          quiz={quizSelecionado}
+          tipoItem="quiz"
         />
-      </View>
-    )
+      )}
+    </View>
   );
 }
 
@@ -621,5 +659,22 @@ const styles = StyleSheet.create({
   emptyDescricao: {
     fontSize: 14,
     color: "#6b7280",
+  },
+
+  quizCardHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  handleExcluirQuizButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fef2f2",
+    borderWidth: 1,
+    borderColor: "#fecaca",
   },
 });

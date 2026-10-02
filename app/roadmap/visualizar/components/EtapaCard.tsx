@@ -26,16 +26,13 @@ import ReferenciasCard from "./ReferenciasCard";
 type EtapaCardProps = {
   etapa: IEtapa;
   roadmap: IRoadmap;
-
   setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
-
   anotacoes: {
     [etapaId: number]: {
       plainText: string;
       editorState: string | null;
     };
   };
-
   setAnotacoes: React.Dispatch<
     React.SetStateAction<{
       [etapaId: number]: {
@@ -44,7 +41,6 @@ type EtapaCardProps = {
       };
     }>
   >;
-
   addReferencia: (
     tipoItem: "objetivo" | "etapa",
     itemId: number,
@@ -52,17 +48,11 @@ type EtapaCardProps = {
     nome: string,
     url: string,
   ) => void;
-
   zIndex: number;
-
   aberta: boolean;
-
   toggleEtapa: (id: number) => void;
-
   setEtapaSelecionada: React.Dispatch<React.SetStateAction<IEtapa | undefined>>;
-
   setTipoItemASerExcluido: React.Dispatch<React.SetStateAction<TipoItem>>;
-
   setDeleteModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
