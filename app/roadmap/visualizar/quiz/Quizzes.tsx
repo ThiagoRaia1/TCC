@@ -288,7 +288,9 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
                     styles.quizFooterButtonPrimary,
                     pressed && styles.quizFooterButtonPressed,
                   ]}
-                  onPress={() => visualizarQuiz(quiz)}
+                  onPress={() =>
+                    router.push(`/roadmap/visualizar/quiz/responder/${quiz.id}`)
+                  }
                 >
                   {quiz.tentativas?.length != 0 ? (
                     <Eye size={16} color="#fff" style={{ marginTop: 2 }} />
