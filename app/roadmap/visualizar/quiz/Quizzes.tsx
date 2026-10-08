@@ -19,6 +19,9 @@ import { getAllQuizzes } from "../../../../services/quiz/quiz";
 import { useAuth } from "../../../../context/auth";
 import { router } from "expo-router";
 import DeleteModal from "../components/DeleteModal";
+import SelectTentativaModal, {
+  TentativaQuizResumo,
+} from "./components/SelectTentativaModal";
 
 export type OpcoesAdicionarQuiz = "Etapas" | "Quizzes";
 export const opcoesAdicionarQuiz: OpcoesAdicionarQuiz[] = ["Etapas", "Quizzes"];
@@ -34,6 +37,10 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
 
   const [quizzes, setQuizzes] = useState<IQuiz[]>();
   const [quizSelecionado, setQuizSelecionado] = useState<IQuiz>();
+  const [modalSelecionarTentativa, setModalSelecionarTentativa] =
+    useState(false);
+  const [quizParaVisualizarResultado, setQuizParaVisualizarResultado] =
+    useState<IQuiz>();
   const [modalCriarQuiz, setModalCriarQuiz] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [opcaoSelecionadaAdicionarQuiz, setOpcaoSelecionadaAdicionarQuiz] =
@@ -246,7 +253,9 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
                       pressed && styles.quizFooterButtonPressed,
                     ]}
                     onPress={() => {
-                      alert(`Refazer teste ${quiz.id}`);
+                      router.push(
+                        `/roadmap/visualizar/quiz/responder/${quiz.id}`,
+                      );
                     }}
                   >
                     <RotateCcw
@@ -288,9 +297,16 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
                     styles.quizFooterButtonPrimary,
                     pressed && styles.quizFooterButtonPressed,
                   ]}
-                  onPress={() =>
-                    router.push(`/roadmap/visualizar/quiz/responder/${quiz.id}`)
-                  }
+                  onPress={() => {
+                    if (quiz.tentativas?.length) {
+                      setQuizParaVisualizarResultado(quiz);
+                      setModalSelecionarTentativa(true);
+                    } else {
+                      router.push(
+                        `/roadmap/visualizar/quiz/responder/${quiz.id}`,
+                      );
+                    }
+                  }}
                 >
                   {quiz.tentativas?.length != 0 ? (
                     <Eye size={16} color="#fff" style={{ marginTop: 2 }} />
@@ -300,7 +316,7 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
 
                   <Text style={styles.quizFooterButtonPrimaryText}>
                     {quiz.tentativas?.length != 0
-                      ? "Ver resultado"
+                      ? "Ver resultados"
                       : "Iniciar quiz"}
                   </Text>
                 </Pressable>
@@ -337,6 +353,20 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
           tipoItem="quiz"
         />
       )}
+
+      <SelectTentativaModal
+        visible={modalSelecionarTentativa}
+        closeModal={() => setModalSelecionarTentativa(false)}
+        tituloQuiz={quizParaVisualizarResultado?.titulo}
+        tentativas={
+          (quizParaVisualizarResultado?.tentativas ??
+            []) as TentativaQuizResumo[]
+        }
+        onSelectTentativa={(tentativa) => {
+          setModalSelecionarTentativa(false);
+          router.push(`/roadmap/visualizar/quiz/resultado/${tentativa.id}`);
+        }}
+      />
     </View>
   );
 }
@@ -478,10 +508,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+    height: 34,
     paddingHorizontal: 8,
     paddingVertical: 5,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: "#dcfce7",
+    borderWidth: 1,
+    borderColor: "#00ff59"
   },
 
   concluidoText: {

@@ -7,7 +7,7 @@ import {
   Text,
 } from "react-native";
 import { getGlobalStyles } from "../../../styles/globalStyles";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import { useLoading } from "../../../context/providers/loading";
 import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
@@ -27,7 +27,6 @@ export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
 
 export default function Visualizar() {
-  const { id } = useLocalSearchParams();
   const globalStyles = getGlobalStyles();
   const [roadmap, setRoadmap] = useState<IRoadmap>();
   const { showLoading, hideLoading } = useLoading();
@@ -52,9 +51,20 @@ export default function Visualizar() {
   }>({});
 
   //#region TIPOS
-  type Abas = "Etapas" | "Quizzes";
-  const abas: Abas[] = ["Etapas", "Quizzes"];
-  const [abaSelecionada, setAbaSelecionada] = useState<Abas>(abas[0]);
+  type Abas = "etapas" | "quizzes";
+
+  const { id, aba } = useLocalSearchParams<{
+    id: string;
+    aba?: string;
+  }>();
+
+  const pathname = usePathname();
+
+  const abaSelecionada: Abas = aba === "quizzes" ? "quizzes" : "etapas";
+
+  const selecionarAba = (novaAba: Abas) => {
+    router.setParams({ aba: novaAba });
+  };
 
   const [tipoItemASerExcluido, setTipoItemASerExcluido] = useState<TipoItem>(
     tiposItem[0],
@@ -391,10 +401,10 @@ export default function Visualizar() {
       {/* MENU */}
       <View style={styles.menu}>
         <TouchableOpacity
-          onPress={() => setAbaSelecionada(abas[0])}
+          onPress={() => selecionarAba("etapas")}
           style={[
             styles.menuItem,
-            abaSelecionada == abas[0]
+            abaSelecionada === "etapas"
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -402,7 +412,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              abaSelecionada == abas[0]
+              abaSelecionada === "etapas"
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -412,10 +422,10 @@ export default function Visualizar() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => setAbaSelecionada(abas[1])}
+          onPress={() => selecionarAba("quizzes")}
           style={[
             styles.menuItem,
-            abaSelecionada == abas[1]
+            abaSelecionada === "quizzes"
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -423,7 +433,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              abaSelecionada == abas[1]
+              abaSelecionada === "quizzes"
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -433,7 +443,7 @@ export default function Visualizar() {
         </TouchableOpacity>
       </View>
 
-      {abaSelecionada == abas[0] && (
+      {abaSelecionada === "etapas" && (
         <Roadmap
           roadmap={roadmap}
           setRoadmap={setRoadmap}
@@ -448,7 +458,7 @@ export default function Visualizar() {
         />
       )}
 
-      {abaSelecionada == abas[1] && (
+      {abaSelecionada === "quizzes" && (
         <Quizzes roadmap={roadmap} setRoadmap={setRoadmap} />
       )}
     </View>
