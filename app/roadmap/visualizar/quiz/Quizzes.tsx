@@ -63,14 +63,15 @@ export default function Quizzes() {
     }
   }, [roadmapContext]);
 
-  const visualizarQuiz = (quiz: IQuiz) => {
-    alert(`Visualizar quiz: ${quiz.id}`);
-    // router.push(`/quiz/${quiz.id}`);
+  const visualizarQuiz = (quizId: number) => {
+    setRoadmapContext(roadmapContext);
+    router.push(`roadmap/visualizar/quiz/${quizId}`);
   };
 
-  const handleExcluirQuiz = async (quizId: number) => {
+  const handleExcluirQuiz = async (quiz: IQuiz) => {
     try {
-      // setQuizSelecionado();
+      setQuizSelecionado(quiz);
+      setDeleteModalVisible(true);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -136,9 +137,16 @@ export default function Quizzes() {
           </View>
 
           <View>
-            <Text style={styles.resumoValor}>Quizzes Concluídos</Text>
+            <Text style={styles.resumoValor}>
+              {quizzes?.filter((quiz) =>
+                quiz.tentativas?.some(
+                  (tentativa) =>
+                    tentativa.concluido && tentativa.percentual === 100,
+                ),
+              ).length ?? 0}
+            </Text>
 
-            <Text style={styles.resumoLabel}>Progresso médio</Text>
+            <Text style={styles.resumoLabel}>Quizzes com 100% de acerto</Text>
           </View>
         </View>
       </View>
@@ -180,104 +188,117 @@ export default function Quizzes() {
       {/* QUIZZES */}
       {quizzes && quizzes.length > 0 ? (
         <View style={styles.grid}>
-          {quizzes.map((quiz) => (
-            <View key={quiz.id} style={styles.quizCard}>
-              {/* TOPO DO CARD */}
-              <View style={styles.quizCardHeader}>
-                <View style={styles.quizIcon}>
-                  <CircleHelp size={22} color={colors.lightBlue} />
+          {quizzes.map((quiz) => {
+            const temTentativaPerfeita = quiz.tentativas?.some(
+              (tentativa) =>
+                tentativa.concluido && tentativa.percentual === 100,
+            );
+
+            // console.log("Quiz:", quiz.titulo);
+            // console.log("Etapas:", quiz.etapas);
+            // console.log("Quantidade:", quiz.etapas?.length);
+
+            return (
+              <View key={quiz.id} style={styles.quizCard}>
+                {/* TOPO DO CARD */}
+                <View style={styles.quizCardHeader}>
+                  <View style={styles.quizIcon}>
+                    <CircleHelp size={22} color={colors.lightBlue} />
+                  </View>
+
+                  <View style={styles.quizCardHeaderRight}>
+                    {quiz.tentativas?.length != 0 && (
+                      <View style={styles.concluidoBadge}>
+                        <CheckCircle2 size={14} color="#15803d" />
+                        <Text style={styles.concluidoText}>Concluído</Text>
+                      </View>
+                    )}
+
+                    {temTentativaPerfeita && (
+                      <View style={styles.perfeitoBadge}>
+                        <Trophy size={14} color="#a16207" />
+                        <Text style={styles.perfeitoText}>100% de acerto</Text>
+                      </View>
+                    )}
+
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.handleExcluirQuizButton,
+                        pressed && styles.quizFooterButtonPressed,
+                      ]}
+                      onPress={() => {
+                        handleExcluirQuiz(quiz);
+                      }}
+                    >
+                      <Trash2 size={17} color="#dc2626" />
+                    </Pressable>
+                  </View>
                 </View>
 
-                <View style={styles.quizCardHeaderRight}>
+                {/* CONTEÚDO */}
+                <View style={styles.quizContent}>
+                  {/* {quiz.etapas && quiz.etapas.length > 0 ? (
+                    <Text style={styles.quizEtapa}>
+                      {quiz.etapas.length === 1
+                        ? "QUIZ DE 1 ETAPA"
+                        : `QUIZ DE ${quiz.etapas.length} ETAPAS`}
+                    </Text>
+                  ) : (
+                    <Text style={styles.quizEtapa}>QUIZ DO ROADMAP</Text>
+                  )} */}
+
+                  <Text style={styles.quizTitulo}>{quiz.titulo}</Text>
+
+                  <Text style={styles.quizDescricao} numberOfLines={2}>
+                    {quiz.descricao || "Sem descrição"}
+                  </Text>
+                </View>
+
+                {/* INFORMAÇÕES */}
+                <View style={styles.infoContainer}>
+                  <View style={styles.infoItem}>
+                    <CircleHelp size={15} color="#6b7280" />
+
+                    <Text style={styles.infoText}>
+                      {quiz.quantidadeQuestoes} questões
+                    </Text>
+                  </View>
+                </View>
+
+                {/* BOTÃO */}
+                <View style={styles.quizFooter}>
                   {quiz.tentativas?.length != 0 && (
-                    <View style={styles.concluidoBadge}>
-                      <CheckCircle2 size={14} color="#15803d" />
-                      <Text style={styles.concluidoText}>Concluído</Text>
-                    </View>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.quizFooterButton,
+                        styles.quizFooterButtonSecondary,
+                        pressed && styles.quizFooterButtonPressed,
+                      ]}
+                      onPress={() => {
+                        router.push(
+                          `/roadmap/visualizar/quiz/responder/${quiz.id}`,
+                        );
+                      }}
+                    >
+                      <RotateCcw
+                        size={16}
+                        color={colors.lightBlue}
+                        style={{ marginTop: 2 }}
+                      />
+
+                      <Text style={styles.quizFooterButtonSecondaryText}>
+                        Refazer
+                      </Text>
+                    </Pressable>
                   )}
 
                   <Pressable
                     style={({ pressed }) => [
-                      styles.handleExcluirQuizButton,
-                      pressed && styles.quizFooterButtonPressed,
-                    ]}
-                    onPress={() => {
-                      setQuizSelecionado(quiz);
-                      setDeleteModalVisible(true);
-                      // handleExcluirQuiz(quiz.id);
-                    }}
-                  >
-                    <Trash2 size={17} color="#dc2626" />
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* CONTEÚDO */}
-              <View style={styles.quizContent}>
-                {quiz.etapas?.length ? (
-                  <Text style={styles.quizEtapa}>
-                    {quiz.etapas.length === 1
-                      ? "QUIZ DE 1 ETAPA"
-                      : `QUIZ DE ${quiz.etapas.length} ETAPAS`}
-                  </Text>
-                ) : (
-                  <Text style={styles.quizEtapa}>QUIZ DO ROADMAP</Text>
-                )}
-
-                <Text style={styles.quizTitulo}>{quiz.titulo}</Text>
-
-                <Text style={styles.quizDescricao} numberOfLines={2}>
-                  {quiz.descricao || "Sem descrição"}
-                </Text>
-              </View>
-
-              {/* INFORMAÇÕES */}
-              <View style={styles.infoContainer}>
-                <View style={styles.infoItem}>
-                  <CircleHelp size={15} color="#6b7280" />
-
-                  <Text style={styles.infoText}>
-                    {quiz.quantidadeQuestoes} questões
-                  </Text>
-                </View>
-              </View>
-
-              {/* BOTÃO */}
-              <View style={styles.quizFooter}>
-                {quiz.tentativas?.length != 0 ? (
-                  <Pressable
-                    style={({ pressed }) => [
                       styles.quizFooterButton,
                       styles.quizFooterButtonSecondary,
                       pressed && styles.quizFooterButtonPressed,
                     ]}
-                    onPress={() => {
-                      router.push(
-                        `/roadmap/visualizar/quiz/responder/${quiz.id}`,
-                      );
-                    }}
-                  >
-                    <RotateCcw
-                      size={16}
-                      color={colors.lightBlue}
-                      style={{ marginTop: 2 }}
-                    />
-
-                    <Text style={styles.quizFooterButtonSecondaryText}>
-                      Refazer
-                    </Text>
-                  </Pressable>
-                ) : (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.quizFooterButton,
-                      styles.quizFooterButtonSecondary,
-                      pressed && styles.quizFooterButtonPressed,
-                    ]}
-                    onPress={() => {
-                      setRoadmapContext(roadmapContext);
-                      router.push(`roadmap/visualizar/quiz/${quiz.id}`);
-                    }}
+                    onPress={() => visualizarQuiz(quiz.id)}
                   >
                     <Eye
                       size={16}
@@ -289,40 +310,38 @@ export default function Quizzes() {
                       Visualizar
                     </Text>
                   </Pressable>
-                )}
 
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.quizFooterButton,
-                    styles.quizFooterButtonPrimary,
-                    pressed && styles.quizFooterButtonPressed,
-                  ]}
-                  onPress={() => {
-                    if (quiz.tentativas?.length) {
-                      setQuizParaVisualizarResultado(quiz);
-                      setModalSelecionarTentativa(true);
-                    } else {
-                      router.push(
-                        `/roadmap/visualizar/quiz/responder/${quiz.id}`,
-                      );
-                    }
-                  }}
-                >
-                  {quiz.tentativas?.length != 0 ? (
-                    <Eye size={16} color="#fff" style={{ marginTop: 2 }} />
-                  ) : (
-                    <Play size={16} color="#fff" style={{ marginTop: 2 }} />
-                  )}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.quizFooterButton,
+                      styles.quizFooterButtonPrimary,
+                      pressed && styles.quizFooterButtonPressed,
+                    ]}
+                    onPress={() => {
+                      if (quiz.tentativas?.length) {
+                        setQuizParaVisualizarResultado(quiz);
+                        setModalSelecionarTentativa(true);
+                      } else {
+                        router.push(
+                          `/roadmap/visualizar/quiz/responder/${quiz.id}`,
+                        );
+                      }
+                    }}
+                  >
+                    {quiz.tentativas?.length == 0 && (
+                      <Play size={16} color="#fff" style={{ marginTop: 2 }} />
+                    )}
 
-                  <Text style={styles.quizFooterButtonPrimaryText}>
-                    {quiz.tentativas?.length != 0
-                      ? "Ver resultados"
-                      : "Iniciar quiz"}
-                  </Text>
-                </Pressable>
+                    <Text style={styles.quizFooterButtonPrimaryText}>
+                      {quiz.tentativas?.length != 0
+                        ? "Ver resultados"
+                        : "Iniciar quiz"}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       ) : (
         /* ESTADO VAZIO */
@@ -708,5 +727,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#fef2f2",
     borderWidth: 1,
     borderColor: "#fecaca",
+  },
+  perfeitoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 9,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#fef3c7",
+    borderWidth: 1,
+    borderColor: "#fcd34d",
+  },
+
+  perfeitoText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#92400e",
   },
 });
