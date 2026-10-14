@@ -57,7 +57,7 @@ export default function RoadmapCard({ roadmap }: { roadmap: IRoadmap }) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
 
-  const { setRoadmapSelecionado } = useRoadmap();
+  const { setRoadmapContext } = useRoadmap();
 
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -128,7 +128,7 @@ export default function RoadmapCard({ roadmap }: { roadmap: IRoadmap }) {
               containerStyle={globalStyles.actionButton}
               label={<Feather name="edit" size={40} color="white" />}
               onPress={() => {
-                setRoadmapSelecionado(roadmap);
+                setRoadmapContext(roadmap);
 
                 router.push({
                   pathname: "/main",

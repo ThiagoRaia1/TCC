@@ -20,12 +20,11 @@ import { deleteObjetivo, updateObjetivo } from "../../../../services/objetivo";
 import ReferenciasCard from "./ReferenciasCard";
 import MenuOptionButton from "../../../_components/MenuOptionButton";
 import { Feather } from "@expo/vector-icons";
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 type ObjetivoCardProps = {
   objetivo: IObjetivo;
   etapaId: number;
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   addReferencia: (
     tipoItem: "objetivo" | "etapa",
     itemId: number,
@@ -38,11 +37,10 @@ type ObjetivoCardProps = {
 export default function ObjetivoCard({
   objetivo,
   etapaId,
-  roadmap,
-  setRoadmap,
   addReferencia,
 }: ObjetivoCardProps) {
   const globalStyles = getGlobalStyles();
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
 
   const [objetivoTituloEditInput, setObjetivoTituloEditInput] = useState<{
@@ -76,11 +74,11 @@ export default function ObjetivoCard({
   const toggleObjetivo = async (etapaId: number, objetivoId: number) => {
     try {
       showLoading();
-      if (!roadmap) return;
+      if (!roadmapContext) return;
 
       const novoRoadmap = {
-        ...roadmap,
-        etapas: roadmap.etapas.map((etapa) => {
+        ...roadmapContext,
+        etapas: roadmapContext.etapas.map((etapa) => {
           if (etapa.id !== etapaId) return etapa;
 
           return {
@@ -99,7 +97,7 @@ export default function ObjetivoCard({
 
       const resultado = await updateRoadmap(novoRoadmap);
 
-      setRoadmap(novoRoadmap);
+      setRoadmapContext(novoRoadmap);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -125,7 +123,7 @@ export default function ObjetivoCard({
       });
 
       // Atualiza o roadmap localmente
-      setRoadmap((prev) => {
+      setRoadmapContext((prev) => {
         if (!prev) return prev;
 
         return {
@@ -167,13 +165,13 @@ export default function ObjetivoCard({
     try {
       showLoading();
 
-      if (!roadmap) return;
+      if (!roadmapContext) return;
 
       await deleteObjetivo(objetivoId);
 
       const novoRoadmap: IRoadmap = {
-        ...roadmap,
-        etapas: roadmap.etapas.map((etapa) => ({
+        ...roadmapContext,
+        etapas: roadmapContext.etapas.map((etapa) => ({
           ...etapa,
           objetivos: etapa.objetivos.filter(
             (objetivo) => objetivo.id !== objetivoId,
@@ -181,7 +179,7 @@ export default function ObjetivoCard({
         })),
       };
 
-      setRoadmap(novoRoadmap);
+      setRoadmapContext(novoRoadmap);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -202,7 +200,7 @@ export default function ObjetivoCard({
         anotacao,
       });
 
-      setRoadmap((prev) => {
+      setRoadmapContext((prev) => {
         if (!prev) return prev;
 
         return {
@@ -667,8 +665,6 @@ export default function ObjetivoCard({
             onAdicionarReferencia={(id, tipo, nome, url) =>
               addReferencia("objetivo", id, tipo, nome, url)
             }
-            roadmap={roadmap}
-            setRoadmap={setRoadmap}
           />
         </Pressable>
       )}

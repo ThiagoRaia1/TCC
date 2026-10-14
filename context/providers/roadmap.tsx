@@ -1,72 +1,45 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  createContext,
+  useContext,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
+
 import { IRoadmap } from "../../interfaces/roadmap";
-import { useLoading } from "./loading";
 
-type ContextType = {
-  roadmapSelecionado?: IRoadmap;
-  setRoadmapSelecionado: (r?: IRoadmap) => void;
-  loading: boolean;
-};
+interface RoadmapContextProps {
+  roadmapContext: IRoadmap | undefined;
+  setRoadmapContext: Dispatch<SetStateAction<IRoadmap | undefined>>;
+}
 
-const RoadmapContext = createContext<ContextType>({
-  roadmapSelecionado: undefined,
-  setRoadmapSelecionado: () => {},
-  loading: true,
-});
+interface RoadmapProviderProps {
+  children: ReactNode;
+}
 
-export function RoadmapProvider({ children }: any) {
-  const [roadmapSelecionado, setRoadmapSelecionadoState] = useState<IRoadmap>();
-  const { showLoading, hideLoading } = useLoading();
-  const [loading, setLoading] = useState(true);
+const RoadmapContext = createContext<RoadmapContextProps | undefined>(
+  undefined,
+);
 
-  // carregar ao iniciar
-  useEffect(() => {
-    const carregarRoadmap = async () => {
-      try {
-        setLoading(true);
-        showLoading();
-
-        const data = await AsyncStorage.getItem("roadmap");
-
-        if (data) {
-          setRoadmapSelecionadoState(JSON.parse(data));
-          console.log(JSON.parse(data))
-        }
-      } catch (error: any) {
-        console.error("Erro ao carregar roadmap:", error);
-        alert("Erro ao carregar dados salvos");
-      } finally {
-        setLoading(false); // 👈 importante
-        hideLoading();
-      }
-    };
-
-    carregarRoadmap();
-  }, []);
-
-  // salvar sempre que mudar
-  const setRoadmapSelecionado = async (r?: IRoadmap) => {
-    try {
-      setRoadmapSelecionadoState(r);
-
-      if (r) {
-        await AsyncStorage.setItem("roadmap", JSON.stringify(r));
-      } else {
-        await AsyncStorage.removeItem("roadmap");
-      }
-    } catch (error) {
-      console.error("Erro ao salvar roadmap:", error);
-    }
-  };
+export function RoadmapProvider({ children }: RoadmapProviderProps) {
+  const [roadmapContext, setRoadmapContext] = useState<IRoadmap | undefined>(
+    undefined,
+  );
 
   return (
-    <RoadmapContext.Provider
-      value={{ roadmapSelecionado, setRoadmapSelecionado, loading }}
-    >
+    <RoadmapContext.Provider value={{ roadmapContext, setRoadmapContext }}>
       {children}
     </RoadmapContext.Provider>
   );
 }
 
-export const useRoadmap = () => useContext(RoadmapContext);
+export function useRoadmap() {
+  const context = useContext(RoadmapContext);
+
+  if (!context) {
+    throw new Error("useRoadmap deve ser utilizado dentro de RoadmapProvider");
+  }
+
+  return context;
+}

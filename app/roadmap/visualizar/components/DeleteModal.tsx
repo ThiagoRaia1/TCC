@@ -10,11 +10,10 @@ import { IReferencia } from "../../../../interfaces/referencia";
 import { deleteReferencia } from "../../../../services/referecia";
 import { IQuiz } from "../../../../interfaces/quiz/quiz";
 import { excluirQuiz } from "../../../../services/quiz/quiz";
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 type DeleteModalProps = {
   closeModal: () => void;
-  roadmap?: IRoadmap;
-  setRoadmap?: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   tipoItem: "roadmap" | "etapa" | "objetivo" | "referencia" | "quiz";
   etapa?: IEtapa;
   referencia?: IReferencia;
@@ -23,8 +22,6 @@ type DeleteModalProps = {
 
 export default function DeleteModal({
   closeModal,
-  roadmap,
-  setRoadmap,
   tipoItem,
   etapa,
   referencia,
@@ -32,14 +29,15 @@ export default function DeleteModal({
 }: DeleteModalProps) {
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
 
   const onDeleteRoadmap = async () => {
     try {
       showLoading();
-      if (!roadmap) return;
+      if (!roadmapContext) return;
 
-      const resultado = await deleteRoadmap(roadmap.id);
-      alert(`Roadmap "${roadmap.tema}" excluído com sucesso!`);
+      const resultado = await deleteRoadmap(roadmapContext.id);
+      alert(`Roadmap "${roadmapContext.tema}" excluído com sucesso!`);
 
       router.push("/roadmap");
     } catch (erro: any) {
@@ -52,13 +50,13 @@ export default function DeleteModal({
   const onDeleteEtapa = async () => {
     try {
       showLoading();
-      if (!roadmap || !setRoadmap || !etapa) return;
+      if (!roadmapContext || !setRoadmapContext || !etapa) return;
 
       const resultado = await deleteEtapa(etapa.id);
       alert(`Etapa "${etapa.titulo}" excluída com sucesso!`);
 
-      const novoRoadmap = await getRoadmap(roadmap.id);
-      setRoadmap(novoRoadmap);
+      const novoRoadmap = await getRoadmap(roadmapContext.id);
+      setRoadmapContext(novoRoadmap);
 
       closeModal();
     } catch (erro: any) {
@@ -71,12 +69,12 @@ export default function DeleteModal({
   const onDeleteReferencia = async () => {
     try {
       showLoading();
-      if (!roadmap || !setRoadmap || !referencia) return;
+      if (!roadmapContext || !setRoadmapContext || !referencia) return;
 
       const resultado = await deleteReferencia(referencia.id);
 
-      const novoRoadmap = await getRoadmap(roadmap.id);
-      setRoadmap(novoRoadmap);
+      const novoRoadmap = await getRoadmap(roadmapContext.id);
+      setRoadmapContext(novoRoadmap);
 
       closeModal();
     } catch (erro: any) {
@@ -89,14 +87,20 @@ export default function DeleteModal({
   const onDeleteQuiz = async () => {
     try {
       showLoading();
-      if (!roadmap || !setRoadmap || !quiz) return;
+      console.log(quiz);
+      console.log("Aqui");
+      console.log(roadmapContext);
+      console.log(setRoadmapContext);
+      if (!roadmapContext || !setRoadmapContext || !quiz) return;
 
       const resultado = await excluirQuiz(quiz.id);
 
       console.log(resultado);
 
-      const novoRoadmap = await getRoadmap(roadmap.id);
-      setRoadmap(novoRoadmap);
+      const novoRoadmap = await getRoadmap(roadmapContext.id);
+      setRoadmapContext(novoRoadmap);
+
+      router.push(`/roadmap/visualizar/${roadmapContext.id}?aba=quizzes`);
 
       closeModal();
     } catch (erro: any) {
@@ -140,7 +144,7 @@ export default function DeleteModal({
           {tipoItem == "roadmap" && (
             <Text style={{ fontSize: 24, textAlign: "center" }}>
               Tem certeza que deseja excluir o roadmap
-              <strong> "{roadmap && roadmap.tema}"</strong>?<br />
+              <strong> "{roadmapContext && roadmapContext.tema}"</strong>?<br />
               <i>Essa ação não pode ser desfeita.</i>
             </Text>
           )}

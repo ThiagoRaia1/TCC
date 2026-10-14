@@ -16,24 +16,23 @@ import { router } from "expo-router";
 import { criarQuiz, gerarQuiz } from "../../../../../services/quiz/quiz";
 import { IQuiz } from "../../../../../interfaces/quiz/quiz";
 import { useAuth } from "../../../../../context/auth";
-import { IRoadmap } from "../../../../../interfaces/roadmap";
 import { opcoesAdicionarQuiz, OpcoesAdicionarQuiz } from "../Quizzes";
 import { useLoading } from "../../../../../context/providers/loading";
+import { useRoadmap } from "../../../../../context/providers/roadmap";
 
 interface CriarQuizModalProps {
   visible: boolean;
   closeModal: () => void;
-  roadmap: IRoadmap;
   opcaoSelecionadaAdicionarQuiz: OpcoesAdicionarQuiz;
 }
 
 export default function CriarQuizModal({
   visible,
   closeModal,
-  roadmap,
   opcaoSelecionadaAdicionarQuiz,
 }: CriarQuizModalProps) {
   const { usuario } = useAuth();
+  const { roadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
   const translateY = useRef(new Animated.Value(700)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -118,7 +117,7 @@ export default function CriarQuizModal({
         return;
       }
 
-      if (!usuario) return;
+      if (!usuario || !roadmapContext) return;
 
       // Nenhuma etapa selecionada = roadmap inteiro
       const quizDoRoadmap = etapasSelecionadas === null;
@@ -134,7 +133,7 @@ export default function CriarQuizModal({
         descricao: descricaoTratada,
 
         // Roadmap inteiro
-        roadmapId: roadmap.id,
+        roadmapId: roadmapContext.id,
 
         // Etapas específicas
         etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,
@@ -167,7 +166,7 @@ export default function CriarQuizModal({
         return;
       }
 
-      if (!usuario) return;
+      if (!usuario || !roadmapContext) return;
 
       // Nenhuma etapa selecionada = roadmap inteiro
       const quizDoRoadmap = etapasSelecionadas === null;
@@ -183,7 +182,7 @@ export default function CriarQuizModal({
         descricao: descricaoTratada,
 
         // Roadmap inteiro
-        roadmapId: roadmap.id,
+        roadmapId: roadmapContext.id,
 
         // Etapas específicas
         etapaIds: quizDoRoadmap ? undefined : etapasSelecionadas,
@@ -355,54 +354,55 @@ export default function CriarQuizModal({
               </Pressable>
 
               {/* ETAPAS */}
-              {roadmap.etapas.map((etapa, index) => {
-                const selecionada =
-                  etapasSelecionadas?.includes(etapa.id) ?? false;
+              {roadmapContext &&
+                roadmapContext.etapas.map((etapa, index) => {
+                  const selecionada =
+                    etapasSelecionadas?.includes(etapa.id) ?? false;
 
-                return (
-                  <Pressable
-                    key={etapa.id}
-                    onPress={() => alternarEtapa(etapa.id)}
-                    style={[
-                      styles.etapaOpcao,
-                      selecionada && styles.etapaSelecionada,
-                    ]}
-                  >
-                    <View
+                  return (
+                    <Pressable
+                      key={etapa.id}
+                      onPress={() => alternarEtapa(etapa.id)}
                       style={[
-                        styles.numeroEtapa,
-                        selecionada && styles.numeroEtapaSelecionada,
+                        styles.etapaOpcao,
+                        selecionada && styles.etapaSelecionada,
                       ]}
                     >
-                      <Text
+                      <View
                         style={[
-                          styles.numeroEtapaTexto,
-                          selecionada && styles.numeroEtapaTextoSelecionado,
+                          styles.numeroEtapa,
+                          selecionada && styles.numeroEtapaSelecionada,
                         ]}
                       >
-                        {index + 1}
-                      </Text>
-                    </View>
-
-                    <View style={styles.etapaTextoContainer}>
-                      <Text
-                        style={[
-                          styles.etapaTitulo,
-                          selecionada && styles.etapaTituloSelecionado,
-                        ]}
-                      >
-                        {etapa.titulo}
-                      </Text>
-                    </View>
-
-                    {selecionada && (
-                      <View style={styles.checkContainer}>
-                        <Check size={17} color="#FFFFFF" />
+                        <Text
+                          style={[
+                            styles.numeroEtapaTexto,
+                            selecionada && styles.numeroEtapaTextoSelecionado,
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
                       </View>
-                    )}
-                  </Pressable>
-                );
-              })}
+
+                      <View style={styles.etapaTextoContainer}>
+                        <Text
+                          style={[
+                            styles.etapaTitulo,
+                            selecionada && styles.etapaTituloSelecionado,
+                          ]}
+                        >
+                          {etapa.titulo}
+                        </Text>
+                      </View>
+
+                      {selecionada && (
+                        <View style={styles.checkContainer}>
+                          <Check size={17} color="#FFFFFF" />
+                        </View>
+                      )}
+                    </Pressable>
+                  );
+                })}
 
               {etapasSelecionadas !== null && etapasSelecionadas.length > 0 && (
                 <Text style={styles.selecaoInfo}>

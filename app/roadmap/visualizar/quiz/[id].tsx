@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import {
-  ArrowLeft,
-  ClipboardList,
-} from "lucide-react-native";
+import { ArrowLeft, ClipboardList, Play, Trash2 } from "lucide-react-native";
 import { httpClient } from "../../../../services/httpclient";
 import { IQuiz } from "../../../../interfaces/quiz/quiz";
 import { useLoading } from "../../../../context/providers/loading";
+import DeleteModal from "../components/DeleteModal";
 
 export default function VisualizarQuiz() {
   const { id } = useLocalSearchParams();
   const { showLoading, hideLoading } = useLoading();
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 
   const [quiz, setQuiz] = useState<IQuiz | null>(null);
 
@@ -81,13 +74,38 @@ export default function VisualizarQuiz() {
               <ClipboardList size={25} color="#2563EB" />
             </View>
 
-            <View>
+            <View style={styles.headerText}>
               <Text style={styles.headerTitle}>{quiz.titulo}</Text>
-
               <Text style={styles.headerSubtitle}>
                 {quiz.quantidadeQuestoes} questões
               </Text>
             </View>
+          </View>
+
+          <View style={styles.headerActions}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.startQuizButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() =>
+                router.push(`/roadmap/visualizar/quiz/responder/${id}`)
+              }
+            >
+              <Play size={17} color="#FFFFFF" />
+              <Text style={styles.startQuizButtonText}>Iniciar quiz</Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.deleteQuizButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => setDeleteModalVisible(true)}
+            >
+              <Trash2 size={18} color="#DC2626" />
+              <Text style={styles.deleteQuizButtonText}>Excluir</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -143,6 +161,14 @@ export default function VisualizarQuiz() {
           })}
         </View>
       </ScrollView>
+
+      {deleteModalVisible && (
+        <DeleteModal
+          closeModal={() => setDeleteModalVisible(false)}
+          quiz={quiz}
+          tipoItem="quiz"
+        />
+      )}
     </View>
   );
 }
@@ -364,5 +390,55 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  headerText: {
+    flexShrink: 1,
+  },
+
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginLeft: "auto",
+  },
+
+  startQuizButton: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#2563EB",
+  },
+
+  startQuizButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  deleteQuizButton: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+
+  deleteQuizButtonText: {
+    color: "#DC2626",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  buttonPressed: {
+    opacity: 0.7,
   },
 });

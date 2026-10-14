@@ -25,6 +25,7 @@ import {
 import DeleteModal from "./visualizar/components/DeleteModal";
 import { useAuth } from "../../context/auth";
 import GerarRoadmapModal from "./components/GerarRoadmapModal";
+import { useRoadmap } from "../../context/providers/roadmap";
 
 export default function SeusRoadmaps() {
   const { showLoading, hideLoading } = useLoading();
@@ -33,7 +34,7 @@ export default function SeusRoadmaps() {
   const { usuario } = useAuth();
 
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);
-  const [roadmapSelecionado, setRoadmapSelecionado] = useState<IRoadmap>();
+  const { setRoadmapContext } = useRoadmap();
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 
   const [modalGerarRoadmap, setModalGerarRoadmap] = useState(false);
@@ -255,7 +256,7 @@ export default function SeusRoadmaps() {
                         },
                       ]}
                       onPress={() => {
-                        setRoadmapSelecionado(roadmap);
+                        setRoadmapContext(roadmap);
                         setDeleteModalVisible(true);
                       }}
                     >
@@ -300,7 +301,6 @@ export default function SeusRoadmaps() {
       {deleteModalVisible && (
         <DeleteModal
           closeModal={() => setDeleteModalVisible(false)}
-          roadmap={roadmapSelecionado}
           tipoItem="roadmap"
         />
       )}

@@ -11,17 +11,17 @@ import { updateRoadmap } from "../../../../services/roadmap";
 import { IRoadmap, IUpdateRoadmap } from "../../../../interfaces/roadmap";
 import { ICriarEtapa } from "../../../../interfaces/etapa";
 import { useLoading } from "../../../../context/providers/loading";
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 type AdicionarEtapaModalProps = {
   closeModal: () => void;
-  roadmap: IRoadmap;
 };
 
 export default function AdicionarEtapaModal({
   closeModal,
-  roadmap,
 }: AdicionarEtapaModalProps) {
   const globalStyles = getGlobalStyles();
+  const { roadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
   const [titulo, setTitulo] = useState<string>("");
   const [descricao, setDescricao] = useState<string>("");
@@ -29,7 +29,10 @@ export default function AdicionarEtapaModal({
   const onSave = async () => {
     try {
       showLoading();
-      const etapasAtuais = Array.isArray(roadmap.etapas) ? roadmap.etapas : [];
+      if (!roadmapContext) return;
+      const etapasAtuais = Array.isArray(roadmapContext.etapas)
+        ? roadmapContext.etapas
+        : [];
       const novaEtapa: ICriarEtapa = {
         titulo,
         ordem: etapasAtuais.length + 1,
@@ -38,7 +41,7 @@ export default function AdicionarEtapaModal({
       };
 
       const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
+        ...roadmapContext,
         etapas: [...etapasAtuais, novaEtapa],
       };
 
@@ -50,16 +53,6 @@ export default function AdicionarEtapaModal({
       hideLoading();
     }
   };
-
-  const styles = StyleSheet.create({
-    inputContainer: {
-      gap: 8,
-    },
-    inputLabel: {
-      fontSize: 18,
-      fontWeight: 600,
-    },
-  });
 
   return (
     <View
@@ -114,3 +107,13 @@ export default function AdicionarEtapaModal({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 18,
+    fontWeight: 600,
+  },
+});

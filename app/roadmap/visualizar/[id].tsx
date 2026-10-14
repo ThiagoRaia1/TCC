@@ -22,13 +22,14 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react-native";
 import DeleteModal from "./components/DeleteModal";
 import { IEtapa } from "../../../interfaces/etapa";
 import Quizzes from "./quiz/Quizzes";
+import { useRoadmap } from "../../../context/providers/roadmap";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
 
 export default function Visualizar() {
   const globalStyles = getGlobalStyles();
-  const [roadmap, setRoadmap] = useState<IRoadmap>();
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
 
   const [editandoRoadmap, setEditandoRoadmap] = useState(false);
@@ -77,7 +78,7 @@ export default function Visualizar() {
     try {
       showLoading();
       const resultado = await getRoadmap(Number(id));
-      setRoadmap(resultado);
+      setRoadmapContext(resultado);
 
       const anotacoesIniciais: {
         [etapaId: number]: {
@@ -106,35 +107,35 @@ export default function Visualizar() {
   }, [id]);
 
   useEffect(() => {
-    if (roadmap) calcularProgresso(roadmap);
-  }, [roadmap]);
+    if (roadmapContext) calcularProgresso(roadmapContext);
+  }, [roadmapContext]);
   // USE EFFECTS
   //#endregion
 
-  const porcentagemConclusaoRoadmap: number = roadmap
-    ? calcularProgresso(roadmap)
+  const porcentagemConclusaoRoadmap: number = roadmapContext
+    ? calcularProgresso(roadmapContext)
     : 0;
 
   const iniciarEdicaoRoadmap = () => {
-    if (!roadmap) return;
+    if (!roadmapContext) return;
 
-    setNovoTema(roadmap.tema);
-    setNovaDescricao(roadmap.descricaoGeral ?? "");
+    setNovoTema(roadmapContext.tema);
+    setNovaDescricao(roadmapContext.descricaoGeral ?? "");
 
     setEditandoRoadmap(true);
   };
 
   const cancelarEdicaoRoadmap = () => {
-    if (!roadmap) return;
+    if (!roadmapContext) return;
 
-    setNovoTema(roadmap.tema);
-    setNovaDescricao(roadmap.descricaoGeral ?? "");
+    setNovoTema(roadmapContext.tema);
+    setNovaDescricao(roadmapContext.descricaoGeral ?? "");
 
     setEditandoRoadmap(false);
   };
 
   const salvarEdicaoRoadmap = async () => {
-    if (!roadmap) return;
+    if (!roadmapContext) return;
 
     await editarRoadmap(novoTema, novaDescricao);
 
@@ -143,7 +144,7 @@ export default function Visualizar() {
 
   const editarRoadmap = async (novoTema: string, novaDescricao: string) => {
     try {
-      if (!roadmap) return;
+      if (!roadmapContext) return;
 
       const tema = novoTema.trim();
       const descricaoGeral = novaDescricao.trim();
@@ -156,14 +157,14 @@ export default function Visualizar() {
       showLoading();
 
       const roadmapAtualizado: IUpdateRoadmap = {
-        ...roadmap,
+        ...roadmapContext,
         tema,
         descricaoGeral,
       };
 
       const atualizado = await updateRoadmap(roadmapAtualizado);
 
-      setRoadmap(atualizado);
+      setRoadmapContext(atualizado);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -171,7 +172,7 @@ export default function Visualizar() {
     }
   };
 
-  return roadmap ? (
+  return roadmapContext ? (
     <View
       style={{
         maxWidth: 1350,
@@ -187,8 +188,6 @@ export default function Visualizar() {
       {deleteModalVisible && (
         <DeleteModal
           closeModal={() => setDeleteModalVisible(false)}
-          roadmap={roadmap}
-          setRoadmap={setRoadmap}
           tipoItem={tipoItemASerExcluido}
           etapa={etapaSelecionada}
         />
@@ -264,11 +263,11 @@ export default function Visualizar() {
               </>
             ) : (
               <>
-                <Text style={styles.titulo}>{roadmap.tema}</Text>
+                <Text style={styles.titulo}>{roadmapContext.tema}</Text>
 
                 <Text style={styles.descricao}>
-                  {roadmap.descricaoGeral ? (
-                    roadmap.descricaoGeral
+                  {roadmapContext.descricaoGeral ? (
+                    roadmapContext.descricaoGeral
                   ) : (
                     <i>Este roadmap ainda não possui descrição.</i>
                   )}
@@ -445,8 +444,6 @@ export default function Visualizar() {
 
       {abaSelecionada === "etapas" && (
         <Roadmap
-          roadmap={roadmap}
-          setRoadmap={setRoadmap}
           tipoItemASerExcluido={tipoItemASerExcluido}
           setTipoItemASerExcluido={setTipoItemASerExcluido}
           deleteModalVisible={deleteModalVisible}
@@ -458,9 +455,7 @@ export default function Visualizar() {
         />
       )}
 
-      {abaSelecionada === "quizzes" && (
-        <Quizzes roadmap={roadmap} setRoadmap={setRoadmap} />
-      )}
+      {abaSelecionada === "quizzes" && <Quizzes />}
     </View>
   ) : null;
 }

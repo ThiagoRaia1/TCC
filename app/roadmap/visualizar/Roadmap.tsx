@@ -13,10 +13,9 @@ import { ICriarReferencia } from "../../../interfaces/referencia";
 import { TipoReferencia } from "../../../utils/tiposReferencia";
 import { updateRoadmap } from "../../../services/roadmap";
 import { IEtapa } from "../../../interfaces/etapa";
+import { useRoadmap } from "../../../context/providers/roadmap";
 
 type RoadmapProps = {
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   tipoItemASerExcluido: TipoItem;
   setTipoItemASerExcluido: React.Dispatch<React.SetStateAction<TipoItem>>;
   deleteModalVisible: boolean;
@@ -40,8 +39,6 @@ type RoadmapProps = {
 };
 
 export default function Roadmap({
-  roadmap,
-  setRoadmap,
   setTipoItemASerExcluido,
   setDeleteModalVisible,
   getData,
@@ -50,6 +47,7 @@ export default function Roadmap({
   setEtapaSelecionada,
 }: RoadmapProps) {
   const { showLoading, hideLoading } = useLoading();
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
 
   const [adicionandoEtapaModal, setAdicionandoEtapaModal] = useState(false);
 
@@ -92,10 +90,12 @@ export default function Roadmap({
         url,
       };
 
-      const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
+      if (!roadmapContext) return;
 
-        etapas: roadmap.etapas.map((etapa) => {
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmapContext,
+
+        etapas: roadmapContext.etapas.map((etapa) => {
           // Referência da etapa
           if (tipoItem === "etapa" && etapa.id === itemId) {
             return {
@@ -128,7 +128,7 @@ export default function Roadmap({
 
       const atualizado = await updateRoadmap(novoRoadmap);
 
-      setRoadmap(atualizado);
+      setRoadmapContext(atualizado);
     } catch (erro: any) {
       alert(erro.message);
     } finally {
@@ -136,8 +136,12 @@ export default function Roadmap({
     }
   };
 
+  if (!roadmapContext) return;
+
   // Não altera diretamente roadmap.etapas
-  const etapasOrdenadas = [...roadmap.etapas].sort((a, b) => a.ordem - b.ordem);
+  const etapasOrdenadas = [...roadmapContext.etapas].sort(
+    (a, b) => a.ordem - b.ordem,
+  );
 
   return (
     <View style={{ gap: 20 }}>
@@ -165,7 +169,6 @@ export default function Roadmap({
       {adicionandoEtapaModal && (
         <AdicionarEtapaModal
           closeModal={() => setAdicionandoEtapaModal(false)}
-          roadmap={roadmap}
         />
       )}
 
@@ -178,8 +181,6 @@ export default function Roadmap({
               <EtapaCard
                 key={etapa.id}
                 etapa={etapa}
-                roadmap={roadmap}
-                setRoadmap={setRoadmap}
                 anotacoes={anotacoes}
                 setAnotacoes={setAnotacoes}
                 addReferencia={addReferencia}

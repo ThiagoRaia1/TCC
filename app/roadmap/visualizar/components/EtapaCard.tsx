@@ -22,11 +22,10 @@ import { Feather } from "@expo/vector-icons";
 import { useLoading } from "../../../../context/providers/loading";
 import { TipoReferencia } from "../../../../utils/tiposReferencia";
 import ReferenciasCard from "./ReferenciasCard";
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 type EtapaCardProps = {
   etapa: IEtapa;
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   anotacoes: {
     [etapaId: number]: {
       plainText: string;
@@ -58,8 +57,6 @@ type EtapaCardProps = {
 
 export default function EtapaCard({
   etapa,
-  roadmap,
-  setRoadmap,
   anotacoes,
   setAnotacoes,
   addReferencia,
@@ -71,6 +68,7 @@ export default function EtapaCard({
   setDeleteModalVisible,
 }: EtapaCardProps) {
   const globalStyles = getGlobalStyles();
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
 
   const calcularProgressoEtapa = (etapa: IEtapa): number => {
@@ -101,7 +99,7 @@ export default function EtapaCard({
 
   const criarNovoObjetivo = async (etapaId: number) => {
     try {
-      if (!roadmap) return;
+      if (!roadmapContext) return;
 
       const titulo = tituloNovoObjetivo[etapaId]?.trim();
       const descricao = descricaoNovoObjetivo[etapaId]?.trim();
@@ -109,8 +107,8 @@ export default function EtapaCard({
       if (!titulo || !descricao) return;
 
       const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
-        etapas: roadmap.etapas.map((etapa) => {
+        ...roadmapContext,
+        etapas: roadmapContext.etapas.map((etapa) => {
           if (etapa.id !== etapaId) return etapa;
 
           return {
@@ -129,7 +127,7 @@ export default function EtapaCard({
 
       const atualizado = await updateRoadmap(novoRoadmap);
 
-      setRoadmap(atualizado);
+      setRoadmapContext(atualizado);
 
       // Limpa título
       setTituloNovoObjetivo((prev) => ({
@@ -228,10 +226,12 @@ export default function EtapaCard({
 
       showLoading();
 
-      const novoRoadmap: IUpdateRoadmap = {
-        ...roadmap,
+      if (!roadmapContext) return;
 
-        etapas: roadmap.etapas.map((e) => {
+      const novoRoadmap: IUpdateRoadmap = {
+        ...roadmapContext,
+
+        etapas: roadmapContext.etapas.map((e) => {
           if (e.id !== etapa.id) return e;
 
           return {
@@ -244,7 +244,7 @@ export default function EtapaCard({
 
       const atualizado = await updateRoadmap(novoRoadmap);
 
-      setRoadmap(atualizado);
+      setRoadmapContext(atualizado);
 
       setEditandoEtapa(false);
     } catch (erro: any) {
@@ -473,8 +473,6 @@ export default function EtapaCard({
                   key={obj.id}
                   objetivo={obj}
                   etapaId={etapa.id}
-                  roadmap={roadmap}
-                  setRoadmap={setRoadmap}
                   addReferencia={addReferencia}
                 />
               );
@@ -694,8 +692,6 @@ export default function EtapaCard({
               onAdicionarReferencia={(id, tipo, nome, url) =>
                 addReferencia("etapa", id, tipo, nome, url)
               }
-              roadmap={roadmap}
-              setRoadmap={setRoadmap}
             />
           </View>
         </View>

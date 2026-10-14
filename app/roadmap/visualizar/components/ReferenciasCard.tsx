@@ -18,21 +18,11 @@ import { getGlobalStyles } from "../../../../styles/globalStyles";
 import { useState } from "react";
 import { IReferencia } from "../../../../interfaces/referencia";
 import DeleteModal from "./DeleteModal";
-import { IRoadmap } from "../../../../interfaces/roadmap";
 import { updateReferencia } from "../../../../services/referecia";
 import { useLoading } from "../../../../context/providers/loading";
-
-const styles = StyleSheet.create({
-  cardTitulo: {
-    color: "black",
-    fontWeight: 600,
-    fontSize: 16,
-  },
-});
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 type ReferenciasCardProps = {
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
   item: {
     id: number;
     referencias?: IReferencia[];
@@ -49,12 +39,11 @@ type ReferenciasCardProps = {
 };
 
 export default function ReferenciasCard({
-  roadmap,
-  setRoadmap,
   item,
   tipoItem,
   onAdicionarReferencia,
 }: ReferenciasCardProps) {
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
   const globalStyles = getGlobalStyles();
   const { showLoading, hideLoading } = useLoading();
 
@@ -134,7 +123,7 @@ export default function ReferenciasCard({
         },
       );
 
-      setRoadmap((prev) => {
+      setRoadmapContext((prev) => {
         if (!prev) return prev;
 
         return {
@@ -610,10 +599,16 @@ export default function ReferenciasCard({
           closeModal={() => setDeleteModalVisible(false)}
           tipoItem="referencia"
           referencia={referenciaSelecionada}
-          roadmap={roadmap}
-          setRoadmap={setRoadmap}
         />
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  cardTitulo: {
+    color: "black",
+    fontWeight: 600,
+    fontSize: 16,
+  },
+});

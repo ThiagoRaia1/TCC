@@ -11,7 +11,6 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { IQuiz } from "../../../../interfaces/quiz/quiz";
-import { IRoadmap } from "../../../../interfaces/roadmap";
 import { colors } from "../../../../styles/colors";
 import CriarQuizModal from "./components/CriarQuizModal";
 import { useLoading } from "../../../../context/providers/loading";
@@ -22,16 +21,13 @@ import DeleteModal from "../components/DeleteModal";
 import SelectTentativaModal, {
   TentativaQuizResumo,
 } from "./components/SelectTentativaModal";
+import { useRoadmap } from "../../../../context/providers/roadmap";
 
 export type OpcoesAdicionarQuiz = "Etapas" | "Quizzes";
 export const opcoesAdicionarQuiz: OpcoesAdicionarQuiz[] = ["Etapas", "Quizzes"];
 
-interface QuizzesProps {
-  roadmap: IRoadmap;
-  setRoadmap: React.Dispatch<React.SetStateAction<IRoadmap | undefined>>;
-}
-
-export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
+export default function Quizzes() {
+  const { roadmapContext, setRoadmapContext } = useRoadmap();
   const { showLoading, hideLoading } = useLoading();
   const { usuario } = useAuth();
 
@@ -47,8 +43,11 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
     useState<OpcoesAdicionarQuiz>(opcoesAdicionarQuiz[0]);
 
   const getData = async () => {
-    if (!usuario) return;
-    const resultado: IQuiz[] = await getAllQuizzes(usuario.sub, roadmap.id);
+    if (!usuario || !roadmapContext) return;
+    const resultado: IQuiz[] = await getAllQuizzes(
+      usuario.sub,
+      roadmapContext.id,
+    );
 
     setQuizzes(resultado);
   };
@@ -62,7 +61,7 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
     } finally {
       hideLoading();
     }
-  }, [roadmap]);
+  }, [roadmapContext]);
 
   const visualizarQuiz = (quiz: IQuiz) => {
     alert(`Visualizar quiz: ${quiz.id}`);
@@ -276,6 +275,7 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
                       pressed && styles.quizFooterButtonPressed,
                     ]}
                     onPress={() => {
+                      setRoadmapContext(roadmapContext);
                       router.push(`roadmap/visualizar/quiz/${quiz.id}`);
                     }}
                   >
@@ -340,15 +340,12 @@ export default function Quizzes({ roadmap, setRoadmap }: QuizzesProps) {
       <CriarQuizModal
         visible={modalCriarQuiz}
         closeModal={() => setModalCriarQuiz(false)}
-        roadmap={roadmap}
         opcaoSelecionadaAdicionarQuiz={opcaoSelecionadaAdicionarQuiz}
       />
 
       {deleteModalVisible && (
         <DeleteModal
           closeModal={() => setDeleteModalVisible(false)}
-          roadmap={roadmap}
-          setRoadmap={setRoadmap}
           quiz={quizSelecionado}
           tipoItem="quiz"
         />
@@ -514,7 +511,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#dcfce7",
     borderWidth: 1,
-    borderColor: "#00ff59"
+    borderColor: "#00ff59",
   },
 
   concluidoText: {
