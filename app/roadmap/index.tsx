@@ -233,7 +233,9 @@ export default function SeusRoadmaps() {
                         },
                       ]}
                       onPress={() =>
-                        router.push(`roadmap/visualizar/${roadmap.id}`)
+                        router.push(
+                          `roadmap/visualizar/${roadmap.id}?aba=etapas`,
+                        )
                       }
                     >
                       <Eye color={"black"} size={18} />

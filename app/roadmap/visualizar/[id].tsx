@@ -7,10 +7,10 @@ import {
   Text,
 } from "react-native";
 import { getGlobalStyles } from "../../../styles/globalStyles";
-import { router, useLocalSearchParams, usePathname } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useLoading } from "../../../context/providers/loading";
-import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
+import { IUpdateRoadmap } from "../../../interfaces/roadmap";
 import { getRoadmap, updateRoadmap } from "../../../services/roadmap";
 import { colors } from "../../../styles/colors";
 import {
@@ -23,6 +23,7 @@ import DeleteModal from "./components/DeleteModal";
 import { IEtapa } from "../../../interfaces/etapa";
 import Quizzes from "./quiz/Quizzes";
 import { useRoadmap } from "../../../context/providers/roadmap";
+import CadernoRevisao from "./cadernoRevisao";
 
 export type TipoItem = "roadmap" | "etapa" | "objetivo";
 export const tiposItem: TipoItem[] = ["roadmap", "etapa", "objetivo"];
@@ -52,16 +53,12 @@ export default function Visualizar() {
   }>({});
 
   //#region TIPOS
-  type Abas = "etapas" | "quizzes";
+  type Abas = "etapas" | "quizzes" | "cadernoRevisao";
 
   const { id, aba } = useLocalSearchParams<{
     id: string;
     aba?: string;
   }>();
-
-  const pathname = usePathname();
-
-  const abaSelecionada: Abas = aba === "quizzes" ? "quizzes" : "etapas";
 
   const selecionarAba = (novaAba: Abas) => {
     router.setParams({ aba: novaAba });
@@ -403,7 +400,7 @@ export default function Visualizar() {
           onPress={() => selecionarAba("etapas")}
           style={[
             styles.menuItem,
-            abaSelecionada === "etapas"
+            aba === "etapas"
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -411,7 +408,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              abaSelecionada === "etapas"
+              aba === "etapas"
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -424,7 +421,7 @@ export default function Visualizar() {
           onPress={() => selecionarAba("quizzes")}
           style={[
             styles.menuItem,
-            abaSelecionada === "quizzes"
+            aba === "quizzes"
               ? styles.menuItemSelecionado
               : styles.menuItemDesselecionado,
           ]}
@@ -432,7 +429,7 @@ export default function Visualizar() {
           <Text
             style={[
               styles.menuItemText,
-              abaSelecionada === "quizzes"
+              aba === "quizzes"
                 ? styles.menuItemSelecionadoText
                 : styles.menuItemDesselecionadoText,
             ]}
@@ -440,9 +437,30 @@ export default function Visualizar() {
             Quizzes e Avaliações
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => selecionarAba("cadernoRevisao")}
+          style={[
+            styles.menuItem,
+            aba === "cadernoRevisao"
+              ? styles.menuItemSelecionado
+              : styles.menuItemDesselecionado,
+          ]}
+        >
+          <Text
+            style={[
+              styles.menuItemText,
+              aba === "cadernoRevisao"
+                ? styles.menuItemSelecionadoText
+                : styles.menuItemDesselecionadoText,
+            ]}
+          >
+            Caderno de Revisão
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {abaSelecionada === "etapas" && (
+      {aba === "etapas" && (
         <Roadmap
           tipoItemASerExcluido={tipoItemASerExcluido}
           setTipoItemASerExcluido={setTipoItemASerExcluido}
@@ -455,7 +473,9 @@ export default function Visualizar() {
         />
       )}
 
-      {abaSelecionada === "quizzes" && <Quizzes />}
+      {aba === "quizzes" && <Quizzes />}
+
+      {aba === "cadernoRevisao" && <CadernoRevisao />}
     </View>
   ) : null;
 }
