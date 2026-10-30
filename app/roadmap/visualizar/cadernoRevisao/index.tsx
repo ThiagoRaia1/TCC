@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import {
-  BookOpen,
-  CheckCircle2,
-  CircleAlert,
-  RotateCcw,
-} from "lucide-react-native";
+import { BookOpen, CheckCircle2, CircleAlert } from "lucide-react-native";
 import { useAuth } from "../../../../context/auth";
 import { colors } from "../../../../styles/colors";
 import { useRoadmap } from "../../../../context/providers/roadmap";
@@ -110,16 +105,6 @@ export default function CadernoRevisao() {
           <Text style={styles.descricao}>
             Revise as questões que você errou nos quizzes deste roadmap.
           </Text>
-        </View>
-      </View>
-
-      <View style={styles.resumo}>
-        <View style={styles.resumoIcon}>
-          <CircleAlert size={22} color="#dc2626" />
-        </View>
-
-        <View style={styles.resumoTexto}>
-          <Text style={styles.resumoLabel}>questões para revisar</Text>
         </View>
       </View>
 
@@ -229,13 +214,6 @@ export default function CadernoRevisao() {
             );
           })}
         </View>
-      )}
-
-      {erros.length > 0 && (
-        <Pressable style={styles.botaoAtualizar} onPress={carregarErros}>
-          <RotateCcw size={16} color={colors.lightBlue} />
-          <Text style={styles.botaoAtualizarTexto}>Atualizar caderno</Text>
-        </Pressable>
       )}
     </View>
   );
