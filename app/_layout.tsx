@@ -7,6 +7,7 @@ import { RoadmapProvider } from "../context/providers/roadmap";
 import Header from "./_components/Header";
 import { ScrollView } from "react-native";
 import Pomodoro from "./_components/Pomodoro";
+import { ResultadoQuizProvider } from "../context/providers/resultadoQuiz";
 
 function LayoutContent() {
   const { isAuthenticated } = useAuth();
@@ -36,7 +37,9 @@ export default function Layout() {
     <AuthProvider>
       <LoadingProvider>
         <RoadmapProvider>
-          <LayoutContent />
+          <ResultadoQuizProvider>
+            <LayoutContent />
+          </ResultadoQuizProvider>
         </RoadmapProvider>
       </LoadingProvider>
     </AuthProvider>

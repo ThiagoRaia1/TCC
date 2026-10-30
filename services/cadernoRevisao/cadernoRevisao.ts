@@ -12,3 +12,11 @@ export async function getAllErrosRoadmap(
     },
   );
 }
+
+export async function gerarQuizPraticaErros(usuarioId: number, roadmapId?: number) {
+  const params = roadmapId ? `?roadmapId=${roadmapId}` : "";
+
+  return await httpClient(`/caderno-erros/${usuarioId}/praticar${params}`, {
+    method: "GET",
+  });
+}

@@ -11,10 +11,21 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { IQuiz } from "../../../../../interfaces/quiz/quiz";
 import { httpClient } from "../../../../../services/httpclient";
+import { useAuth } from "../../../../../context/auth";
+import { useRoadmap } from "../../../../../context/providers/roadmap";
+import { useResultadoQuiz } from "../../../../../context/providers/resultadoQuiz";
 
 export default function ResponderQuiz() {
-  const { id } = useLocalSearchParams();
+  const { id, modo } = useLocalSearchParams<{
+    id?: string;
+    modo?: string;
+  }>();
 
+  const modoErros = modo === "erros";
+
+  const { usuario } = useAuth();
+  const { roadmapContext } = useRoadmap();
+  const { salvarResultadoTemporario } = useResultadoQuiz();
   const [quiz, setQuiz] = useState<IQuiz | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [finalizando, setFinalizando] = useState(false);
@@ -32,17 +43,38 @@ export default function ResponderQuiz() {
 
   useEffect(() => {
     carregarQuiz();
-  }, [id]);
+  }, [id, modo]);
 
   async function carregarQuiz() {
     try {
       setCarregando(true);
 
-      const resultado = await httpClient(`/quiz/${id}`, {
-        method: "GET",
-      });
+      let resultado;
+
+      if (modoErros && usuario && roadmapContext) {
+        if (!usuario.sub) {
+          throw new Error("Usuário não identificado.");
+        }
+
+        const query = roadmapContext.id
+          ? `?roadmapId=${roadmapContext.id}`
+          : "";
+
+        resultado = await httpClient(
+          `/caderno-erros/${usuario.sub}/praticar${query}`,
+          {
+            method: "GET",
+          },
+        );
+      } else {
+        resultado = await httpClient(`/quiz/${id}`, {
+          method: "GET",
+        });
+      }
 
       setQuiz(resultado);
+      setQuestaoAtual(0);
+      setRespostas({});
     } catch (error) {
       console.error("Erro ao carregar quiz:", error);
 
@@ -129,45 +161,61 @@ export default function ResponderQuiz() {
         alternativaId: respostas[questao.id],
       }));
 
-      /**
-       * Endpoint esperado:
-       *
-       * POST /quiz/:id/finalizar
-       *
-       * Body:
-       * {
-       *   respostas: [
-       *     {
-       *       questaoId: 1,
-       *       alternativaId: 4
-       *     }
-       *   ]
-       * }
-       */
+      let resultado;
 
-      const resultado = await httpClient(`/quiz/${quiz.id}/finalizar`, {
-        method: "POST",
-        body: JSON.stringify({
-          respostas: respostasFormatadas,
-        }),
-      });
+      if (modoErros) {
+        if (!usuario?.sub) {
+          throw new Error("Usuário não identificado.");
+        }
 
-      /**
-       * Ajuste a rota conforme a sua tela
-       * de resultado.
-       */
-      router.replace({
-        pathname: "/roadmap/visualizar/quiz/resultado/[id]",
-        params: {
-          id: String(resultado.id),
-        },
-      });
-    } catch (error) {
-      console.error("Erro ao finalizar quiz:", error);
+        if (!roadmapContext?.id) {
+          throw new Error("Roadmap não identificado.");
+        }
 
+        const query = `?roadmapId=${roadmapContext.id}`;
+
+        resultado = await httpClient(
+          `/caderno-erros/${usuario.sub}/praticar/finalizar${query}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              respostas: respostasFormatadas,
+            }),
+          },
+        );
+
+        // Primeiro armazena o resultado
+        salvarResultadoTemporario(resultado);
+
+        console.log("Resultado salvo no contexto:", resultado);
+
+        // Depois navega
+        router.replace({
+          pathname: "/roadmap/visualizar/quiz/resultado/[id]",
+          params: {
+            id: "pratica-erros",
+            modo: "erros",
+          },
+        });
+      } else {
+        resultado = await httpClient(`/quiz/${quiz.id}/finalizar`, {
+          method: "POST",
+          body: JSON.stringify({
+            respostas: respostasFormatadas,
+          }),
+        });
+
+        router.replace({
+          pathname: "/roadmap/visualizar/quiz/resultado/[id]",
+          params: {
+            id: String(resultado.id),
+          },
+        });
+      }
+    } catch (error: any) {
       Alert.alert(
         "Erro",
-        "Não foi possível finalizar o quiz. Tente novamente.",
+        error.message || "Não foi possível finalizar o quiz.",
       );
     } finally {
       setFinalizando(false);

@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import {
-  BookOpen,
-  CheckCircle2,
-  CircleAlert,
-  RotateCcw,
-} from "lucide-react-native";
+import { BookOpen, CheckCircle2, CircleAlert } from "lucide-react-native";
 import { useAuth } from "../../../../context/auth";
 import { colors } from "../../../../styles/colors";
 import { useRoadmap } from "../../../../context/providers/roadmap";
 import { getAllErrosRoadmap } from "../../../../services/cadernoRevisao/cadernoRevisao";
 import { useLoading } from "../../../../context/providers/loading";
 import { ICadernoRevisao } from "../../../../interfaces/cadernoRevisao/cadernoRevisao";
+import { router } from "expo-router";
 
 export default function CadernoRevisao() {
   const { usuario } = useAuth();
@@ -72,6 +68,23 @@ export default function CadernoRevisao() {
     }));
   }, [erros]);
 
+  const iniciarPraticaErros = () => {
+    if (!usuario?.sub || !roadmapContext?.id) {
+      alert("Não foi possível identificar o usuário ou o roadmap.");
+      return;
+    }
+
+    router.push({
+      pathname: "/roadmap/visualizar/quiz/responder/[id]",
+      params: {
+        id: "pratica-erros",
+        modo: "erros",
+        usuarioId: String(usuario.sub),
+        roadmapId: String(roadmapContext.id),
+      },
+    });
+  };
+
   const carregarErros = async () => {
     if (!usuario?.sub || !roadmapContext) {
       setErros([]);
@@ -96,7 +109,7 @@ export default function CadernoRevisao() {
 
   useEffect(() => {
     carregarErros();
-  }, []);
+  }, [usuario?.sub, roadmapContext?.id]);
 
   return (
     <View style={styles.container}>
@@ -111,16 +124,22 @@ export default function CadernoRevisao() {
             Revise as questões que você errou nos quizzes deste roadmap.
           </Text>
         </View>
-      </View>
 
-      <View style={styles.resumo}>
-        <View style={styles.resumoIcon}>
-          <CircleAlert size={22} color="#dc2626" />
-        </View>
+        {erros.length > 0 && (
+          <Pressable style={styles.botaoPraticar} onPress={iniciarPraticaErros}>
+            <BookOpen size={20} color="#fff" />
 
-        <View style={styles.resumoTexto}>
-          <Text style={styles.resumoLabel}>questões para revisar</Text>
-        </View>
+            <View style={styles.botaoPraticarConteudo}>
+              <Text style={styles.botaoPraticarTitulo}>
+                Praticar meus erros
+              </Text>
+
+              <Text style={styles.botaoPraticarDescricao}>
+                Responda novamente às questões que você errou.
+              </Text>
+            </View>
+          </Pressable>
+        )}
       </View>
 
       {erros.length === 0 ? (
@@ -229,13 +248,6 @@ export default function CadernoRevisao() {
             );
           })}
         </View>
-      )}
-
-      {erros.length > 0 && (
-        <Pressable style={styles.botaoAtualizar} onPress={carregarErros}>
-          <RotateCcw size={16} color={colors.lightBlue} />
-          <Text style={styles.botaoAtualizarTexto}>Atualizar caderno</Text>
-        </Pressable>
       )}
     </View>
   );
@@ -472,5 +484,29 @@ const styles = StyleSheet.create({
     color: colors.lightBlue,
     fontSize: 14,
     fontWeight: "700",
+  },
+  botaoPraticar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: colors.lightBlue,
+  },
+
+  botaoPraticarConteudo: {
+    flex: 1,
+    gap: 3,
+  },
+
+  botaoPraticarTitulo: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+  },
+
+  botaoPraticarDescricao: {
+    fontSize: 12,
+    color: "#eaf4ff",
   },
 });

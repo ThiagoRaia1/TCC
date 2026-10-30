@@ -10,9 +10,17 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { httpClient } from "../../../../../services/httpclient";
 import { ITentativaQuiz } from "../../../../../interfaces/quiz/tentativaQuiz";
+import { useResultadoQuiz } from "../../../../../context/providers/resultadoQuiz";
 
 export default function ResultadoQuiz() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, modo } = useLocalSearchParams<{
+    id: string;
+    modo?: string;
+  }>();
+
+  const modoErros = modo === "erros";
+
+  const { resultadoTemporario, limparResultadoTemporario } = useResultadoQuiz();
 
   const [tentativa, setTentativa] = useState<ITentativaQuiz | null>(null);
 
@@ -20,11 +28,20 @@ export default function ResultadoQuiz() {
 
   useEffect(() => {
     carregarResultado();
-  }, [id]);
+  }, [id, modo]);
 
   async function carregarResultado() {
     try {
       setCarregando(true);
+
+      if (modoErros) {
+        if (!resultadoTemporario) {
+          throw new Error("Resultado temporário não encontrado.");
+        }
+
+        setTentativa(resultadoTemporario as ITentativaQuiz);
+        return;
+      }
 
       const resultado = await httpClient(`/tentativa-quiz/${id}`, {
         method: "GET",
@@ -33,6 +50,7 @@ export default function ResultadoQuiz() {
       setTentativa(resultado);
     } catch (error) {
       console.error("Erro ao carregar resultado:", error);
+      setTentativa(null);
     } finally {
       setCarregando(false);
     }
@@ -273,14 +291,14 @@ export default function ResultadoQuiz() {
         {/* BOTÕES */}
 
         <View style={styles.botoes}>
-          <Pressable
+          {!modoErros && <Pressable
             style={styles.botaoPrincipal}
             onPress={() =>
               router.replace(`/quiz/responder/${tentativa.quiz.id}`)
             }
           >
             <Text style={styles.botaoPrincipalTexto}>Tentar novamente</Text>
-          </Pressable>
+          </Pressable>}
 
           <Pressable
             style={styles.botaoSecundario}
