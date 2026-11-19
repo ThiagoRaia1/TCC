@@ -291,7 +291,7 @@ export default function SeusRoadmaps() {
               ...roadmapGerado,
               usuario: usuario.sub,
             });
-            router.push(`/roadmap/visualizar/${roadmapSalvo.id}`);
+            router.push(`/roadmap/visualizar/${roadmapSalvo.id}?aba=etapas`);
           } catch (erro: any) {
             alert(erro.message);
           } finally {

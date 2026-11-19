@@ -7,7 +7,7 @@ import { TipoItem } from "./[id]";
 import AdicionarEtapaModal from "./components/AdicionarEtapaModal";
 import EtapaCard from "./components/EtapaCard";
 
-import { IRoadmap, IUpdateRoadmap } from "../../../interfaces/roadmap";
+import { IUpdateRoadmap } from "../../../interfaces/roadmap";
 import { useLoading } from "../../../context/providers/loading";
 import { ICriarReferencia } from "../../../interfaces/referencia";
 import { TipoReferencia } from "../../../utils/tiposReferencia";
